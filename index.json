@@ -25,6 +25,176 @@
           "released": "2026-10-27"
         }
       ]
+    },
+    "mcadminpanel": {
+      "name": "mcAdminPanel",
+      "versions": [
+        {
+          "version": "1.1.0",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/mcadminpanel/1.21.1-neoforge/mcadminpanel-1.1.0.jar",
+          "fileName": "mcadminpanel-1.1.0.jar",
+          "sha256": "175e48b8649b6a0bc256e29c2b41b0c7a175716da2cb5176530f497a5c54f58f",
+          "changelog": "「人気MOD」タブを追加しました。",
+          "released": "2026-10-24"
+        }
+      ]
+    },
+    "recipecraft": {
+      "name": "RecipeCraft",
+      "versions": [
+        {
+          "version": "0.2.2",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/recipecraft/1.21.1-neoforge/recipecraft-0.2.2.jar",
+          "fileName": "recipecraft-0.2.2.jar",
+          "sha256": "d2edab08b5ab954c21b47d6a3bcb8163b0d1c0a8025e83ab671be983e12b5bd1",
+          "changelog": "ほかのMODの起動処理で改変したレシピが元に戻ることがある問題に対策しました。",
+          "released": "2026-10-26"
+        },
+        {
+          "version": "0.2.2",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/recipecraft/1.20.1-forge/recipecraft-0.2.2.jar",
+          "fileName": "recipecraft-0.2.2.jar",
+          "sha256": "32b11da641470e179506510bc2254b4bac5d3f8576a7d4c298f592890b1e5635",
+          "changelog": "ほかのMODの起動処理で改変したレシピが元に戻ることがある問題に対策しました。",
+          "released": "2026-10-26"
+        }
+      ]
+    },
+    "emcgui": {
+      "name": "EMC Editor GUI",
+      "versions": [
+        {
+          "version": "1.1.0",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/emcgui/1.21.1-neoforge/emcgui-neoforge-1.21.1-1.1.0.jar",
+          "fileName": "emcgui-neoforge-1.21.1-1.1.0.jar",
+          "sha256": "ce4c2ace4f16f5ef1a4f07391c8e834a9e817a6b11a0320562e69ba300cd54cf",
+          "changelog": "NeoForge 1.20.4 と 1.21.1 に対応しました。",
+          "released": "2026-10-25"
+        },
+        {
+          "version": "1.1.0",
+          "mc": "1.20.4",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/emcgui/1.20.4-neoforge/emcgui-neoforge-1.20.4-1.1.0.jar",
+          "fileName": "emcgui-neoforge-1.20.4-1.1.0.jar",
+          "sha256": "58bd6bcf0b3714a77dac30639de1aa6fd8adcf9d0e4175b5d1fe2c57900a5874",
+          "changelog": "NeoForge 1.20.4 と 1.21.1 に対応しました。",
+          "released": "2026-10-25"
+        },
+        {
+          "version": "1.0.0",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/emcgui/1.20.1-forge/emcgui-1.0.0.jar",
+          "fileName": "emcgui-1.0.0.jar",
+          "sha256": "315cd9241898343bda160800eac8be7f6f018d10f01fdb7cf205defaad17863d",
+          "changelog": "NeoForge 1.20.4 と 1.21.1 に対応しました。",
+          "released": "2026-10-22"
+        }
+      ]
+    },
+    "hijiki": {
+      "name": "ひじき豆modV2",
+      "versions": [
+        {
+          "version": "1.0.4-neoforge",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/hijiki/1.21.1-neoforge/hijiki-neoforge-1.21.1-1.0.4-neoforge.jar",
+          "fileName": "hijiki-neoforge-1.21.1-1.0.4-neoforge.jar",
+          "sha256": "d62edca24ed34b8ec43e4caa941958e0090ea5bd22c3ad533201487757a97f50",
+          "changelog": "ひじき豆modV2 の最新版です。",
+          "released": "2026-10-27"
+        },
+        {
+          "version": "1.0.4-forge",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/hijiki/1.20.1-forge/hijiki-forge-1.20.1-1.0.4-forge.jar",
+          "fileName": "hijiki-forge-1.20.1-1.0.4-forge.jar",
+          "sha256": "f14a559248a7c53b9c44db8fedc95b0623485ad1f9165424d2be6c95f30b0efe",
+          "changelog": "ひじき豆modV2 の最新版です。",
+          "released": "2026-10-27"
+        }
+      ]
+    },
+    "mentionmod": {
+      "name": "Mention Mod",
+      "versions": [
+        {
+          "version": "1.2.0",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/mentionmod/1.21.1-neoforge/mentionmod-neoforge-1.21.1-1.2.0.jar",
+          "fileName": "mentionmod-neoforge-1.21.1-1.2.0.jar",
+          "sha256": "c28c202108f5a838212b7aee631f4c2dd66fecb10c724899d9d5fa49296be96c",
+          "changelog": "What Are They Up To（Watut）との連携を追加しました。",
+          "released": "2026-10-27"
+        },
+        {
+          "version": "1.2.0",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/mentionmod/1.20.1-forge/mentionmod-forge-1.20.1-1.2.0.jar",
+          "fileName": "mentionmod-forge-1.20.1-1.2.0.jar",
+          "sha256": "f82a28558f7303f96a046c79650d0496fabf8deb205b179e5b356673b279cc90",
+          "changelog": "What Are They Up To（Watut）との連携を追加しました。",
+          "released": "2026-10-27"
+        }
+      ]
+    },
+    "callai": {
+      "name": "Call AI",
+      "versions": [
+        {
+          "version": "1.2.0",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/callai/1.20.1-forge/callai-1.2.0.jar",
+          "fileName": "callai-1.2.0.jar",
+          "sha256": "e460d0c70322ed8b6958c41442020cb3dd0cee35acf8ef368f76ee775c09e955",
+          "changelog": "MODの名前を「Gemini Tell」から「Call AI」に変えました。",
+          "released": "2026-10-27"
+        }
+      ]
+    },
+    "geminitell": {
+      "name": "Call AI（旧 Gemini Tell）",
+      "versions": [
+        {
+          "version": "1.2.0",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/callai/1.20.1-forge/callai-1.2.0.jar",
+          "fileName": "callai-1.2.0.jar",
+          "sha256": "e460d0c70322ed8b6958c41442020cb3dd0cee35acf8ef368f76ee775c09e955",
+          "changelog": "Gemini Tell は Call AI に名前が変わりました。更新すると古い jar は消えます。設定ファイルが新しくなるので、もう一度 /gemini key set でAPIキーを設定してください。",
+          "released": "2026-10-27"
+        }
+      ]
+    },
+    "hyperdaimc": {
+      "name": "Hyperlink-E（Hyperlink 1.21.1 移植版）",
+      "versions": [
+        {
+          "version": "1.2.0",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/hyperdaimc/1.21.1-neoforge/Hyperlink-1.21.1-1.2.0.jar",
+          "fileName": "Hyperlink-1.21.1-1.2.0.jar",
+          "sha256": "c52c363cee6546d08ac027181e9a07d6bc8b4ccb8cb3835d4687716d5d226511",
+          "changelog": "Z-MAX マテリアライザーを追加しました。",
+          "released": "2026-10-24"
+        }
+      ]
     }
   }
 }
