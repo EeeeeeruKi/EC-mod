@@ -2,7 +2,7 @@
 
 Claude が作った Minecraft のMODの配布用リポジトリです。
 
-- jar は [Releases](https://github.com/EeeeeeruKi/EC-mod/releases) に置いています。
+- jar は `jars/<MOD ID>/` に置いています。古い版も消さずに残します。
 - `index.json` は **Claude MOD Updater** が起動時に読む更新情報です。MODの新しい版を出したら、ここに追記します。
 
 ## index.json の書き方
