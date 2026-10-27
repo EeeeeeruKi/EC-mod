@@ -1,0 +1,30 @@
+{
+  "format": 1,
+  "mods": {
+    "claudeupdater": {
+      "name": "Claude MOD Updater",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://github.com/EeeeeeruKi/EC-mod/releases/download/claudeupdater-1.0.0/claudeupdater-1.0.0-neoforge-1.21.1.jar",
+          "fileName": "claudeupdater-1.0.0-neoforge-1.21.1.jar",
+          "sha256": "36a53190d5fca4298eb952dea2bb1a3e3a143a942535a9b9de04232a74e0c744",
+          "changelog": "最初の版です。",
+          "released": "2026-10-27"
+        },
+        {
+          "version": "1.0.0",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://github.com/EeeeeeruKi/EC-mod/releases/download/claudeupdater-1.0.0/claudeupdater-1.0.0-forge-1.20.1.jar",
+          "fileName": "claudeupdater-1.0.0-forge-1.20.1.jar",
+          "sha256": "a48d4ff6344cf5fb761bbb58fa6169ffc7bc1413e68098d2233a22a2d3f7512f",
+          "changelog": "最初の版です。",
+          "released": "2026-10-27"
+        }
+      ]
+    }
+  }
+}
