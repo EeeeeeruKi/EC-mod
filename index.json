@@ -5,6 +5,26 @@
       "name": "Claude MOD Updater",
       "versions": [
         {
+          "version": "1.1.0",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/claudeupdater/1.20.1-forge/claudeupdater-1.1.0-forge-1.20.1.jar",
+          "fileName": "claudeupdater-1.1.0-forge-1.20.1.jar",
+          "sha256": "de7e16c71fd76474f6989276dd7f2bbb8b65cf774c3be622ec9060d3417768ad",
+          "changelog": "タイトル画面に更新ボタン（アイコン）を追加しました。「選んだ版は今後お知らせしない」を「二度と表示しない」に変え、あとから入れたMODの更新だけが表示されるようにしました。",
+          "released": "2026-10-28"
+        },
+        {
+          "version": "1.1.0",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/claudeupdater/1.21.1-neoforge/claudeupdater-1.1.0-neoforge-1.21.1.jar",
+          "fileName": "claudeupdater-1.1.0-neoforge-1.21.1.jar",
+          "sha256": "45244153cb1bd92e3de54b3d0deaf2bb7b8a8b6b71dcf2c55fa1354436a852e8",
+          "changelog": "タイトル画面に更新ボタン（アイコン）を追加しました。「選んだ版は今後お知らせしない」を「二度と表示しない」に変え、あとから入れたMODの更新だけが表示されるようにしました。",
+          "released": "2026-10-28"
+        },
+        {
           "version": "1.0.0",
           "mc": "1.21.1",
           "loader": "neoforge",
