@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.eeeeeeruki.callai.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "callai.refmap.json",
+  "mixins": [
+    "EntitySelectorParserMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
