@@ -5,4 +5,4 @@
 - forge/ … 1.20.1 Forge
 - neoforge/ … 1.21.1 NeoForge
 
-過去の版はgitの履歴とタグ（callai-v1.9.0 など）で見られる。
+過去の版はgitのコミット履歴で見られる。
