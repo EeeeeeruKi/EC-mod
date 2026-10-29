@@ -6,6 +6,26 @@
       "summary": "ゲームの起動時に、このライブラリのMODの新しい版があるか確認し、選んだMODを自動で入れ替えるMOD。jarを毎回ダウンロードして置き換える手間がなくなります。",
       "versions": [
         {
+          "version": "1.2.2",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/claudeupdater/1.20.1-forge/claudeupdater-1.2.2-forge-1.20.1.jar",
+          "fileName": "claudeupdater-1.2.2-forge-1.20.1.jar",
+          "sha256": "ac5fe7439cad3027a2da5367342ca6546699c7c0d99fd4aaa4a0c4edff8761d7",
+          "changelog": "ゲームのフォルダ名に日本語などが入っていると、終了後の入れ替えが失敗することがある不具合を直しました。",
+          "released": "2026-10-29"
+        },
+        {
+          "version": "1.2.2",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/claudeupdater/1.21.1-neoforge/claudeupdater-1.2.2-neoforge-1.21.1.jar",
+          "fileName": "claudeupdater-1.2.2-neoforge-1.21.1.jar",
+          "sha256": "9d8015e5a8d95fff6cad16dac50616dd59f1c8911f79fbf0c97627fe04e21b91",
+          "changelog": "ゲームのフォルダ名に日本語などが入っていると、終了後の入れ替えが失敗することがある不具合を直しました。",
+          "released": "2026-10-29"
+        },
+        {
           "version": "1.2.1",
           "mc": "1.20.1",
           "loader": "forge",
