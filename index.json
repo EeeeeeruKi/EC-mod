@@ -324,6 +324,16 @@
       "summary": "Sakurafuld さんのMOD「Hyperlink」（Forge 1.20.1）の主要部分を NeoForge 1.21.1 に移植したもの。ムテキスター・ノベルカリバー・クロニクロック・ピックドクス・V.R.X.・フメツウィザー・ゲーマクラフター・Z-MAX マテリアライザーが使えます。",
       "versions": [
         {
+          "version": "1.3.0",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/hyperdaimc/1.21.1-neoforge/Hyperlink-1.21.1-1.3.0.jar",
+          "fileName": "Hyperlink-1.21.1-1.3.0.jar",
+          "sha256": "7ae39e0fbef47db4c56360abead955f8f6f5cfb2950e918b30acac3ef83e7891",
+          "changelog": "v1.3.0 で Better Combat・Epic Fight と連携しました。どちらかを入れると、ノベルカリバーは視線先をまとめて倒す攻撃の代わりに、剣と同じモーションで振れるようになり、当たった相手を倒します。リーチは普通の剣より約1ブロック長めです。どちらも入れていなければ今までどおりです。",
+          "released": "2026-10-29"
+        },
+        {
           "version": "1.2.0",
           "mc": "1.21.1",
           "loader": "neoforge",
