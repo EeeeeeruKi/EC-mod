@@ -239,8 +239,28 @@
     },
     "callai": {
       "name": "Call AI",
-      "summary": "/tell @gemini でささやくと、Google の Gemini がささやき返してくれるMOD。サーバーのOPがAPIキーを設定すれば、参加者の誰でも Gemini と話せます。",
+      "summary": "/tell @gemini でささやくと、Google の Gemini がささやき返してくれるMOD。頼めばコマンドも実行してくれます。サーバーのOPがAPIキーを設定すれば、参加者の誰でも Gemini と話せます。",
       "versions": [
+        {
+          "version": "1.9.0",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/callai/1.20.1-forge/callai-1.9.0.jar",
+          "fileName": "callai-1.9.0.jar",
+          "sha256": "b99d27d8a1346dba7004df065b363da7199e784d92d2be2f8589ab26a7aea275",
+          "changelog": "Geminiがコマンドを実行できるようになりました（/gemini do <やってほしいこと>、/tell @gemini でも頼めます）。権限は話しかけた人の権限までで、OPは /gemini commands で使える場面・権限の上限・禁止するコマンドを変えられます。",
+          "released": "2026-10-29"
+        },
+        {
+          "version": "1.9.0",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/callai/1.21.1-neoforge/callai-neoforge-1.21.1-1.9.0.jar",
+          "fileName": "callai-neoforge-1.21.1-1.9.0.jar",
+          "sha256": "81ba4394c902693c9ead695d6b36c5ed4c2312c3df4d5180d866aafbbd6ef02f",
+          "changelog": "Geminiがコマンドを実行できるようになりました（/gemini do <やってほしいこと>、/tell @gemini でも頼めます）。権限は話しかけた人の権限までで、OPは /gemini commands で使える場面・権限の上限・禁止するコマンドを変えられます。",
+          "released": "2026-10-29"
+        },
         {
           "version": "1.8.0",
           "mc": "1.20.1",
