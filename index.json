@@ -3,7 +3,28 @@
   "mods": {
     "claudeupdater": {
       "name": "Claude MOD Updater",
+      "summary": "ゲームの起動時に、このライブラリのMODの新しい版があるか確認し、選んだMODを自動で入れ替えるMOD。jarを毎回ダウンロードして置き換える手間がなくなります。",
       "versions": [
+        {
+          "version": "1.2.0",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/claudeupdater/1.20.1-forge/claudeupdater-1.2.0-forge-1.20.1.jar",
+          "fileName": "claudeupdater-1.2.0-forge-1.20.1.jar",
+          "sha256": "2c8a9824111d3fe583e4ddea181cf1b0723da7d2c6bc5cdeb4713de5ba8a34c6",
+          "changelog": "更新ボタンを開くときに隠しキー（初期設定は Ctrl＋Shift、操作設定では「???」）を押していると、まだ入っていないMODを追加できる画面が開くようになりました。",
+          "released": "2026-10-29"
+        },
+        {
+          "version": "1.2.0",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/claudeupdater/1.21.1-neoforge/claudeupdater-1.2.0-neoforge-1.21.1.jar",
+          "fileName": "claudeupdater-1.2.0-neoforge-1.21.1.jar",
+          "sha256": "3da9864327aa4f5679ec3a1b2773bfac874abf74ce00425f3f6a2e614fb0518b",
+          "changelog": "更新ボタンを開くときに隠しキー（初期設定は Ctrl＋Shift、操作設定では「???」）を押していると、まだ入っていないMODを追加できる画面が開くようになりました。",
+          "released": "2026-10-29"
+        },
         {
           "version": "1.1.0",
           "mc": "1.20.1",
@@ -48,6 +69,7 @@
     },
     "mcadminpanel": {
       "name": "mcAdminPanel",
+      "summary": "OP向けの管理パネル。プレイヤー・ゲームルール・MOD設定・人気MODの設定・コマンドをゲーム内のGUIで管理します。",
       "versions": [
         {
           "version": "1.1.0",
@@ -63,6 +85,7 @@
     },
     "recipecraft": {
       "name": "RecipeCraft",
+      "summary": "ゲームの中でレシピをGUIで作り変えられるMOD。データパックやJSONを書かずに、作業台に材料を置く感覚でレシピを編集・追加・削除できます。",
       "versions": [
         {
           "version": "0.2.2",
@@ -88,6 +111,7 @@
     },
     "emcgui": {
       "name": "EMC Editor GUI",
+      "summary": "ProjectE のアイテムの EMC を、ゲーム内の一覧から選んで書き換えられるMOD。ProjectE 標準のコマンドを送るだけなので、クライアントに入れるだけで使えます。",
       "versions": [
         {
           "version": "1.1.0",
@@ -123,7 +147,28 @@
     },
     "hijiki": {
       "name": "ひじき豆modV2",
+      "summary": "ひじき豆とひじブロックを追加するMOD。v1.0.2 から「弱いよ」と「弱いよブロック」、v1.0.5 から「iri」と「iriブロック」も入っています。",
       "versions": [
+        {
+          "version": "1.0.7-forge",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/hijiki/1.20.1-forge/hijiki-forge-1.20.1-1.0.7-forge.jar",
+          "fileName": "hijiki-forge-1.20.1-1.0.7-forge.jar",
+          "sha256": "0a1f3d570a44789e5b79ef8b1ec6b5f0dd04cc61e55ef8506b813e76e815137d",
+          "changelog": "ひじき豆modV2 の最新版です。",
+          "released": "2026-10-29"
+        },
+        {
+          "version": "1.0.7-neoforge",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/hijiki/1.21.1-neoforge/hijiki-neoforge-1.21.1-1.0.7-neoforge.jar",
+          "fileName": "hijiki-neoforge-1.21.1-1.0.7-neoforge.jar",
+          "sha256": "2e6e52cbefc35863f7692d9c1d95cd8cc40a25541da74931b52ef2ac4d3f722f",
+          "changelog": "ひじき豆modV2 の最新版です。",
+          "released": "2026-10-29"
+        },
         {
           "version": "1.0.4-neoforge",
           "mc": "1.21.1",
@@ -148,7 +193,28 @@
     },
     "mentionmod": {
       "name": "Mention Mod",
+      "summary": "チャットで @プレイヤー名・@OP・@everyone のメンションと、メッセージへの返信ができるMOD。メンションは色付きで表示され、ゲームを見ていないときは Windows の通知が届きます。",
       "versions": [
+        {
+          "version": "1.4.1",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/mentionmod/1.20.1-forge/mentionmod-forge-1.20.1-1.4.1.jar",
+          "fileName": "mentionmod-forge-1.20.1-1.4.1.jar",
+          "sha256": "b10ffe7d4957df9fa6288c5be32d8edeba8c746a738484eb235b08e6eb02b2f5",
+          "changelog": "Mention Mod の最新版です。",
+          "released": "2026-10-28"
+        },
+        {
+          "version": "1.4.1",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/mentionmod/1.21.1-neoforge/mentionmod-neoforge-1.21.1-1.4.1.jar",
+          "fileName": "mentionmod-neoforge-1.21.1-1.4.1.jar",
+          "sha256": "ffd6b8b81312d10bd44388c7d5e6c1594821f280d244a7f36dde5d583806a3ef",
+          "changelog": "Mention Mod の最新版です。",
+          "released": "2026-10-28"
+        },
         {
           "version": "1.2.0",
           "mc": "1.21.1",
@@ -173,7 +239,28 @@
     },
     "callai": {
       "name": "Call AI",
+      "summary": "/tell @gemini でささやくと、Google の Gemini がささやき返してくれるMOD。サーバーのOPがAPIキーを設定すれば、参加者の誰でも Gemini と話せます。",
       "versions": [
+        {
+          "version": "1.8.0",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/callai/1.20.1-forge/callai-1.8.0.jar",
+          "fileName": "callai-1.8.0.jar",
+          "sha256": "88b5e1fe3ce3b362ee56d7bb61c44a70f4cd28287718bf8236d2cbd489fea9c4",
+          "changelog": "Call AI の最新版です。",
+          "released": "2026-10-28"
+        },
+        {
+          "version": "1.8.0",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/callai/1.21.1-neoforge/callai-neoforge-1.21.1-1.8.0.jar",
+          "fileName": "callai-neoforge-1.21.1-1.8.0.jar",
+          "sha256": "4a4ac8585c184ca63057b3086c3aa97285d5c75374ce78ba594ddcfb7c1f951e",
+          "changelog": "Call AI の最新版です。",
+          "released": "2026-10-28"
+        },
         {
           "version": "1.2.0",
           "mc": "1.20.1",
@@ -188,7 +275,18 @@
     },
     "geminitell": {
       "name": "Call AI（旧 Gemini Tell）",
+      "installable": false,
       "versions": [
+        {
+          "version": "1.8.0",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/callai/1.20.1-forge/callai-1.8.0.jar",
+          "fileName": "callai-1.8.0.jar",
+          "sha256": "88b5e1fe3ce3b362ee56d7bb61c44a70f4cd28287718bf8236d2cbd489fea9c4",
+          "changelog": "Gemini Tell は Call AI に名前が変わりました。更新すると古い jar は消えます。設定ファイルが新しくなるので、もう一度 /gemini key set でAPIキーを設定してください。",
+          "released": "2026-10-28"
+        },
         {
           "version": "1.2.0",
           "mc": "1.20.1",
@@ -203,6 +301,7 @@
     },
     "hyperdaimc": {
       "name": "Hyperlink-E（Hyperlink 1.21.1 移植版）",
+      "summary": "Sakurafuld さんのMOD「Hyperlink」（Forge 1.20.1）の主要部分を NeoForge 1.21.1 に移植したもの。ムテキスター・ノベルカリバー・クロニクロック・ピックドクス・V.R.X.・フメツウィザー・ゲーマクラフター・Z-MAX マテリアライザーが使えます。",
       "versions": [
         {
           "version": "1.2.0",
