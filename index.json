@@ -190,6 +190,26 @@
       "summary": "ひじき豆とひじブロックを追加するMOD。v1.0.2 から「弱いよ」と「弱いよブロック」、v1.0.5 から「iri」と「iriブロック」も入っています。",
       "versions": [
         {
+          "version": "1.0.8-neoforge",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/hijiki/1.21.1-neoforge/hijiki-neoforge-1.21.1-1.0.8-neoforge.jar",
+          "fileName": "hijiki-neoforge-1.21.1-1.0.8-neoforge.jar",
+          "sha256": "f0cd4bbb63c5b781247f672a2a1da2f5feb550201bfd10e87cb34412a2cab34a",
+          "changelog": "弱いよを使うと、画面下に今の弱体化のレベルが表示されるようになりました（ゲームの効果の表示では、レベル11以上になると数字が出ないためです）。",
+          "released": "2026-10-30"
+        },
+        {
+          "version": "1.0.8-forge",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/hijiki/1.20.1-forge/hijiki-forge-1.20.1-1.0.8-forge.jar",
+          "fileName": "hijiki-forge-1.20.1-1.0.8-forge.jar",
+          "sha256": "712f63d38db3de36848b48c23cbd0213a9311a4a233fe7cc8a2120e8cee44420",
+          "changelog": "弱いよを使うと、画面下に今の弱体化のレベルが表示されるようになりました（ゲームの効果の表示では、レベル11以上になると数字が出ないためです）。",
+          "released": "2026-10-30"
+        },
+        {
           "version": "1.0.7-forge",
           "mc": "1.20.1",
           "loader": "forge",
