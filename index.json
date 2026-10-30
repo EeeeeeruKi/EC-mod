@@ -342,6 +342,26 @@
       "summary": "/tell @ai でささやくと、AI（Google の Gemini か、OpenAI・Ollama・LM Studio などの OpenAI互換API）がささやき返してくれるMOD。頼めばコマンドも実行してくれます。",
       "versions": [
         {
+          "version": "2.2.1",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/callai/1.20.1-forge/callai-2.2.1.jar",
+          "fileName": "callai-2.2.1.jar",
+          "sha256": "89ac734d4c2d5ef5c51079bfdd635d68c3c2feb541b8eef3bdd1376bab3c4ada",
+          "changelog": "小さいモデルで [覚えて: nothing] のような目印がチャットに出てしまうのを直しました。/ai memory auto で、AIが自分から覚えるかどうかを切り替えられます。",
+          "released": "2026-10-30"
+        },
+        {
+          "version": "2.2.1",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/callai/1.21.1-neoforge/callai-neoforge-1.21.1-2.2.1.jar",
+          "fileName": "callai-neoforge-1.21.1-2.2.1.jar",
+          "sha256": "5e2a2216e8f4cd0eee3b8695650e398cbe3f8d67e76e4b9b0865fad85e966fb2",
+          "changelog": "小さいモデルで [覚えて: nothing] のような目印がチャットに出てしまうのを直しました。/ai memory auto で、AIが自分から覚えるかどうかを切り替えられます。",
+          "released": "2026-10-30"
+        },
+        {
           "version": "2.2.0",
           "mc": "1.20.1",
           "loader": "forge",

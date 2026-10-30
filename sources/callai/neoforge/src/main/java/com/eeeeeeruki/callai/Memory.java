@@ -106,39 +106,45 @@ public final class Memory {
     public static String promptFor(ServerPlayer player) {
         List<String> mine = of(player);
         List<String> shared = server(player.getServer());
-        StringBuilder sb = new StringBuilder();
-        if (!shared.isEmpty() || !mine.isEmpty()) {
-            sb.append("\n\n【あなたが覚えていること】");
-            if (!shared.isEmpty()) sb.append("\nサーバーについて: ").append(String.join(" / ", shared));
-            if (!mine.isEmpty()) {
-                sb.append("\n").append(player.getGameProfile().getName()).append("について: ").append(String.join(" / ", mine));
-            }
+        String name = player.getGameProfile().getName();
+        StringBuilder sb = new StringBuilder("\n\n【あなたの記憶】");
+        if (shared.isEmpty() && mine.isEmpty()) {
+            sb.append("\nまだ何も覚えていません。何を覚えているか聞かれたら「まだ何も覚えていない」と答えてください。");
+            return sb.toString();
         }
+        sb.append("\nあなたは次のことを覚えています。質問に答えるときに使ってください。何を覚えているか聞かれたら、これを教えてください。");
+        for (String m : shared) sb.append("\n- （サーバー）").append(m);
+        for (String m : mine) sb.append("\n- （").append(name).append("について）").append(m);
         return sb.toString();
     }
 
     /** ツールが使えるときの説明 */
     public static String toolAddendum() {
         return "\n\n【覚える】プレイヤーに「覚えて」と頼まれた時や、名前・好きなもの・拠点の座標・約束など、あとで役に立ちそうなことを教えてもらった時は、"
-                + "remember ツールで覚えてください。覚えたことは次に話すときも使えます。";
+                + "remember ツールで覚えてください。覚えることが無い時は使わないでください。";
     }
 
     /** ツールを使わないとき（OpenAI互換）の、返事に目印を書いてもらう方法の説明 */
     public static String tagAddendum() {
-        return "\n\n【覚える】プレイヤーに「覚えて」と頼まれた時や、名前・好きなもの・拠点の座標・約束など、あとで役に立ちそうなことを教えてもらった時は、"
-                + "返事の最後に [覚える: 覚えること] と書いてください（サーバーのみんなに関係することは [覚える(サーバー): 覚えること]）。"
-                + "この目印はプレイヤーには見えず、次に話すときも思い出せるようになります。";
+        return "\n\n【覚える】プレイヤーが「〇〇を覚えて」とはっきり頼んだ時だけ、返事の最後に [覚える: 〇〇] と書いてください。"
+                + "例: 「拠点は120 64 -300だよ、覚えて」→「わかった、覚えたよ！ [覚える: 拠点の座標は120 64 -300]」。"
+                + "頼まれていない時は、この目印を絶対に書かないでください。";
     }
 
-    /** 返事の中の [覚える: …] を取り出して覚え、目印を消した返事を返します（サーバーのスレッドで） */
-    public static final java.util.regex.Pattern TAG =
-            java.util.regex.Pattern.compile("[\\[［【]\\s*覚える\\s*(?:[(（]\\s*(サーバー|server)\\s*[)）])?\\s*[:：]\\s*([^\\]］】]+)[\\]］】]");
+    /** 返事の中の [覚える: …]（覚えて・記憶 などの書き間違いも）を取り出して覚え、目印を消した返事を返します */
+    public static final java.util.regex.Pattern TAG = java.util.regex.Pattern.compile(
+            "[\\[［【]\\s*(?:覚える|覚えて|覚えた|記憶|remember)\\s*(?:[(（]\\s*(サーバー|server)\\s*[)）])?\\s*[:：]\\s*([^\\]］】]*)[\\]］】]",
+            java.util.regex.Pattern.CASE_INSENSITIVE);
+    private static final java.util.regex.Pattern NOTHING = java.util.regex.Pattern.compile(
+            "(?i)\\s*(nothing|none|null|n/a|なし|無し|ない|特になし|なにもない|何もない|〇〇|覚えること|-|…|\\.\\.\\.)?\\s*");
 
     public static String takeTags(ServerPlayer player, String reply, String botName) {
         java.util.regex.Matcher m = TAG.matcher(reply);
-        if (player != null) {
+        if (player != null && GeminiConfig.MEMORY_AUTO.get()) {
             while (m.find()) {
-                String saved = add(player, m.group(1) != null, m.group(2));
+                String body = m.group(2) == null ? "" : m.group(2).trim();
+                if (NOTHING.matcher(body).matches()) continue;
+                String saved = add(player, m.group(1) != null, body);
                 if (!saved.isEmpty()) {
                     player.sendSystemMessage(Component.literal("📝 " + botName + "が覚えました" + (m.group(1) != null ? "（サーバー）" : "") + ": " + saved)
                             .withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC));
@@ -223,6 +229,19 @@ public final class Memory {
                             ctx.getSource().sendSuccess(() -> Component.literal("AIが覚えていたあなたのことを、全部忘れさせました。"), false);
                             return 1;
                         }))
+                // OP: AIが自分から覚えるか
+                .then(Commands.literal("auto")
+                        .requires(s -> s.hasPermission(2))
+                        .then(Commands.argument("enabled", com.mojang.brigadier.arguments.BoolArgumentType.bool())
+                                .executes(ctx -> {
+                                    boolean on = com.mojang.brigadier.arguments.BoolArgumentType.getBool(ctx, "enabled");
+                                    GeminiConfig.MEMORY_AUTO.set(on);
+                                    GeminiConfig.MEMORY_AUTO.save();
+                                    ctx.getSource().sendSuccess(() -> Component.literal(on
+                                            ? "AIが話の中で自分から覚えるようにしました。"
+                                            : "AIが自分から覚えるのをやめました（/ai memory add で覚えさせたことは、今までどおり思い出します）。"), true);
+                                    return 1;
+                                })))
                 // サーバーについて覚えていること（見るのは誰でも、変えるのはOP）
                 .then(Commands.literal("server")
                         .executes(ctx -> list(ctx, true))

@@ -178,9 +178,10 @@ public final class GeminiChat {
         String prompt = GeminiConfig.SYSTEM_PROMPT.get().replace("{player}", player.getGameProfile().getName())
                 .replace("{bot}", GeminiConfig.BOT_NAME.get());
         if (cmds) prompt = prompt + CommandRunner.promptAddendum(player);
-        prompt = prompt + Memory.promptFor(player) + (memoryTool ? Memory.toolAddendum() : Memory.tagAddendum());
+        boolean auto = GeminiConfig.MEMORY_AUTO.get();
+        prompt = prompt + Memory.promptFor(player) + (!auto ? "" : memoryTool ? Memory.toolAddendum() : Memory.tagAddendum());
         JsonArray decls = new JsonArray();
-        if (memoryTool) decls.add(Memory.declaration());
+        if (memoryTool && auto) decls.add(Memory.declaration());
         if (cmds) decls.addAll(CommandRunner.declarations());
         MinecraftServer server = player.getServer();
         UUID uuid = player.getUUID();
@@ -215,7 +216,7 @@ public final class GeminiChat {
                 return;
             }
             String text = cleanup(Memory.takeTags(player.getServer().getPlayerList().getPlayer(player.getUUID()), reply, botName));
-            if (text.isEmpty()) text = "（覚えました）";
+            if (text.isEmpty()) text = "（返事がありませんでした）";
             synchronized (s) {
                 s.history.addLast(new GeminiClient.Turn(true, message));
                 s.history.addLast(new GeminiClient.Turn(false, text));

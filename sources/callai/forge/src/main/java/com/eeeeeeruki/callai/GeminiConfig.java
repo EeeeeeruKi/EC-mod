@@ -30,6 +30,8 @@ public final class GeminiConfig {
     public static final ForgeConfigSpec.IntValue REACT_CHANCE;
     public static final ForgeConfigSpec.IntValue REACT_COOLDOWN;
 
+    public static final ForgeConfigSpec.BooleanValue MEMORY_AUTO;
+
     public static final ForgeConfigSpec.ConfigValue<String> COMMAND_MODE;
     public static final ForgeConfigSpec.IntValue COMMAND_MAX_LEVEL;
     public static final ForgeConfigSpec.IntValue MAX_COMMANDS;
@@ -90,6 +92,12 @@ public final class GeminiConfig {
                 .defineInRange("chance", 100, 0, 100);
         REACT_COOLDOWN = b.comment("同じプレイヤーに次に反応するまでの秒数です（APIの使いすぎを防ぎます）。/ai react cooldown <秒> でも変えられます。")
                 .defineInRange("cooldownSeconds", 10, 0, 3600);
+
+        b.pop();
+        b.push("memory");
+
+        MEMORY_AUTO = b.comment("AIが話の中で、自分から物を覚えるかどうかです。小さいモデルで変なことを覚える時は false にしてください（/ai memory add で覚えさせたことは、false でも思い出します）。/ai memory auto <true|false> でも変えられます。")
+                .define("autoRemember", true);
 
         b.pop();
         b.push("commands");
