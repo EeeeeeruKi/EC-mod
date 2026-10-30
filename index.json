@@ -190,6 +190,26 @@
       "summary": "ひじき豆とひじブロックを追加するMOD。v1.0.2 から「弱いよ」と「弱いよブロック」、v1.0.5 から「iri」と「iriブロック」も入っています。",
       "versions": [
         {
+          "version": "1.0.9-neoforge",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/hijiki/1.21.1-neoforge/hijiki-neoforge-1.21.1-1.0.9-neoforge.jar",
+          "fileName": "hijiki-neoforge-1.21.1-1.0.9-neoforge.jar",
+          "sha256": "3edb12f5f3ac8c623d8193d13b7d8264fc492b0231fd77993ff3d99c96b064e5",
+          "changelog": "v1.0.8 で追加した弱体化のレベルの表示をなくしました。",
+          "released": "2026-10-30"
+        },
+        {
+          "version": "1.0.9-forge",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/hijiki/1.20.1-forge/hijiki-forge-1.20.1-1.0.9-forge.jar",
+          "fileName": "hijiki-forge-1.20.1-1.0.9-forge.jar",
+          "sha256": "bf87b8f1c21494af1d8a6462f57244c25782210c46ee5de223b712fea750d0a6",
+          "changelog": "v1.0.8 で追加した弱体化のレベルの表示をなくしました。",
+          "released": "2026-10-30"
+        },
+        {
           "version": "1.0.8-neoforge",
           "mc": "1.21.1",
           "loader": "neoforge",
