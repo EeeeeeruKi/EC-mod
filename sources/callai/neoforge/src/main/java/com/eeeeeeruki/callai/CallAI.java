@@ -49,6 +49,8 @@ public class CallAI {
         NeoForge.EVENT_BUS.addListener(this::onLogout);
         NeoForge.EVENT_BUS.addListener(this::onLogin);
         NeoForge.EVENT_BUS.addListener(this::onServerStopping);
+        NeoForge.EVENT_BUS.addListener(this::onAdvancement);
+        NeoForge.EVENT_BUS.addListener(this::onDeath);
     }
 
     private void onCommand(CommandEvent event) {
@@ -288,6 +290,8 @@ public class CallAI {
                                             + "モデルを " + name + " に変更しました。"), false);
                                     return 1;
                                 })))
+                // 進捗・死亡への反応
+                .then(Reactions.command())
                 // OP: チャットに出るAIの名前
                 .then(Commands.literal("name")
                         .requires(s -> s.hasPermission(2))
@@ -353,6 +357,17 @@ public class CallAI {
         );
     }
 
+    private void onAdvancement(net.neoforged.neoforge.event.entity.player.AdvancementEvent.AdvancementEarnEvent event) {
+        if (!(event.getEntity() instanceof ServerPlayer sp)) return;
+        event.getAdvancement().value().display().ifPresent(d ->
+                Reactions.onAdvancement(sp, d.getType().getSerializedName(), d.getTitle().getString(), d.getDescription().getString()));
+    }
+
+    private void onDeath(net.neoforged.neoforge.event.entity.living.LivingDeathEvent event) {
+        if (!(event.getEntity() instanceof ServerPlayer sp)) return;
+        Reactions.onDeath(sp, sp.getCombatTracker().getDeathMessage().getString());
+    }
+
     private void onLogin(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity() instanceof ServerPlayer sp) KeyStore.updateName(sp);
     }
@@ -365,6 +380,7 @@ public class CallAI {
         GeminiChat.clearAll();
         KeyStore.unload();
         ReadSettings.unload();
+        Reactions.unload();
     }
 
     private static int status(CommandContext<CommandSourceStack> ctx) {

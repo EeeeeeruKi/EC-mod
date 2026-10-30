@@ -322,6 +322,26 @@
       "summary": "/tell @ai でささやくと、AI（Google の Gemini か、OpenAI・Ollama・LM Studio などの OpenAI互換API）がささやき返してくれるMOD。頼めばコマンドも実行してくれます。",
       "versions": [
         {
+          "version": "2.1.0",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/callai/1.20.1-forge/callai-2.1.0.jar",
+          "fileName": "callai-2.1.0.jar",
+          "sha256": "51db0210f2c1aef45d72ede67cac5baacf8be227408238dbc5832a9d11482b0d",
+          "changelog": "プレイヤーが進捗（挑戦など）を達成した時や死んだ時に、AIが褒めたり煽ったり慰めたりしてチャットで喋るようになりました（/ai react で設定、/ai react me false で自分には反応しないようにできます）。",
+          "released": "2026-10-30"
+        },
+        {
+          "version": "2.1.0",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/callai/1.21.1-neoforge/callai-neoforge-1.21.1-2.1.0.jar",
+          "fileName": "callai-neoforge-1.21.1-2.1.0.jar",
+          "sha256": "10841b083eaf16ec573a77c71efd726cf3125c50186004459a37a20a79b7e4c6",
+          "changelog": "プレイヤーが進捗（挑戦など）を達成した時や死んだ時に、AIが褒めたり煽ったり慰めたりしてチャットで喋るようになりました（/ai react で設定、/ai react me false で自分には反応しないようにできます）。",
+          "released": "2026-10-30"
+        },
+        {
           "version": "2.0.0",
           "mc": "1.20.1",
           "loader": "forge",

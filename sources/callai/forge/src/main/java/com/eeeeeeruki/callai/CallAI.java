@@ -48,6 +48,8 @@ public class CallAI {
         MinecraftForge.EVENT_BUS.addListener(this::onLogout);
         MinecraftForge.EVENT_BUS.addListener(this::onLogin);
         MinecraftForge.EVENT_BUS.addListener(this::onServerStopping);
+        MinecraftForge.EVENT_BUS.addListener(this::onAdvancement);
+        MinecraftForge.EVENT_BUS.addListener(this::onDeath);
     }
 
     private void onCommand(CommandEvent event) {
@@ -287,6 +289,8 @@ public class CallAI {
                                             + "モデルを " + name + " に変更しました。"), false);
                                     return 1;
                                 })))
+                // 進捗・死亡への反応
+                .then(Reactions.command())
                 // OP: チャットに出るAIの名前
                 .then(Commands.literal("name")
                         .requires(s -> s.hasPermission(2))
@@ -352,6 +356,18 @@ public class CallAI {
         );
     }
 
+    private void onAdvancement(net.minecraftforge.event.entity.player.AdvancementEvent.AdvancementEarnEvent event) {
+        if (!(event.getEntity() instanceof ServerPlayer sp)) return;
+        net.minecraft.advancements.DisplayInfo d = event.getAdvancement().getDisplay();
+        if (d == null) return;
+        Reactions.onAdvancement(sp, d.getFrame().getName(), d.getTitle().getString(), d.getDescription().getString());
+    }
+
+    private void onDeath(net.minecraftforge.event.entity.living.LivingDeathEvent event) {
+        if (!(event.getEntity() instanceof ServerPlayer sp)) return;
+        Reactions.onDeath(sp, sp.getCombatTracker().getDeathMessage().getString());
+    }
+
     private void onLogin(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity() instanceof ServerPlayer sp) KeyStore.updateName(sp);
     }
@@ -364,6 +380,7 @@ public class CallAI {
         GeminiChat.clearAll();
         KeyStore.unload();
         ReadSettings.unload();
+        Reactions.unload();
     }
 
     private static int status(CommandContext<CommandSourceStack> ctx) {

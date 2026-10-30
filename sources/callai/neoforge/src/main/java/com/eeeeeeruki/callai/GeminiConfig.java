@@ -23,6 +23,13 @@ public final class GeminiConfig {
     public static final ModConfigSpec.ConfigValue<String> OPENAI_MODEL;
     public static final ModConfigSpec.ConfigValue<String> OPENAI_API_KEY;
 
+    public static final ModConfigSpec.ConfigValue<String> REACT_ADV_MODE;
+    public static final ModConfigSpec.ConfigValue<String> REACT_ADV_SCOPE;
+    public static final ModConfigSpec.ConfigValue<String> REACT_DEATH_MODE;
+    public static final ModConfigSpec.ConfigValue<String> REACT_OUTPUT;
+    public static final ModConfigSpec.IntValue REACT_CHANCE;
+    public static final ModConfigSpec.IntValue REACT_COOLDOWN;
+
     public static final ModConfigSpec.ConfigValue<String> COMMAND_MODE;
     public static final ModConfigSpec.IntValue COMMAND_MAX_LEVEL;
     public static final ModConfigSpec.IntValue MAX_COMMANDS;
@@ -67,6 +74,22 @@ public final class GeminiConfig {
                 .define("openaiModel", "");
         OPENAI_API_KEY = b.comment("OpenAI互換APIのキーです。いらないサーバー（Ollama など）なら空のままで大丈夫です。プレイヤーが /ai key set で設定したGeminiのキーは、OpenAI互換のサーバーには送りません。/ai openai key <キー> でも設定できます。")
                 .define("openaiApiKey", "");
+
+        b.pop();
+        b.push("reactions");
+
+        REACT_ADV_MODE = b.comment("プレイヤーが進捗を達成した時のAIの反応です。off = 反応しない、praise = 褒める、tease = 煽る、mixed = 褒めたり煽ったり。/ai react advancement <off|praise|tease|mixed> でも変えられます。")
+                .define("advancement", "mixed");
+        REACT_ADV_SCOPE = b.comment("反応する進捗の種類です。challenge = 挑戦だけ、goal = 目標と挑戦、task = すべての進捗。/ai react advancement scope <challenge|goal|task> でも変えられます。")
+                .define("advancementScope", "goal");
+        REACT_DEATH_MODE = b.comment("プレイヤーが死んだ時のAIの反応です。off = 反応しない、tease = 煽る、comfort = 慰める、mixed = 煽ったり慰めたり。/ai react death <off|tease|comfort|mixed> でも変えられます。")
+                .define("death", "mixed");
+        REACT_OUTPUT = b.comment("反応の出し方です。chat = チャットで全員に見える、whisper = その人にだけささやく。/ai react output <chat|whisper> でも変えられます。")
+                .define("output", "chat");
+        REACT_CHANCE = b.comment("反応する確率（%）です。/ai react chance <0〜100> でも変えられます。")
+                .defineInRange("chance", 100, 0, 100);
+        REACT_COOLDOWN = b.comment("同じプレイヤーに次に反応するまでの秒数です（APIの使いすぎを防ぎます）。/ai react cooldown <秒> でも変えられます。")
+                .defineInRange("cooldownSeconds", 10, 0, 3600);
 
         b.pop();
         b.push("commands");

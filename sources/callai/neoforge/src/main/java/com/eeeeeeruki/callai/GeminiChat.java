@@ -104,6 +104,21 @@ public final class GeminiChat {
         return true;
     }
 
+    /** 1回きりの問い合わせ（会話の履歴・ツール・画面なし）。進捗や死亡への反応に使います */
+    public static CompletableFuture<String> oneShot(ServerPlayer player, String systemPrompt, String message) {
+        String apiKey = useOpenAI() ? GeminiConfig.OPENAI_API_KEY.get().trim() : KeyStore.keyFor(player);
+        if (apiKey.isEmpty() && !useOpenAI()) {
+            return CompletableFuture.failedFuture(new GeminiClient.GeminiException("APIキーがありません"));
+        }
+        JsonObject body = GeminiClient.buildBody(systemPrompt, List.of(new GeminiClient.Turn(true, message)), null,
+                GeminiConfig.THINKING_LEVEL.get(), null);
+        int timeout = GeminiConfig.TIMEOUT_SECONDS.get();
+        CompletableFuture<JsonObject> sent = useOpenAI()
+                ? OpenAIClient.call(GeminiConfig.OPENAI_BASE_URL.get(), apiKey, GeminiConfig.OPENAI_MODEL.get(), body, timeout)
+                : GeminiClient.call(apiKey, GeminiConfig.MODEL.get(), body, timeout);
+        return sent.thenApply(GeminiClient::requireText).thenApply(GeminiChat::cleanup);
+    }
+
     /** つなぐ先が OpenAI互換API なら true */
     public static boolean useOpenAI() {
         return "openai".equalsIgnoreCase(GeminiConfig.PROVIDER.get().trim());
