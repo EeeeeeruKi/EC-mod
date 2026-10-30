@@ -276,6 +276,26 @@
       "summary": "チャットで @プレイヤー名・@OP・@everyone のメンションと、メッセージへの返信ができるMOD。メンションは色付きで表示され、ゲームを見ていないときは Windows の通知が届きます。",
       "versions": [
         {
+          "version": "1.5.0",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/mentionmod/1.20.1-forge/mentionmod-forge-1.20.1-1.5.0.jar",
+          "fileName": "mentionmod-forge-1.20.1-1.5.0.jar",
+          "sha256": "41e7b4a4e0fa1ef229a304c820fa3b56040de73da8c1721717be7ed07803bbf1",
+          "changelog": "チャットで @ai と書くとAI（Call AI v2.0.0 以降）が返事をするようになりました（@gemini でも使えます）。",
+          "released": "2026-10-30"
+        },
+        {
+          "version": "1.5.0",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/mentionmod/1.21.1-neoforge/mentionmod-neoforge-1.21.1-1.5.0.jar",
+          "fileName": "mentionmod-neoforge-1.21.1-1.5.0.jar",
+          "sha256": "d4d3321b7e12b3845767c4dbac24ba68f06d0c2a3b8de3c36ed01706464e5097",
+          "changelog": "チャットで @ai と書くとAI（Call AI v2.0.0 以降）が返事をするようになりました（@gemini でも使えます）。",
+          "released": "2026-10-30"
+        },
+        {
           "version": "1.4.1",
           "mc": "1.20.1",
           "loader": "forge",
@@ -321,6 +341,26 @@
       "name": "Call AI",
       "summary": "/tell @ai でささやくと、AI（Google の Gemini か、OpenAI・Ollama・LM Studio などの OpenAI互換API）がささやき返してくれるMOD。頼めばコマンドも実行してくれます。",
       "versions": [
+        {
+          "version": "2.2.0",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/callai/1.20.1-forge/callai-2.2.0.jar",
+          "fileName": "callai-2.2.0.jar",
+          "sha256": "f0b5fd3dfdd274e5ced5185eec5959fdcc592dcb753f1dcd92450abb760aaea2",
+          "changelog": "AIが物を覚えられるようになりました（「覚えて」と頼む、/ai memory で一覧・追加・削除）。進捗への反応が、初期設定ですべての進捗に反応するようになりました。",
+          "released": "2026-10-30"
+        },
+        {
+          "version": "2.2.0",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/callai/1.21.1-neoforge/callai-neoforge-1.21.1-2.2.0.jar",
+          "fileName": "callai-neoforge-1.21.1-2.2.0.jar",
+          "sha256": "afef5ceb62cd390b29c8fb946ae1458eab0e7649103a4a5a50363c187b3137cf",
+          "changelog": "AIが物を覚えられるようになりました（「覚えて」と頼む、/ai memory で一覧・追加・削除）。進捗への反応が、初期設定ですべての進捗に反応するようになりました。",
+          "released": "2026-10-30"
+        },
         {
           "version": "2.1.1",
           "mc": "1.20.1",

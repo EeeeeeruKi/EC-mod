@@ -1,0 +1,13 @@
+{
+  "mentionmod.notify.player": "%s mentioned you",
+  "mentionmod.notify.op": "%s mentioned @OP",
+  "mentionmod.notify.everyone": "%s mentioned @everyone",
+  "mentionmod.notify.reply": "%s replied to your message",
+  "mentionmod.everyone_denied": "Only operators can use @everyone.",
+  "mentionmod.reply.bar": "Replying to %s: \"%s\" (Esc to cancel)",
+  "mentionmod.watut.typing": "%s is typing",
+  "mentionmod.watut.replying": "%s is replying",
+  "mentionmod.watut.many": "Several people are typing",
+  "mentionmod.ai.thinking": "%s is thinking",
+  "mentionmod.ai.replying": "%s is replying"
+}

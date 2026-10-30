@@ -92,6 +92,8 @@ public final class Reactions {
                 + "煽るときも、差別的なこと・ひどい悪口・本気で傷つけることは言わないでください。"
                 + "日本語で返事してください。";
 
+
+        system = system + Memory.promptFor(player);
         MinecraftServer server = player.getServer();
         UUID uuid = player.getUUID();
         GeminiChat.oneShot(player, system, message).whenComplete((text, err) -> server.execute(() -> {

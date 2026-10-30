@@ -291,6 +291,8 @@ public class CallAI {
                                 })))
                 // 進捗・死亡への反応
                 .then(Reactions.command())
+                // 覚えていること
+                .then(Memory.command())
                 // OP: チャットに出るAIの名前
                 .then(Commands.literal("name")
                         .requires(s -> s.hasPermission(2))
@@ -381,6 +383,7 @@ public class CallAI {
         KeyStore.unload();
         ReadSettings.unload();
         Reactions.unload();
+        Memory.unload();
     }
 
     private static int status(CommandContext<CommandSourceStack> ctx) {

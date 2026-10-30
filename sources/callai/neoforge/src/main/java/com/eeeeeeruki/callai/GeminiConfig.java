@@ -80,8 +80,8 @@ public final class GeminiConfig {
 
         REACT_ADV_MODE = b.comment("プレイヤーが進捗を達成した時のAIの反応です。off = 反応しない、praise = 褒める、tease = 煽る、mixed = 褒めたり煽ったり。/ai react advancement <off|praise|tease|mixed> でも変えられます。")
                 .define("advancement", "mixed");
-        REACT_ADV_SCOPE = b.comment("反応する進捗の種類です。challenge = 挑戦だけ、goal = 目標と挑戦、task = すべての進捗。/ai react advancement scope <challenge|goal|task> でも変えられます。")
-                .define("advancementScope", "goal");
+        REACT_ADV_SCOPE = b.comment("反応する進捗の種類です。task = すべての進捗、goal = 目標と挑戦、challenge = 挑戦だけ。/ai react advancement scope <challenge|goal|task> でも変えられます。")
+                .define("advancementTypes", "task");
         REACT_DEATH_MODE = b.comment("プレイヤーが死んだ時のAIの反応です。off = 反応しない、tease = 煽る、comfort = 慰める、mixed = 煽ったり慰めたり。/ai react death <off|tease|comfort|mixed> でも変えられます。")
                 .define("death", "mixed");
         REACT_OUTPUT = b.comment("反応の出し方です。chat = チャットで全員に見える、whisper = その人にだけささやく。/ai react output <chat|whisper> でも変えられます。")

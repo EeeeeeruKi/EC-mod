@@ -1,0 +1,13 @@
+{
+  "mentionmod.notify.player": "%sさんからメンションされました",
+  "mentionmod.notify.op": "%sさんが@OPでメンションしました",
+  "mentionmod.notify.everyone": "%sさんが@everyoneでメンションしました",
+  "mentionmod.notify.reply": "%sさんがあなたのメッセージに返信しました",
+  "mentionmod.everyone_denied": "@everyone はOPのみ使用できます。",
+  "mentionmod.reply.bar": "返信先: %s「%s」（Escで解除）",
+  "mentionmod.watut.typing": "%sが入力中",
+  "mentionmod.watut.replying": "%sが返信中",
+  "mentionmod.watut.many": "複数人が入力中",
+  "mentionmod.ai.thinking": "%sが考え中",
+  "mentionmod.ai.replying": "%sが返信中"
+}

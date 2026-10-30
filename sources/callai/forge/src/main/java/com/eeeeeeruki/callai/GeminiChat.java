@@ -116,7 +116,8 @@ public final class GeminiChat {
         CompletableFuture<JsonObject> sent = useOpenAI()
                 ? OpenAIClient.call(GeminiConfig.OPENAI_BASE_URL.get(), apiKey, GeminiConfig.OPENAI_MODEL.get(), body, timeout)
                 : GeminiClient.call(apiKey, GeminiConfig.MODEL.get(), body, timeout);
-        return sent.thenApply(GeminiClient::requireText).thenApply(GeminiChat::cleanup);
+        return sent.thenApply(GeminiClient::requireText)
+                .thenApply(t -> cleanup(Memory.TAG.matcher(t).replaceAll("").trim()));
     }
 
     /** つなぐ先が OpenAI互換API なら true */
@@ -171,10 +172,16 @@ public final class GeminiChat {
         turns.add(new GeminiClient.Turn(true, message));
 
         String apiKey = useOpenAI() ? GeminiConfig.OPENAI_API_KEY.get().trim() : KeyStore.keyFor(player);
-        boolean tools = CommandRunner.allowed(viaDo);
+        boolean cmds = CommandRunner.allowed(viaDo);
+        // 覚える: Gemini はツールで、OpenAI互換（ツールに対応していないモデルが多い）は返事の中の目印で
+        boolean memoryTool = !useOpenAI();
         String prompt = GeminiConfig.SYSTEM_PROMPT.get().replace("{player}", player.getGameProfile().getName())
                 .replace("{bot}", GeminiConfig.BOT_NAME.get());
-        if (tools) prompt = prompt + CommandRunner.promptAddendum(player);
+        if (cmds) prompt = prompt + CommandRunner.promptAddendum(player);
+        prompt = prompt + Memory.promptFor(player) + (memoryTool ? Memory.toolAddendum() : Memory.tagAddendum());
+        JsonArray decls = new JsonArray();
+        if (memoryTool) decls.add(Memory.declaration());
+        if (cmds) decls.addAll(CommandRunner.declarations());
         MinecraftServer server = player.getServer();
         UUID uuid = player.getUUID();
         String botName = GeminiConfig.BOT_NAME.get();
@@ -199,15 +206,16 @@ public final class GeminiChat {
                         message + "\n\n（添付の画像は、このプレイヤーがいま見ているMinecraftの画面です）"));
             }
             JsonObject body = GeminiClient.buildBody(systemPrompt, t, image, GeminiConfig.THINKING_LEVEL.get(),
-                    tools ? CommandRunner.declarations() : null);
-            return converse(apiKey, body, server, uuid, botName, new int[]{0}, 0);
+                    decls.isEmpty() ? null : decls);
+            return converse(apiKey, body, server, uuid, botName, cmds, new int[]{0}, 0);
         }).whenComplete((reply, err) -> server.execute(() -> {
             if (err != null) {
                 CallAI.LOGGER.warn("AI request failed: {}", describe(err));
                 callback.accept(null, describe(err));
                 return;
             }
-            String text = cleanup(reply);
+            String text = cleanup(Memory.takeTags(player.getServer().getPlayerList().getPlayer(player.getUUID()), reply, botName));
+            if (text.isEmpty()) text = "（覚えました）";
             synchronized (s) {
                 s.history.addLast(new GeminiClient.Turn(true, message));
                 s.history.addLast(new GeminiClient.Turn(false, text));
@@ -223,7 +231,7 @@ public final class GeminiChat {
      * 最後に文章の返事を返します。
      */
     private static CompletableFuture<String> converse(String apiKey, JsonObject body, MinecraftServer server, UUID uuid,
-                                                      String botName, int[] commandsRun, int round) {
+                                                      String botName, boolean cmds, int[] commandsRun, int round) {
         int timeout = GeminiConfig.TIMEOUT_SECONDS.get();
         CompletableFuture<JsonObject> sent = useOpenAI()
                 ? OpenAIClient.call(GeminiConfig.OPENAI_BASE_URL.get(), apiKey, GeminiConfig.OPENAI_MODEL.get(), body, timeout)
@@ -248,7 +256,9 @@ public final class GeminiChat {
                 List<JsonObject> results = new ArrayList<>();
                 for (GeminiClient.FunctionCall call : calls) {
                     JsonObject r;
-                    if (!CommandRunner.TOOL_NAME.equals(call.name())) {
+                    if (Memory.TOOL_NAME.equals(call.name()) && p != null) {
+                        r = Memory.run(p, call.args(), botName);
+                    } else if (!CommandRunner.TOOL_NAME.equals(call.name()) || !cmds) {
                         r = new JsonObject();
                         r.addProperty("success", false);
                         r.addProperty("output", "そのような関数はありません。");
@@ -270,7 +280,7 @@ public final class GeminiChat {
                 return results;
             }, server).thenCompose(results -> {
                 contents.add(GeminiClient.functionResponses(calls, results));
-                return converse(apiKey, body, server, uuid, botName, commandsRun, round + 1);
+                return converse(apiKey, body, server, uuid, botName, cmds, commandsRun, round + 1);
             });
         });
     }
