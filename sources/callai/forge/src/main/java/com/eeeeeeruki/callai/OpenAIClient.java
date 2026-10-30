@@ -41,7 +41,22 @@ public final class OpenAIClient {
                     "OpenAI互換APIのモデルが設定されていません（/ai model <名前>）"));
         }
         JsonObject req = convert(model, body, true);
-        return send(baseUrl, apiKey, req, timeoutSeconds).exceptionallyCompose(err -> {
+        return send(baseUrl, apiKey, req, timeoutSeconds).thenCompose(candidate -> {
+            // ツールを付けると空の返事になるサーバーがあるので、その時はツール無しで送り直す
+            if (isEmpty(candidate) && req.has("tools")) {
+                return send(baseUrl, apiKey, convert(model, body, false), timeoutSeconds);
+            }
+            return CompletableFuture.completedFuture(candidate);
+        }).thenApply(candidate -> {
+            if (isEmpty(candidate)) {
+                String raw = candidate.has("_raw") ? candidate.get("_raw").getAsString() : "";
+                CallAI.LOGGER.warn("OpenAI-compatible API returned no text. Response: {}", raw);
+                if (raw.length() > 160) raw = raw.substring(0, 160) + "…";
+                throw new CompletionException(new GeminiClient.GeminiException("返事が空でした。サーバーの返事: " + raw));
+            }
+            candidate.remove("_raw");
+            return candidate;
+        }).exceptionallyCompose(err -> {
             Throwable t = GeminiClient.unwrap(err);
             // ツール（関数呼び出し）に対応していないモデルなら、ツール無しで送り直す
             if (t instanceof GeminiClient.GeminiException ge && ge.getMessage().startsWith("HTTP 4")
@@ -50,6 +65,25 @@ public final class OpenAIClient {
             }
             return CompletableFuture.failedFuture(err);
         });
+    }
+
+    private static boolean isEmpty(JsonObject candidate) {
+        return candidate.getAsJsonObject("content").getAsJsonArray("parts").isEmpty();
+    }
+
+    /** content が文字・部品の配列・オブジェクトのどれでも、文章を取り出します */
+    private static String textOf(JsonElement e) {
+        if (e == null || e.isJsonNull()) return "";
+        if (e.isJsonPrimitive()) return e.getAsString();
+        StringBuilder sb = new StringBuilder();
+        if (e.isJsonArray()) {
+            for (JsonElement x : e.getAsJsonArray()) sb.append(textOf(x));
+        } else if (e.isJsonObject()) {
+            JsonObject o = e.getAsJsonObject();
+            if (o.has("text")) sb.append(textOf(o.get("text")));
+            else if (o.has("content")) sb.append(textOf(o.get("content")));
+        }
+        return sb.toString();
     }
 
     // ------------------------------------------------------------------
@@ -219,11 +253,17 @@ public final class OpenAIClient {
             throw new CompletionException(new GeminiClient.GeminiException("返事が空でした"));
         }
         JsonObject choice = choices.get(0).getAsJsonObject();
-        JsonObject message = choice.has("message") ? choice.getAsJsonObject("message") : new JsonObject();
+        JsonObject message = choice.has("message") && choice.get("message").isJsonObject() ? choice.getAsJsonObject("message")
+                : choice.has("delta") && choice.get("delta").isJsonObject() ? choice.getAsJsonObject("delta") : new JsonObject();
 
         JsonArray parts = new JsonArray();
-        if (message.has("content") && message.get("content").isJsonPrimitive()) {
-            String text = THINK.matcher(message.get("content").getAsString()).replaceAll("").trim();
+        String rawText = textOf(message.get("content"));
+        if (rawText.isBlank() && choice.has("text")) rawText = textOf(choice.get("text"));
+        {
+            String text = THINK.matcher(rawText).replaceAll("").trim();
+            // 閉じていない <think> が残っていたら、その後ろだけを使う
+            int open = text.lastIndexOf("</think>");
+            if (open >= 0) text = text.substring(open + "</think>".length()).trim();
             if (!text.isEmpty()) {
                 JsonObject p = new JsonObject();
                 p.addProperty("text", text);
@@ -262,6 +302,8 @@ public final class OpenAIClient {
         content.add("parts", parts);
         JsonObject candidate = new JsonObject();
         candidate.add("content", content);
+        String raw = res.body();
+        candidate.addProperty("_raw", raw.length() > 2000 ? raw.substring(0, 2000) : raw);
         if (choice.has("finish_reason") && !choice.get("finish_reason").isJsonNull()) {
             candidate.addProperty("finishReason", choice.get("finish_reason").getAsString());
         }

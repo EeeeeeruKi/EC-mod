@@ -322,6 +322,26 @@
       "summary": "/tell @ai でささやくと、AI（Google の Gemini か、OpenAI・Ollama・LM Studio などの OpenAI互換API）がささやき返してくれるMOD。頼めばコマンドも実行してくれます。",
       "versions": [
         {
+          "version": "2.1.1",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/callai/1.20.1-forge/callai-2.1.1.jar",
+          "fileName": "callai-2.1.1.jar",
+          "sha256": "01114cb8015045f2ac1fa96c84776e80f30099b29017497d7d0d481c147496fc",
+          "changelog": "OpenAI互換APIで「返事が空でした」になるサーバーがあったのを直しました。",
+          "released": "2026-10-30"
+        },
+        {
+          "version": "2.1.1",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/callai/1.21.1-neoforge/callai-neoforge-1.21.1-2.1.1.jar",
+          "fileName": "callai-neoforge-1.21.1-2.1.1.jar",
+          "sha256": "b10df64ffa3bb805b3223e53ef619456c25e575efd3aa9d9992f481192275e0f",
+          "changelog": "OpenAI互換APIで「返事が空でした」になるサーバーがあったのを直しました。",
+          "released": "2026-10-30"
+        },
+        {
           "version": "2.1.0",
           "mc": "1.20.1",
           "loader": "forge",
