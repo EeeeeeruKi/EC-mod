@@ -38,15 +38,15 @@ public final class GeminiChat {
 
     private GeminiChat() {}
 
-    /** /tell @gemini */
+    /** /tell @ai */
     public static void talk(ServerPlayer player, String message) {
         whisper(player, message, message, false);
     }
 
-    /** /gemini do <指示> */
+    /** /ai do <指示> */
     public static void doTask(ServerPlayer player, String instruction) {
         if (!CommandRunner.allowed(true)) {
-            player.sendSystemMessage(Component.literal("このサーバーでは、Geminiがコマンドを実行できないように設定されています。")
+            player.sendSystemMessage(Component.literal("このサーバーでは、AIがコマンドを実行できないように設定されています。")
                     .withStyle(ChatFormatting.RED));
             return;
         }
@@ -76,7 +76,7 @@ public final class GeminiChat {
                 }
                 MentionBridge.setStatus(p, botName, MentionBridge.IDLE);
                 if (p != null) {
-                    p.sendSystemMessage(Component.literal("Geminiから返事をもらえませんでした: " + err)
+                    p.sendSystemMessage(Component.literal("AIから返事をもらえませんでした: " + err)
                             .withStyle(ChatFormatting.RED));
                 }
                 return;
@@ -91,7 +91,7 @@ public final class GeminiChat {
         }));
     }
 
-    /** Mention Mod から、チャットの @gemini で話しかけられた時 */
+    /** Mention Mod から、チャットの @ai で話しかけられた時 */
     public static boolean askPublic(ServerPlayer player, String message, BiConsumer<String, String> callback) {
         Session s = begin(player);
         if (s == null) return false;
@@ -104,22 +104,32 @@ public final class GeminiChat {
         return true;
     }
 
+    /** つなぐ先が OpenAI互換API なら true */
+    public static boolean useOpenAI() {
+        return "openai".equalsIgnoreCase(GeminiConfig.PROVIDER.get().trim());
+    }
+
+    /** 今使っているモデル名 */
+    public static String currentModel() {
+        return useOpenAI() ? GeminiConfig.OPENAI_MODEL.get() : GeminiConfig.MODEL.get();
+    }
+
     public static long replyDelayMs(String reply) {
         return Math.max(REPLY_DELAY_MIN_MS, Math.min(REPLY_DELAY_MAX_MS, 400L + reply.length() * 35L));
     }
 
     private static Session begin(ServerPlayer player) {
         String apiKey = KeyStore.keyFor(player);
-        if (apiKey.isEmpty()) {
+        if (apiKey.isEmpty() && !useOpenAI()) {
             player.sendSystemMessage(Component.literal(
-                    "Geminiはまだ設定されていません。OPの方に /gemini default_key set <APIキー> で設定してもらうか、/gemini key set <APIキー> で自分のキーを設定するか、/gemini key use <名前> で他の人のキーを借りてください。")
+                    "AIはまだ設定されていません。OPの方に /ai default_key set <APIキー> で設定してもらうか、/ai key set <APIキー> で自分のキーを設定するか、/ai key use <名前> で他の人のキーを借りてください。")
                     .withStyle(ChatFormatting.RED));
             return null;
         }
         Session s = SESSIONS.computeIfAbsent(player.getUUID(), k -> new Session());
         synchronized (s) {
             if (s.busy) {
-                player.sendSystemMessage(Component.literal("Geminiが前のメッセージに返事を考えています。少し待ってください。")
+                player.sendSystemMessage(Component.literal("AIが前のメッセージに返事を考えています。少し待ってください。")
                         .withStyle(ChatFormatting.YELLOW));
                 return null;
             }
@@ -145,9 +155,10 @@ public final class GeminiChat {
         }
         turns.add(new GeminiClient.Turn(true, message));
 
-        String apiKey = KeyStore.keyFor(player);
+        String apiKey = useOpenAI() ? GeminiConfig.OPENAI_API_KEY.get().trim() : KeyStore.keyFor(player);
         boolean tools = CommandRunner.allowed(viaDo);
-        String prompt = GeminiConfig.SYSTEM_PROMPT.get().replace("{player}", player.getGameProfile().getName());
+        String prompt = GeminiConfig.SYSTEM_PROMPT.get().replace("{player}", player.getGameProfile().getName())
+                .replace("{bot}", GeminiConfig.BOT_NAME.get());
         if (tools) prompt = prompt + CommandRunner.promptAddendum(player);
         MinecraftServer server = player.getServer();
         UUID uuid = player.getUUID();
@@ -177,7 +188,7 @@ public final class GeminiChat {
             return converse(apiKey, body, server, uuid, botName, new int[]{0}, 0);
         }).whenComplete((reply, err) -> server.execute(() -> {
             if (err != null) {
-                CallAI.LOGGER.warn("Gemini request failed: {}", describe(err));
+                CallAI.LOGGER.warn("AI request failed: {}", describe(err));
                 callback.accept(null, describe(err));
                 return;
             }
@@ -198,9 +209,11 @@ public final class GeminiChat {
      */
     private static CompletableFuture<String> converse(String apiKey, JsonObject body, MinecraftServer server, UUID uuid,
                                                       String botName, int[] commandsRun, int round) {
-        String model = GeminiConfig.MODEL.get();
         int timeout = GeminiConfig.TIMEOUT_SECONDS.get();
-        return GeminiClient.call(apiKey, model, body, timeout).thenCompose(candidate -> {
+        CompletableFuture<JsonObject> sent = useOpenAI()
+                ? OpenAIClient.call(GeminiConfig.OPENAI_BASE_URL.get(), apiKey, GeminiConfig.OPENAI_MODEL.get(), body, timeout)
+                : GeminiClient.call(apiKey, GeminiConfig.MODEL.get(), body, timeout);
+        return sent.thenCompose(candidate -> {
             List<GeminiClient.FunctionCall> calls = GeminiClient.functionCalls(candidate);
             if (calls.isEmpty()) {
                 return CompletableFuture.completedFuture(GeminiClient.requireText(candidate));
@@ -291,9 +304,11 @@ public final class GeminiChat {
         if (t instanceof GeminiClient.GeminiException) return t.getMessage();
         if (t instanceof java.net.http.HttpTimeoutException || t instanceof TimeoutException) {
             return "時間切れになりました（" + GeminiConfig.TIMEOUT_SECONDS.get()
-                    + "秒）。考える時間が長いモデルは、OPの方に /gemini timeout で待ち時間を延ばすか、/gemini thinking low で考える量を減らしてもらってください";
+                    + "秒）。考える時間が長いモデルは、OPの方に /ai timeout で待ち時間を延ばすか、/ai thinking low で考える量を減らしてもらってください";
         }
-        if (t instanceof java.net.ConnectException) return "Geminiにつながりませんでした";
+        if (t instanceof java.net.ConnectException) {
+            return useOpenAI() ? "AIのサーバー（" + GeminiConfig.OPENAI_BASE_URL.get() + "）につながりませんでした" : "AIにつながりませんでした";
+        }
         return t.getClass().getSimpleName() + (t.getMessage() != null ? ": " + t.getMessage() : "");
     }
 }

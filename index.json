@@ -319,8 +319,28 @@
     },
     "callai": {
       "name": "Call AI",
-      "summary": "/tell @gemini でささやくと、Google の Gemini がささやき返してくれるMOD。頼めばコマンドも実行してくれます。サーバーのOPがAPIキーを設定すれば、参加者の誰でも Gemini と話せます。",
+      "summary": "/tell @ai でささやくと、AI（Google の Gemini か、OpenAI・Ollama・LM Studio などの OpenAI互換API）がささやき返してくれるMOD。頼めばコマンドも実行してくれます。",
       "versions": [
+        {
+          "version": "2.0.0",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/callai/1.20.1-forge/callai-2.0.0.jar",
+          "fileName": "callai-2.0.0.jar",
+          "sha256": "fad540edb4aef73579420b0f20966f7f7c7ba69b6aed95da069fa2616db1f9bf",
+          "changelog": "コマンドを /gemini から /ai に、セレクターを @gemini から @ai に変えました。OpenAI互換API（OpenAI・Ollama・LM Studio など）にもつなげるようになりました（/ai provider openai、/ai openai url <URL>、/ai model <名前>）。/ai name <名前> でAIの名前を変えられます。",
+          "released": "2026-10-30"
+        },
+        {
+          "version": "2.0.0",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/callai/1.21.1-neoforge/callai-neoforge-1.21.1-2.0.0.jar",
+          "fileName": "callai-neoforge-1.21.1-2.0.0.jar",
+          "sha256": "1630812a4a743fad826b70d562108452cb609dc0f69aab5899e12e824123d812",
+          "changelog": "コマンドを /gemini から /ai に、セレクターを @gemini から @ai に変えました。OpenAI互換API（OpenAI・Ollama・LM Studio など）にもつなげるようになりました（/ai provider openai、/ai openai url <URL>、/ai model <名前>）。/ai name <名前> でAIの名前を変えられます。",
+          "released": "2026-10-30"
+        },
         {
           "version": "1.9.0",
           "mc": "1.20.1",

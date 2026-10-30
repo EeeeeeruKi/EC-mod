@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * 画面の読み取り（/gemini read）をオンにしているプレイヤー（serverconfig/callai-read.json）。
+ * 画面の読み取り（/ai read）をオンにしているプレイヤー（serverconfig/callai-read.json）。
  */
 public final class ReadSettings {
     private static final Gson GSON = new Gson();

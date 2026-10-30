@@ -25,7 +25,7 @@ public final class CommandRunner {
     public static final String TOOL_NAME = "run_command";
 
     public static final String DEFAULT_BLOCKED =
-            "stop,op,deop,ban,ban-ip,pardon,pardon-ip,whitelist,save-off,save-on,save-all,debug,perf,jfr,publish,transfer,gemini";
+            "stop,op,deop,ban,ban-ip,pardon,pardon-ip,whitelist,save-off,save-on,save-all,debug,perf,jfr,publish,transfer,ai,gemini";
 
     /** 実行の結果をプレイヤーの画面に出す最大行数 */
     private static final int MAX_SHOWN_LINES = 5;
@@ -45,7 +45,7 @@ public final class CommandRunner {
         };
     }
 
-    /** /gemini do のとき true。それ以外（/tell・チャット）は false */
+    /** /ai do のとき true。それ以外（/tell・チャット）は false */
     public static boolean allowed(boolean viaDo) {
         Mode m = mode();
         return m == Mode.ALL || (m == Mode.DO && viaDo);
@@ -104,7 +104,7 @@ public final class CommandRunner {
         for (int i = 0; i < tokens.size(); i++) {
             if (i == 0 || tokens.get(i - 1).equalsIgnoreCase("run")) {
                 String name = normalizeName(tokens.get(i));
-                if (set.contains(name)) return name;
+                if (set.contains(name) || name.equals("ai") || name.equals("gemini")) return name;
             }
         }
         return null;
@@ -177,9 +177,9 @@ public final class CommandRunner {
             result.addProperty("output", "コマンドが空です。");
             return result;
         }
-        if (command.toLowerCase(Locale.ROOT).contains("@gemini")) {
+        if (command.toLowerCase(Locale.ROOT).matches("(?s).*@ai(?![a-z0-9_]).*")) {
             result.addProperty("success", false);
-            result.addProperty("output", "@gemini を使うコマンドは実行できません。");
+            result.addProperty("output", "@ai を使うコマンドは実行できません。");
             return result;
         }
         String blockedName = findBlocked(command);
@@ -194,7 +194,7 @@ public final class CommandRunner {
 
         player.sendSystemMessage(Component.literal("⚙ " + botName + "がコマンドを実行しました: /" + command)
                 .withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC));
-        CallAI.LOGGER.info("[Call AI] {} が Gemini 経由で実行: /{}", player.getGameProfile().getName(), command);
+        CallAI.LOGGER.info("[Call AI] {} が AI 経由で実行: /{}", player.getGameProfile().getName(), command);
 
         Capture capture = new Capture(player);
         CommandSourceStack source = player.createCommandSourceStack()

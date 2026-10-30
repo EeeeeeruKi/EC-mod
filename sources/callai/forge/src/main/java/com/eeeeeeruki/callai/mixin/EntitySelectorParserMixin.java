@@ -17,7 +17,7 @@ import java.util.function.Consumer;
 @Mixin(EntitySelectorParser.class)
 public abstract class EntitySelectorParserMixin {
 
-    /** 「@gemini」を正しいセレクターとして読み込む */
+    /** 「@ai」を正しいセレクターとして読み込む */
     @Inject(method = "parse", at = @At("HEAD"), cancellable = true)
     private void callai$parseGemini(CallbackInfoReturnable<EntitySelector> cir) {
         EntitySelectorParser self = (EntitySelectorParser) (Object) this;

@@ -9,16 +9,16 @@ import net.minecraft.network.chat.Component;
 import java.util.Locale;
 
 /**
- * 「@gemini」セレクター。誰にも当たらないセレクターとして読み込まれ、
- * /tell @gemini はコマンドイベントでGemini宛てに振り分けられます。
+ * 「@ai」セレクター。誰にも当たらないセレクターとして読み込まれ、
+ * /tell @ai はコマンドイベントでGemini宛てに振り分けられます。
  */
 public final class GeminiSelector {
-    public static final String TOKEN = "@gemini";
-    private static final Component TOOLTIP = Component.literal("Geminiにささやきます");
+    public static final String TOKEN = "@ai";
+    private static final Component TOOLTIP = Component.literal("AIにささやきます");
 
     private GeminiSelector() {}
 
-    /** 読み取り位置が「@gemini」なら読み進めて true を返します */
+    /** 読み取り位置が「@ai」なら読み進めて true を返します */
     public static boolean tryConsume(StringReader reader) {
         String rest = reader.getRemaining();
         if (!rest.startsWith(TOKEN)) return false;
@@ -35,7 +35,7 @@ public final class GeminiSelector {
         return parser.getSelector();
     }
 
-    /** /tell・/msg・/w の宛先で、入力中の文字に合えば「@gemini」を候補に足します */
+    /** /tell・/msg・/w の宛先で、入力中の文字に合えば「@ai」を候補に足します */
     public static void suggest(SuggestionsBuilder builder) {
         if (!isWhisperTarget(builder)) return;
         String typed = builder.getRemaining().toLowerCase(Locale.ROOT);

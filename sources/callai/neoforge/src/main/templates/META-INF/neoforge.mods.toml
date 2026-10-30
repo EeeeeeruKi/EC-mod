@@ -7,9 +7,7 @@ modId="${mod_id}"
 version="${mod_version}"
 displayName="${mod_name}"
 authors="EeeeeeruKi"
-description='''
-/tell @gemini でGeminiにささやくと、Geminiがささやき返してくれるmodです。Geminiに頼むとコマンドも実行してくれます（/gemini do）。サーバー必須、クライアントにも入れると @gemini が補完され、画面の読み取りも使えます。
-'''
+description='''/tell @ai でAI（Gemini または OpenAI互換API：OpenAI・Ollama・LM Studio など）にささやくと、ささやき返してくれるmodです。AIに頼むとコマンドも実行してくれます（/ai do）。サーバー必須、クライアントにも入れると @ai が補完され、画面の読み取りも使えます。'''
 
 [[mixins]]
 config="${mod_id}.mixins.json"
