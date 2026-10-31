@@ -113,6 +113,16 @@
       "versions": [
         {
           "version": "1.1.0",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/mcadminpanel/1.20.1-forge/mcadminpanel-forge-1.20.1-1.1.0.jar",
+          "fileName": "mcadminpanel-forge-1.20.1-1.1.0.jar",
+          "sha256": "f5e4cee89b665eaba1347ca48e91628945a1c4f1c880eba052da334d121dde20",
+          "changelog": "Forge 1.20.1 版です。「人気MOD」タブは Forge 1.20.1 で人気の上位20MODに対応しています。",
+          "released": "2026-10-31"
+        },
+        {
+          "version": "1.1.0",
           "mc": "1.21.1",
           "loader": "neoforge",
           "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/mcadminpanel/1.21.1-neoforge/mcadminpanel-1.1.0.jar",
