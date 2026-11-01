@@ -557,8 +557,18 @@
     },
     "famished": {
       "name": "Famished",
-      "summary": "空腹になると、攻撃のリーチが短くなるMODです。満腹度6以下でリーチが0.5、2以下で1.0短くなります。",
+      "summary": "空腹や低HPのとき、プレイヤーが弱くなるMODです。満腹度6以下で攻撃のリーチと攻撃力が下がり、HP10以下で移動速度が下がります。",
       "versions": [
+        {
+          "version": "1.1.0",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/famished/1.20.1-forge/famished-1.1.0-forge-1.20.1.jar",
+          "fileName": "famished-1.1.0-forge-1.20.1.jar",
+          "sha256": "04d27ce7db1deb960001c652c81514a634008f5cfc31158ea2d0b6e8aed02cc3",
+          "changelog": "空腹のときの攻撃力低下（満腹度6以下で -4）と、HPが低いときの移動速度低下（HP10以下で -10%、6以下で -25%、4以下で -40%）を追加しました。",
+          "released": "2026-11-01"
+        },
         {
           "version": "1.0.0",
           "mc": "1.20.1",
