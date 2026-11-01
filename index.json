@@ -109,8 +109,28 @@
     },
     "mcadminpanel": {
       "name": "mcAdminPanel",
-      "summary": "OP向けの管理パネル。プレイヤー・ゲームルール・MOD設定・人気MODの設定・コマンドをゲーム内のGUIで管理します。",
+      "summary": "OP向けの管理パネル。プレイヤー・ゲームルール・MOD設定（人気MOD上位100件の設定ファイルも）・コマンドをゲーム内のGUIで管理します。",
       "versions": [
+        {
+          "version": "1.2.0",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/mcadminpanel/1.21.1-neoforge/mcadminpanel-1.2.0.jar",
+          "fileName": "mcadminpanel-1.2.0.jar",
+          "sha256": "7f276ebedc3bdc0204cab19ea05145a396a3f66c754f837fb614d0f151958c23",
+          "changelog": "「人気MOD」タブを「MOD設定」タブにまとめ、Modrinth の人気MOD上位100件に対応しました。",
+          "released": "2026-11-02"
+        },
+        {
+          "version": "1.2.0",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/mcadminpanel/1.20.1-forge/mcadminpanel-forge-1.20.1-1.2.0.jar",
+          "fileName": "mcadminpanel-forge-1.20.1-1.2.0.jar",
+          "sha256": "34533e9cbf0f27feefa157a67f243dedafd2dec6cb8deaf88ce413e5808b67d3",
+          "changelog": "「人気MOD」タブを「MOD設定」タブにまとめ、Modrinth の人気MOD上位100件に対応しました。",
+          "released": "2026-11-02"
+        },
         {
           "version": "1.1.0",
           "mc": "1.20.1",
