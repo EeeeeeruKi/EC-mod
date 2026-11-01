@@ -554,6 +554,22 @@
           "released": "2026-10-24"
         }
       ]
+    },
+    "famished": {
+      "name": "Famished",
+      "summary": "空腹になると、攻撃のリーチが短くなるMODです。満腹度6以下でリーチが0.5、2以下で1.0短くなります。",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/famished/1.20.1-forge/famished-1.0.0-forge-1.20.1.jar",
+          "fileName": "famished-1.0.0-forge-1.20.1.jar",
+          "sha256": "439c4b6d07ba6dbe71bec62b35ba2b25cf586c57975e30c3733fa65a6d9fb2e8",
+          "changelog": "最初の版です。空腹のとき、攻撃のリーチが短くなります。",
+          "released": "2026-11-01"
+        }
+      ]
     }
   }
 }
