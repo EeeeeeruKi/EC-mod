@@ -797,8 +797,8 @@
  "tonsofadv.tab.mod_actuallyadditions2.desc": "Actually Additionsの進捗がどっさり詰まってるよ",
  "tonsofadv.tab.mod_exposure": "どっさり：Exposure",
  "tonsofadv.tab.mod_exposure.desc": "Exposureの進捗がどっさり詰まってるよ",
- "tonsofadv.tab.mod_elevatorid": "どっさり：Elevator Mod",
- "tonsofadv.tab.mod_elevatorid.desc": "Elevator Modの進捗がどっさり詰まってるよ",
+ "tonsofadv.tab.mod_elevatorid": "どっさり：ElevatorMod",
+ "tonsofadv.tab.mod_elevatorid.desc": "ElevatorModの進捗がどっさり詰まってるよ",
  "tonsofadv.tab.mod_projecte": "どっさり：ProjectE",
  "tonsofadv.tab.mod_projecte.desc": "ProjectEの進捗がどっさり詰まってるよ",
  "tonsofadv.tab.mod_silentgear": "どっさり：Silent Gear",
@@ -990,5 +990,13 @@
  "tonsofadv.tab.mod_extendedae": "どっさり：extendedae",
  "tonsofadv.tab.mod_extendedae.desc": "extendedaeの進捗がどっさり詰まってるよ",
  "tonsofadv.tab.mod_ae2wtlib": "どっさり：AE2WTLib",
- "tonsofadv.tab.mod_ae2wtlib.desc": "AE2WTLibの進捗がどっさり詰まってるよ"
+ "tonsofadv.tab.mod_ae2wtlib.desc": "AE2WTLibの進捗がどっさり詰まってるよ",
+ "tonsofadv.tab.woods2": "どっさり：木材 2",
+ "tonsofadv.tab.woods2.desc": "「木材 2」の進捗がどっさり詰まってるよ",
+ "tonsofadv.tab.make5": "どっさり：作ってみた 5",
+ "tonsofadv.tab.make5.desc": "「作ってみた 5」の進捗がどっさり詰まってるよ",
+ "tonsofadv.tab.place6": "どっさり：設置 6",
+ "tonsofadv.tab.place6.desc": "「設置 6」の進捗がどっさり詰まってるよ",
+ "tonsofadv.tab.mod_ironchest": "どっさり：Iron Chests",
+ "tonsofadv.tab.mod_ironchest.desc": "Iron Chestsの進捗がどっさり詰まってるよ"
 }

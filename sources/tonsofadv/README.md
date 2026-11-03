@@ -23,3 +23,11 @@
 - バニラの統計（`minecraft:crafted` / `used` / `broken` / `killed_by` / `custom`）を使う進捗はデータだけなので、データパック版にも入ります。
 - 合計クラフト回数・置いたブロックなど、バニラの統計にない回数は `ActionStats.java` が独自の統計 `tonsofadv:*` として数えます（MOD版だけ）。
 - Iron's Spells（`SpellOnCastEvent`）・Ars Nouveau（`SpellCastEvent`）・AE2（`MEStorageMenu` の `storage`）はリフレクションでつないでいます。
+
+## 26.2 版（v1.7.0〜）
+
+- `neoforge-26.2/` … NeoForge 26.2 版、`fabric-26.2/` … Fabric 26.2 版（Fabric API が必要）
+- 26.2 の進捗は新しい書き方（`minecraft:entity_type` などの部品の組み合わせ）になっているので、`gen.py` の `fix26()` で変換しています。
+- MOD連携の条件は、NeoForge 版が `neoforge:conditions`、Fabric 版が `fabric:load_conditions` です。
+- Fabric 版の回数は Fabric API のイベントと、失敗しても止まらない（`require = 0`）ミックスイン、ゲームの統計の合計から数えます。クリティカル・飛び道具・経験値オーブは数えないので、その進捗は入れていません。
+- データパックは `ov_262` オーバーレイ（formats 81〜107）で 26.2 に対応しています。

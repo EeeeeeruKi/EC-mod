@@ -1,0 +1,26 @@
+{
+ "schemaVersion": 1,
+ "id": "tonsofadv",
+ "version": "${version}",
+ "name": "Tons of Advancements",
+ "description": "進捗をどっさり追加するよ。アイテム集め・モブ討伐・探検・やり込み、全部のブロックの設置や採掘、効果・醸造・エンチャント・釣り・取引など、ほぼ全部の行動に進捗があるよ。報酬は経験値。入っているMOD（約100個に対応）の進捗も追加されるよ。",
+ "authors": [
+  "EeeeeeruKi"
+ ],
+ "license": "MIT",
+ "environment": "*",
+ "entrypoints": {
+  "main": [
+   "com.eeeeeeruki.tonsofadv.TonsOfAdv"
+  ]
+ },
+ "mixins": [
+  "tonsofadv.mixins.json"
+ ],
+ "depends": {
+  "fabricloader": ">=0.20.1",
+  "minecraft": "~26.2",
+  "java": ">=25",
+  "fabric-api": "*"
+ }
+}

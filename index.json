@@ -606,6 +606,46 @@
       "summary": "進捗を1700個以上追加するMOD。アイテム集め・モブ討伐・探検・やり込み・ネタ系の進捗がどっさり入っていて、達成すると経験値がもらえます。v1.4.0 から、人気のMOD100個（Create・Mekanism・AE2・黄昏の森など）の進捗も追加されます。データパック版もあります。",
       "versions": [
         {
+          "version": "1.7.0",
+          "mc": "26.2",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/tonsofadv/26.2-neoforge/tonsofadv-neoforge-26.2-1.7.0.jar",
+          "fileName": "tonsofadv-neoforge-26.2-1.7.0.jar",
+          "sha256": "0c58ff7600d900e542becad18010a02c0af82272dce3c0b7083495e1f4fd8714",
+          "changelog": "26.2 版（NeoForge・Fabric）を追加しました。26.2 に対応しているMOD 29 個の進捗も入っています。",
+          "released": "2026-11-04"
+        },
+        {
+          "version": "1.7.0",
+          "mc": "26.2",
+          "loader": "fabric",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/tonsofadv/26.2-fabric/tonsofadv-fabric-26.2-1.7.0.jar",
+          "fileName": "tonsofadv-fabric-26.2-1.7.0.jar",
+          "sha256": "1666b55de0825180420d90430c98cd427ea3cc9b84503b2a4eecc6d48c3148e8",
+          "changelog": "26.2 版（NeoForge・Fabric）を追加しました。26.2 に対応しているMOD 29 個の進捗も入っています。",
+          "released": "2026-11-04"
+        },
+        {
+          "version": "1.7.0",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/tonsofadv/1.21.1-neoforge/tonsofadv-neoforge-1.21.1-1.7.0.jar",
+          "fileName": "tonsofadv-neoforge-1.21.1-1.7.0.jar",
+          "sha256": "0fabfed3c3f8410075f6a3be3cc99e1bdf196a17b8fac3b7af6f49e7735b0801",
+          "changelog": "26.2 版を追加しました（この版は中身の修正だけです）。1.20.1 版で鍛冶型の名前が正しく出ていなかったのを直し、MODの説明文を柔らかい言い方にしました。",
+          "released": "2026-11-04"
+        },
+        {
+          "version": "1.7.0",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/tonsofadv/1.20.1-forge/tonsofadv-forge-1.20.1-1.7.0.jar",
+          "fileName": "tonsofadv-forge-1.20.1-1.7.0.jar",
+          "sha256": "7d66688dabbd1f591728913d87fb4d99fd539806130e30873340b4ba41fdacc7",
+          "changelog": "26.2 版を追加しました（この版は中身の修正だけです）。1.20.1 版で鍛冶型の名前が正しく出ていなかったのを直し、MODの説明文を柔らかい言い方にしました。",
+          "released": "2026-11-04"
+        },
+        {
           "version": "1.6.0",
           "mc": "1.21.1",
           "loader": "neoforge",

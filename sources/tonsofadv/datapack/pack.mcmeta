@@ -1,12 +1,15 @@
 {
   "pack": {
+    "description": "進捗どっさり — 進捗をどっさり追加するよ（1.20.1 / 1.21.1 / 26.2）",
     "pack_format": 15,
-    "supported_formats": [15, 48],
-    "description": "進捗どっさり — 進捗を5000個くらい追加するよ（1.20.1 / 1.21.1）"
+    "supported_formats": [15, 107],
+    "min_format": 15,
+    "max_format": 107
   },
   "overlays": {
     "entries": [
-      { "formats": [48, 48], "directory": "ov_1211" }
+      { "directory": "ov_1211", "formats": [48, 48] },
+      { "directory": "ov_262", "formats": [81, 107], "min_format": 81, "max_format": 107 }
     ]
   }
 }

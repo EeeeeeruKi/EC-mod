@@ -174,7 +174,8 @@ MOBS = ["allay", "armadillo", "axolotl", "bat", "bee", "blaze", "bogged", "breez
         "shulker", "silverfish", "skeleton", "skeleton_horse", "slime", "sniffer", "snow_golem", "spider", "squid",
         "stray", "strider", "tadpole", "trader_llama", "tropical_fish", "turtle", "vex", "villager", "vindicator",
         "wandering_trader", "warden", "witch", "wither", "wither_skeleton", "wolf", "zoglin", "zombie", "zombie_horse",
-        "zombie_villager", "zombified_piglin"]
+        "zombie_villager", "zombified_piglin", "creaking", "happy_ghast", "copper_golem", "parched", "camel_husk",
+        "nautilus", "zombie_nautilus", "sulfur_cube"]
 MOB_CHALLENGE = {"ender_dragon", "wither", "warden", "elder_guardian"}
 MOB_GOAL = {"evoker", "ravager", "piglin_brute", "shulker", "breeze", "ghast", "blaze", "wither_skeleton", "guardian",
             "hoglin", "zoglin", "vex", "allay", "skeleton_horse", "zombie_horse"}
@@ -276,10 +277,69 @@ FRAMES_BY_TIER = ["task", "task", "goal", "challenge", "challenge"]
 XP = {"task": 5, "goal": 20, "challenge": 50}
 
 
+def mod_cond(self, modid):
+    if self.v26:
+        return {"_modid": modid}  # becomes neoforge:conditions or fabric:load_conditions when written
+    if self.new:
+        return {"neoforge:conditions": [{"type": "neoforge:mod_loaded", "modid": modid}]}
+    return {"conditions": [{"type": "forge:mod_loaded", "modid": modid}]}
+
+
+ENT26 = {"type": "minecraft:entity_type", "location": "minecraft:location", "flags": "minecraft:flags",
+         "equipment": "minecraft:equipment", "stepping_on": "minecraft:stepping_on", "distance": "minecraft:distance"}
+
+
+def ent26(p):
+    """pre-26.2 entity predicate -> 26.2 sub-predicate map"""
+    out = {}
+    for k, v in p.items():
+        if k == "type_specific":
+            out[f"minecraft:type_specific/{v['type'].split(':')[-1]}"] = {kk: vv for kk, vv in v.items() if kk != "type"}
+        elif k in ("vehicle", "passenger", "targeted_entity"):
+            out[f"minecraft:{k}"] = ent26(v)
+        elif k in ENT26:
+            out[ENT26[k]] = v
+        else:
+            raise ValueError(f"unknown entity predicate key {k}")
+    return out
+
+
+def fix26(a):
+    for c in a["criteria"].values():
+        cond = c.get("conditions")
+        if not cond:
+            continue
+        for k in list(cond):
+            if k in ("player", "entity", "parent", "child", "partner") and isinstance(cond[k], dict):
+                cond[k] = [{"condition": "minecraft:entity_properties", "entity": "this", "predicate": ent26(cond[k])}]
+        dmg = cond.get("damage")
+        if isinstance(dmg, dict):
+            if "source_entity" in dmg:
+                dmg.setdefault("type", {})["source_entity"] = ent26(dmg.pop("source_entity"))
+    return a
+
+
+def loader_cond(a, loader):
+    a = dict(a)
+    modid = a.pop("_modid", None)
+    if modid:
+        if loader == "fabric":
+            a["fabric:load_conditions"] = [{"condition": "fabric:all_mods_loaded", "values": [modid]}]
+        else:
+            a["neoforge:conditions"] = [{"type": "neoforge:mod_loaded", "modid": modid}]
+    return a
+
+
+FABRIC_SKIP_STATS = ("crit_hits", "projectile_hits", "xp_orbs")
+
+
 class Gen:
     def __init__(self, ver):
         self.v = ver
-        self.new = ver == "1.21.1"
+        self.new = ver != "1.20.1"
+        self.v26 = ver.startswith("26")
+        lp = os.path.join(REG, f"lang-{ver}.json")
+        self.vlang = json.load(open(lp, encoding="utf-8")) if os.path.exists(lp) else None
         self.reg = load(ver)
         self.items = set(self.reg["item"])
         self.blocks = set(self.reg["block"])
@@ -307,9 +367,9 @@ class Gen:
         return {"structures": f"minecraft:{s}"} if self.new else {"structure": f"minecraft:{s}"}
 
     def item_name(self, item):
-        kind = "block" if item in self.blocks else "item"
-        base = vtr(f"{kind}.minecraft.{item}")
-        if item.startswith("music_disc_") or item.endswith("_banner_pattern") or item == "disc_fragment_5":
+        base = self.plain_item_name(item)
+        if (item.startswith("music_disc_") or item.endswith("_banner_pattern") or item == "disc_fragment_5") and \
+                (self.vlang is None or f"item.minecraft.{item}.desc" in self.vlang):
             return tr(f"{NS}.obtain.title2", base, vtr(f"item.minecraft.{item}.desc"))
         if item.endswith("_armor_trim_smithing_template"):
             pat = item[:-len("_armor_trim_smithing_template")]
@@ -320,7 +380,13 @@ class Gen:
 
     def plain_item_name(self, item):
         kind = "block" if item in self.blocks else "item"
-        return vtr(f"{kind}.minecraft.{item}")
+        key = f"{kind}.minecraft.{item}"
+        if self.vlang is not None and key not in self.vlang:
+            for alt in (f"item.minecraft.{item}", f"block.minecraft.{item}",
+                        "item.minecraft.smithing_template" if item.endswith("smithing_template") else None):
+                if alt and alt in self.vlang:
+                    return vtr(alt)
+        return vtr(key)
 
     def add(self, path, parent, icon, title, desc, criteria, frame="task", xp=None, chat=None, bg=None, hidden=False):
         disp = {"icon": self.icon(icon), "title": title, "description": desc, "frame": frame,
@@ -558,7 +624,7 @@ class Gen:
         # structures
         r2 = self.root("structures")
         structs = list(self.reg["worldgen/structure"]) or []
-        if self.new:
+        if self.new and not structs:
             structs = list(load("1.20.1")["worldgen/structure"]) + ["trial_chambers"]
         sicon = {"ancient_city": "sculk_catalyst", "bastion_remnant": "gilded_blackstone", "buried_treasure": "heart_of_the_sea",
                  "desert_pyramid": "sandstone", "end_city": "purpur_block", "fortress": "nether_bricks", "igloo": "snow_block",
@@ -689,13 +755,21 @@ class Gen:
             if "parent" in a:
                 assert a["parent"].split(":")[1] in self.advs, (p, a["parent"])
         folder = "advancement" if self.new else "advancements"
-        tag = "1211" if self.new else "1201"
-        # v<tag>: everything (mod jar); dp<tag>: vanilla only (datapack)
-        for root, only_vanilla in ((f"v{tag}", False), (f"dp{tag}", True)):
+        tag = self.v.replace(".", "")
+        if self.v26:
+            for a in self.advs.values():
+                fix26(a)
+        # v<tag>: everything (mod jar); dp<tag>: vanilla only (datapack); 26.x: one mod jar folder per loader
+        roots = [(f"v{tag}n", False, "neoforge"), (f"v{tag}f", False, "fabric")] if self.v26 else [(f"v{tag}", False, None)]
+        for root, only_vanilla, loader in roots + [(f"dp{tag}", True, None)]:
             base = os.path.join(OUT, root, "data", NS, folder)
             for p, a in self.advs.items():
                 if only_vanilla and p not in self.vanilla_paths:
                     continue
+                if loader == "fabric" and any(f'"{NS}:{st}"' in json.dumps(a["criteria"]) for st in FABRIC_SKIP_STATS):
+                    continue  # counters that the Fabric build does not keep
+                if loader:
+                    a = loader_cond(a, loader)
                 fp = os.path.join(base, p + ".json")
                 os.makedirs(os.path.dirname(fp), exist_ok=True)
                 with open(fp, "w", encoding="utf-8") as f:
@@ -736,7 +810,7 @@ MODDATA = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__))
 
 def gen_mods(self):
     data = MODDATA.get(self.v, {})
-    selected = MODDATA.get("_selected", [])
+    selected = MODDATA.get("_selected_" + self.v) or MODDATA.get("_selected", [])
     for ns in sorted(data, key=lambda n: (data[n]["rank"], n)):
         d = data[ns]
         if d["key"] not in selected:
@@ -746,8 +820,7 @@ def gen_mods(self):
         else:
             ja = en = d["name"]; prefer = []; bg = AUTO_BGS[d["rank"] % len(AUTO_BGS)]; cat = None
         modid = d["modid"]
-        cond = ({"neoforge:conditions": [{"type": "neoforge:mod_loaded", "modid": modid}]} if self.new
-                else {"conditions": [{"type": "forge:mod_loaded", "modid": modid}]})
+        cond = mod_cond(self, modid)
         items = {i: k for i, k in d["items"].items() if not any(w in i for w in MOD_EXCLUDE_KW)}
         ids = sorted(items)
         if len(ids) > MOD_ITEM_CAP:
@@ -1007,8 +1080,7 @@ def gen_actions_java(self):
         if ns not in data or f"mod_{ns}/_root" not in self.advs:
             continue
         modid = data[ns]["modid"]
-        cond = ({"neoforge:conditions": [{"type": "neoforge:mod_loaded", "modid": modid}]} if self.new
-                else {"conditions": [{"type": "forge:mod_loaded", "modid": modid}]})
+        cond = mod_cond(self, modid)
         if stat.startswith("irons_school_"):
             L(f"stat.{NS}.{stat}", f"Iron's Spells: {ja.replace('の魔法使い', '')}の呪文を唱えた数", f"Iron's Spells: {en.replace(' Mage', '')} Spells Cast")
         else:
@@ -1057,8 +1129,9 @@ DAMAGE = [("is_fire", "あちっ", "Ouch, Hot", "火でダメージを受けよ�
           ("is_freezing", "こごえる", "Freezing", "粉雪で凍えよう", "Freeze in powder snow", "powder_snow_bucket"),
           ("is_drowning", "ごぼごぼ", "Glub Glub", "おぼれてダメージを受けよう", "Take drowning damage", "water_bucket")]
 VEHICLES = ["horse", "donkey", "mule", "pig", "strider", "camel", "llama", "trader_llama", "skeleton_horse", "zombie_horse",
-            "boat", "chest_boat", "minecart"]
-VEHICLE_ICON = {"boat": "oak_boat", "chest_boat": "oak_chest_boat", "minecart": "minecart"}
+            "boat", "chest_boat", "minecart", "oak_boat", "oak_chest_boat", "bamboo_raft", "happy_ghast", "nautilus", "camel_husk"]
+VEHICLE_ICON = {"boat": "oak_boat", "chest_boat": "oak_chest_boat", "minecart": "minecart", "oak_boat": "oak_boat",
+                "oak_chest_boat": "oak_chest_boat", "bamboo_raft": "bamboo_raft"}
 AXES = ["wooden_axe", "stone_axe", "iron_axe", "golden_axe", "diamond_axe", "netherite_axe"]
 HOES = ["wooden_hoe", "stone_hoe", "iron_hoe", "golden_hoe", "diamond_hoe", "netherite_hoe"]
 SHOVELS = ["wooden_shovel", "stone_shovel", "iron_shovel", "golden_shovel", "diamond_shovel", "netherite_shovel"]
@@ -1182,7 +1255,7 @@ def gen_more_vanilla(self):
         t = L(f"{NS}.dmg.{tag}", ja, en); d = L(f"{NS}.dmg.{tag}.desc", dja, den)
         ent.append((f"dmg_{tag}", ic, tr(t), tr(d), {"c": {"trigger": "minecraft:entity_hurt_player", "conditions": {
             "damage": {"type": {"tags": [{"id": f"minecraft:{tag}", "expected": True}]}}}}}, "task", 5))
-    for m in [m for m in dict.fromkeys(MOBS) if m in self.ents and m not in ("bat", "cod", "salmon", "squid", "glow_squid", "tadpole", "tropical_fish", "chicken", "cow", "pig", "sheep", "mooshroom", "rabbit", "turtle", "horse", "donkey", "mule", "camel", "sniffer", "armadillo", "allay", "frog", "ocelot", "cat", "parrot", "villager", "wandering_trader", "snow_golem", "fox", "skeleton_horse", "zombie_horse", "strider")]:
+    for m in [m for m in dict.fromkeys(MOBS) if m in self.ents and m not in ("bat", "cod", "salmon", "squid", "glow_squid", "tadpole", "tropical_fish", "chicken", "cow", "pig", "sheep", "mooshroom", "rabbit", "turtle", "horse", "donkey", "mule", "camel", "sniffer", "armadillo", "allay", "frog", "ocelot", "cat", "parrot", "villager", "wandering_trader", "snow_golem", "fox", "skeleton_horse", "zombie_horse", "strider", "happy_ghast", "copper_golem", "nautilus", "camel_husk")]:
         n = self.ent(m)
         ent.append((f"hurtby_{m}", self.mob_icon(m), tr(f"{NS}.hurtby.title", n), tr(f"{NS}.hurtby.desc", n),
                     {"c": {"trigger": "minecraft:entity_hurt_player", "conditions": {"damage": {"source_entity": {"type": f"minecraft:{m}"}}}}}, "task", 5))
@@ -1242,7 +1315,7 @@ def gen_more_vanilla(self):
 Gen.gen_more_vanilla = gen_more_vanilla
 
 stats = {}
-for v in ["1.20.1", "1.21.1"]:
+for v in ["1.20.1", "1.21.1", "26.2"]:
     g = Gen(v)
     n = g.run()
     roots = sum(1 for p in g.advs if p.endswith("root"))

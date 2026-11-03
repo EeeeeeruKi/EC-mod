@@ -797,8 +797,8 @@
  "tonsofadv.tab.mod_actuallyadditions2.desc": "Lots of Actually Additions advancements",
  "tonsofadv.tab.mod_exposure": "Tons: Exposure",
  "tonsofadv.tab.mod_exposure.desc": "Lots of Exposure advancements",
- "tonsofadv.tab.mod_elevatorid": "Tons: Elevator Mod",
- "tonsofadv.tab.mod_elevatorid.desc": "Lots of Elevator Mod advancements",
+ "tonsofadv.tab.mod_elevatorid": "Tons: ElevatorMod",
+ "tonsofadv.tab.mod_elevatorid.desc": "Lots of ElevatorMod advancements",
  "tonsofadv.tab.mod_projecte": "Tons: ProjectE",
  "tonsofadv.tab.mod_projecte.desc": "Lots of ProjectE advancements",
  "tonsofadv.tab.mod_silentgear": "Tons: Silent Gear",
@@ -990,5 +990,13 @@
  "tonsofadv.tab.mod_extendedae": "Tons: extendedae",
  "tonsofadv.tab.mod_extendedae.desc": "Lots of extendedae advancements",
  "tonsofadv.tab.mod_ae2wtlib": "Tons: AE2WTLib",
- "tonsofadv.tab.mod_ae2wtlib.desc": "Lots of AE2WTLib advancements"
+ "tonsofadv.tab.mod_ae2wtlib.desc": "Lots of AE2WTLib advancements",
+ "tonsofadv.tab.woods2": "Tons: Woods 2",
+ "tonsofadv.tab.woods2.desc": "Lots of Woods 2 advancements",
+ "tonsofadv.tab.make5": "Tons: Made It 5",
+ "tonsofadv.tab.make5.desc": "Lots of Made It 5 advancements",
+ "tonsofadv.tab.place6": "Tons: Placing 6",
+ "tonsofadv.tab.place6.desc": "Lots of Placing 6 advancements",
+ "tonsofadv.tab.mod_ironchest": "Tons: Iron Chests",
+ "tonsofadv.tab.mod_ironchest.desc": "Lots of Iron Chests advancements"
 }
