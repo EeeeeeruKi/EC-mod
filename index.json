@@ -606,6 +606,46 @@
       "summary": "進捗を1700個以上追加するMOD。アイテム集め・モブ討伐・探検・やり込み・ネタ系の進捗がどっさり入っていて、達成すると経験値がもらえます。v1.4.0 から、人気のMOD100個（Create・Mekanism・AE2・黄昏の森など）の進捗も追加されます。データパック版もあります。",
       "versions": [
         {
+          "version": "1.7.1",
+          "mc": "26.2",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/tonsofadv/26.2-neoforge/tonsofadv-neoforge-26.2-1.7.1.jar",
+          "fileName": "tonsofadv-neoforge-26.2-1.7.1.jar",
+          "sha256": "6f952d60774c533d21795209b4032b93af941c0db8eef60e38c89f56c2d165b2",
+          "changelog": "MOD連携の進捗のうち、アイテムではなく説明文などを拾ってしまっていたもの（約570個）を取り除きました。これが原因で、同じグループの進捗がいくつか読み込まれないことがあったのも直りました。",
+          "released": "2026-11-04"
+        },
+        {
+          "version": "1.7.1",
+          "mc": "26.2",
+          "loader": "fabric",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/tonsofadv/26.2-fabric/tonsofadv-fabric-26.2-1.7.1.jar",
+          "fileName": "tonsofadv-fabric-26.2-1.7.1.jar",
+          "sha256": "5ae10aa1f5f39827b54212e45d9005c1551928258cee2e8e513ca26e4e1b157e",
+          "changelog": "MOD連携の進捗のうち、アイテムではなく説明文などを拾ってしまっていたもの（約570個）を取り除きました。これが原因で、同じグループの進捗がいくつか読み込まれないことがあったのも直りました。",
+          "released": "2026-11-04"
+        },
+        {
+          "version": "1.7.1",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/tonsofadv/1.21.1-neoforge/tonsofadv-neoforge-1.21.1-1.7.1.jar",
+          "fileName": "tonsofadv-neoforge-1.21.1-1.7.1.jar",
+          "sha256": "3cd876a87bcbc6f327bf216efdb38265605dfa155cb4f6ee526f930141c07934",
+          "changelog": "MOD連携の進捗のうち、アイテムではなく説明文などを拾ってしまっていたもの（約570個）を取り除きました。これが原因で、同じグループの進捗がいくつか読み込まれないことがあったのも直りました。",
+          "released": "2026-11-04"
+        },
+        {
+          "version": "1.7.1",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/tonsofadv/1.20.1-forge/tonsofadv-forge-1.20.1-1.7.1.jar",
+          "fileName": "tonsofadv-forge-1.20.1-1.7.1.jar",
+          "sha256": "4c2d46fc614e1bfd1e6b12f43308d6c676c8dc49ffb1c8d219420351b5d02843",
+          "changelog": "MOD連携の進捗のうち、アイテムではなく説明文などを拾ってしまっていたもの（約570個）を取り除きました。これが原因で、同じグループの進捗がいくつか読み込まれないことがあったのも直りました。",
+          "released": "2026-11-04"
+        },
+        {
           "version": "1.7.0",
           "mc": "26.2",
           "loader": "neoforge",
