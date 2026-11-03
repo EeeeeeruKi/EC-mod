@@ -606,6 +606,26 @@
       "summary": "進捗を1700個以上追加するMOD。アイテム集め・モブ討伐・探検・やり込み・ネタ系の進捗がどっさり入っていて、達成すると経験値がもらえます。v1.4.0 から、人気のMOD100個（Create・Mekanism・AE2・黄昏の森など）の進捗も追加されます。データパック版もあります。",
       "versions": [
         {
+          "version": "1.5.0",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/tonsofadv/1.21.1-neoforge/tonsofadv-neoforge-1.21.1-1.5.0.jar",
+          "fileName": "tonsofadv-neoforge-1.21.1-1.5.0.jar",
+          "sha256": "cb9f530262d91af3682cbade1e4287e1fcad719b2c092131eff95692716ede25",
+          "changelog": "「何かをした回数」の進捗を追加しました（合計クラフト回数・置いたブロック・使ったアイテム・やられた相手など。Iron's Spells のスクロールや AE2 の倉庫の容量にも対応）。1.21.1 版で AE2 と Botania の進捗が抜けていたのを直しました。",
+          "released": "2026-11-03"
+        },
+        {
+          "version": "1.5.0",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/tonsofadv/1.20.1-forge/tonsofadv-forge-1.20.1-1.5.0.jar",
+          "fileName": "tonsofadv-forge-1.20.1-1.5.0.jar",
+          "sha256": "271dce9d5b89b551a049854a4d18ff2b6e027dae977a4d75cfc66d975ae5c44e",
+          "changelog": "「何かをした回数」の進捗を追加しました（合計クラフト回数・置いたブロック・使ったアイテム・やられた相手など。Iron's Spells のスクロールや AE2 の倉庫の容量にも対応）。1.21.1 版で AE2 と Botania の進捗が抜けていたのを直しました。",
+          "released": "2026-11-03"
+        },
+        {
           "version": "1.4.0",
           "mc": "1.21.1",
           "loader": "neoforge",

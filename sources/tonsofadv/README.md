@@ -17,3 +17,9 @@
 ## 人気MOD100個（v1.4.0〜）
 
 `tools/modsdata.json` の `_selected` が対応している100個のMODです（人気順の目安）。各MODのGitHubのソースから、1.20.1 Forge と 1.21.1 NeoForge の両方のブランチのデータを集めています。ブロックの種類が400を超えるMODは均等に間引いています。
+
+## 何かをした回数（v1.5.0〜）
+
+- バニラの統計（`minecraft:crafted` / `used` / `broken` / `killed_by` / `custom`）を使う進捗はデータだけなので、データパック版にも入ります。
+- 合計クラフト回数・置いたブロックなど、バニラの統計にない回数は `ActionStats.java` が独自の統計 `tonsofadv:*` として数えます（MOD版だけ）。
+- Iron's Spells（`SpellOnCastEvent`）・Ars Nouveau（`SpellCastEvent`）・AE2（`MEStorageMenu` の `storage`）はリフレクションでつないでいます。

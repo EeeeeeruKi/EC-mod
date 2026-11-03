@@ -10,6 +10,7 @@ public class TonsOfAdv {
     public static final String MOD_ID = "tonsofadv";
 
     public TonsOfAdv() {
+        ActionStats.register(FMLJavaModLoadingContext.get().getModEventBus());
         if (ModList.get().isLoaded("aether")) {
             AetherCompat.register(FMLJavaModLoadingContext.get().getModEventBus());
         }

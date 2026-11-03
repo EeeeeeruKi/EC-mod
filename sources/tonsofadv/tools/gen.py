@@ -230,6 +230,28 @@ STATS = [  # stat, tiers, ja title, en title, ja desc fmt, en desc fmt, display 
     ("target_hit", [10, 100], "的当て名人", "Marksman", "的に%s回当てましょう", "Hit targets %s times", 1, "target"),
     ("sneak_time", [72000, 720000], "隠密", "Shadow", "しゃがんで%s時間過ごしましょう", "Sneak for %s hours", 72000, "black_wool"),
     ("leave_game", [10, 100, 1000], "また来てね", "See You Again", "ゲームを%s回やめましょう", "Leave the game %s times", 1, "oak_door"),
+    ("player_kills", [1, 10, 100], "PvP", "PvP", "プレイヤーを%s回倒しましょう", "Kill players %s times", 1, "iron_axe"),
+    ("time_since_death", [24000, 168000, 720000, 2400000], "無事これ名馬", "Survivor", "死なずに%s日（ゲーム内）過ごしましょう", "Survive %s in-game days without dying", 24000, "golden_apple"),
+    ("time_since_rest", [72000, 168000], "眠らない人", "Insomniac", "寝ずに%s日（ゲーム内）過ごしましょう", "Go %s in-game days without sleeping", 24000, "phantom_membrane"),
+    ("raid_trigger", [1, 10], "不吉な予感", "Bad Omen", "襲撃を%s回起こしましょう", "Trigger %s raids", 1, "crossbow"),
+    ("interact_with_beacon", [10, 100], "光の番人", "Beacon Keeper", "ビーコンを%s回開きましょう", "Use beacons %s times", 1, "beacon"),
+    ("interact_with_blast_furnace", [100, 1000], "溶鉱炉の主", "Smelter", "溶鉱炉を%s回使いましょう", "Use blast furnaces %s times", 1, "blast_furnace"),
+    ("interact_with_smoker", [100, 1000], "燻製名人", "Smokehouse", "燻製器を%s回使いましょう", "Use smokers %s times", 1, "smoker"),
+    ("interact_with_campfire", [10, 100], "キャンパー", "Camper", "焚き火を%s回使いましょう", "Use campfires %s times", 1, "campfire"),
+    ("interact_with_cartography_table", [10, 100], "地図職人", "Cartographer", "製図台を%s回使いましょう", "Use cartography tables %s times", 1, "cartography_table"),
+    ("interact_with_grindstone", [10, 100], "研ぎ師", "Grinder", "砥石を%s回使いましょう", "Use grindstones %s times", 1, "grindstone"),
+    ("interact_with_lectern", [10, 100], "読書家", "Reader", "書見台を%s回使いましょう", "Use lecterns %s times", 1, "lectern"),
+    ("interact_with_loom", [10, 100], "機織り", "Weaver", "機織り機を%s回使いましょう", "Use looms %s times", 1, "loom"),
+    ("interact_with_stonecutter", [100, 1000], "石工", "Stonemason", "石切台を%s回使いましょう", "Use stonecutters %s times", 1, "stonecutter"),
+    ("inspect_hopper", [10, 100], "ホッパー点検", "Hopper Inspector", "ホッパーを%s回のぞきましょう", "Inspect hoppers %s times", 1, "hopper"),
+    ("inspect_dispenser", [10, 100], "発射装置点検", "Dispenser Inspector", "発射装置を%s回のぞきましょう", "Inspect dispensers %s times", 1, "dispenser"),
+    ("trigger_trapped_chest", [10, 100], "罠師", "Trapper", "トラップチェストを%s回開けましょう", "Open trapped chests %s times", 1, "trapped_chest"),
+    ("tune_noteblock", [10, 100], "調律師", "Tuner", "音ブロックを%s回調律しましょう", "Tune note blocks %s times", 1, "note_block"),
+    ("fill_cauldron", [10, 100], "水くみ", "Water Carrier", "大釜を%s回満たしましょう", "Fill cauldrons %s times", 1, "cauldron"),
+    ("clean_shulker_box", [1, 10], "色落とし", "Bleach", "シュルカーボックスを%s回洗いましょう", "Clean shulker boxes %s times", 1, "shulker_box"),
+    ("clean_banner", [1, 10], "旗洗い", "Banner Wash", "旗を%s回洗いましょう", "Clean banners %s times", 1, "white_banner"),
+    ("damage_absorbed", [1000, 10000], "衝撃吸収", "Absorber", "衝撃吸収で%sダメージ受け止めましょう", "Absorb %s damage", 10, "golden_apple"),
+    ("damage_resisted", [1000, 10000], "かたい体", "Toughness", "耐性で%sダメージ防ぎましょう", "Resist %s damage", 10, "turtle_helmet"),
 ]
 FRAMES_BY_TIER = ["task", "task", "goal", "challenge", "challenge"]
 XP = {"task": 5, "goal": 20, "challenge": 50}
@@ -631,8 +653,10 @@ class Gen:
     def run(self):
         self.gen_obtain(); self.gen_eat(); self.gen_kill(); self.gen_animals()
         self.gen_explore(); self.gen_mining(); self.gen_stats(); self.gen_fun()
+        self.gen_actions_vanilla()
         self.vanilla_paths = set(self.advs)
         self.gen_mods()
+        self.gen_actions_java()
         # sanity: icons must exist, parents must exist
         for p, a in self.advs.items():
             ic = a["display"]["icon"]
@@ -783,6 +807,175 @@ def gen_mods(self):
 
 
 Gen.gen_mods = gen_mods
+
+
+# ---------------- "do something N times" ----------------
+CRAFTED = [  # item, tiers
+    ("stick", [100, 1000, 10000]), ("torch", [100, 1000, 10000]), ("crafting_table", [10, 100]), ("chest", [10, 100, 1000]),
+    ("furnace", [10, 100]), ("oak_planks", [100, 1000, 10000]), ("spruce_planks", [100, 1000]), ("birch_planks", [100, 1000]),
+    ("bread", [10, 100, 1000]), ("cake", [1, 10, 100]), ("cookie", [100, 1000]), ("pumpkin_pie", [10, 100]),
+    ("golden_apple", [1, 10, 100]), ("golden_carrot", [10, 100, 1000]), ("iron_ingot", [100, 1000, 10000]),
+    ("gold_ingot", [100, 1000]), ("copper_ingot", [100, 1000]), ("netherite_ingot", [1, 10, 64]), ("glass", [100, 1000, 10000]),
+    ("stone", [100, 1000, 10000]), ("smooth_stone", [100, 1000]), ("bricks", [100, 1000]), ("stone_bricks", [100, 1000, 10000]),
+    ("cooked_beef", [10, 100, 1000]), ("cooked_porkchop", [10, 100, 1000]), ("cooked_chicken", [10, 100]), ("baked_potato", [10, 100, 1000]),
+    ("rail", [100, 1000]), ("powered_rail", [10, 100]), ("redstone_torch", [10, 100]), ("repeater", [10, 100]), ("piston", [10, 100]),
+    ("hopper", [10, 100]), ("ladder", [100, 1000]), ("bookshelf", [10, 100]), ("book", [10, 100]), ("paper", [100, 1000]),
+    ("arrow", [100, 1000]), ("bow", [1, 10]), ("shield", [1, 10]), ("bucket", [1, 10]), ("bone_meal", [100, 1000]),
+    ("white_bed", [1, 10]), ("lantern", [10, 100]), ("scaffolding", [100, 1000]), ("diamond_pickaxe", [1, 10]),
+    ("iron_pickaxe", [1, 10, 100]), ("beacon", [1, 5]), ("firework_rocket", [100, 1000]), ("tnt", [10, 100, 1000]),
+    ("ender_eye", [12, 100]), ("enchanting_table", [1, 5]), ("anvil", [1, 10]), ("observer", [10, 100]),
+    ("item_frame", [10, 100]), ("armor_stand", [1, 10]), ("lead", [1, 10]), ("crafter", [1, 10]),
+]
+USED = [
+    ("firework_rocket", [10, 100, 1000]), ("bone_meal", [100, 1000, 10000]), ("snowball", [100, 1000]), ("egg", [100, 1000]),
+    ("flint_and_steel", [10, 100]), ("water_bucket", [10, 100, 1000]), ("lava_bucket", [10, 100]), ("bucket", [10, 100, 1000]),
+    ("bow", [100, 1000, 10000]), ("crossbow", [100, 1000]), ("trident", [10, 100]), ("fishing_rod", [10, 100]),
+    ("potion", [10, 100]), ("splash_potion", [10, 100]), ("milk_bucket", [1, 10]), ("honey_bottle", [10, 100]),
+    ("golden_apple", [10, 100]), ("enchanted_golden_apple", [1, 10]), ("goat_horn", [10, 100]), ("spyglass", [10, 100]),
+    ("name_tag", [1, 10]), ("lead", [10, 100]), ("saddle", [1, 10]), ("fire_charge", [10, 100]), ("wind_charge", [10, 100]),
+    ("experience_bottle", [100, 1000]), ("ender_eye", [12, 100]), ("shears", [100, 1000]), ("brush", [10, 100]),
+    ("wooden_pickaxe", [100]), ("stone_pickaxe", [100, 1000]), ("iron_pickaxe", [1000, 10000]), ("diamond_pickaxe", [1000, 10000, 100000]),
+    ("netherite_pickaxe", [1000, 10000, 100000]), ("iron_shovel", [1000]), ("diamond_shovel", [1000, 10000]), ("diamond_axe", [100, 1000]),
+    ("iron_sword", [100, 1000]), ("diamond_sword", [100, 1000, 10000]), ("netherite_sword", [100, 1000, 10000]), ("mace", [10, 100]),
+    ("iron_hoe", [100, 1000]), ("diamond_hoe", [100, 1000]),
+]
+BROKEN = [
+    ("wooden_pickaxe", [1, 10]), ("stone_pickaxe", [1, 10]), ("iron_pickaxe", [1, 10]), ("netherite_pickaxe", [1]),
+    ("wooden_sword", [1, 10]), ("stone_sword", [1, 10]), ("iron_sword", [1, 10]), ("diamond_sword", [1, 10]),
+    ("iron_shovel", [1, 10]), ("iron_axe", [1, 10]), ("iron_hoe", [1]), ("bow", [1, 10]), ("shield", [1, 10]),
+    ("fishing_rod", [1, 10]), ("flint_and_steel", [1, 10]), ("shears", [1, 10]), ("iron_helmet", [1]), ("iron_boots", [1]),
+    ("diamond_chestplate", [1]), ("elytra", [1]),
+]
+KILLED_BY = ["zombie", "skeleton", "creeper", "spider", "enderman", "witch", "drowned", "husk", "stray", "phantom", "slime",
+             "magma_cube", "blaze", "ghast", "piglin", "piglin_brute", "hoglin", "wither_skeleton", "guardian", "elder_guardian",
+             "pillager", "vindicator", "evoker", "ravager", "vex", "silverfish", "bee", "wolf", "iron_golem", "polar_bear",
+             "goat", "pufferfish", "llama", "breeze", "bogged", "warden", "wither", "ender_dragon", "shulker", "zombified_piglin"]
+# stats counted by this mod's own code (tonsofadv:...) — mod jar only, never in the datapack
+JAVA_STATS = [  # tab, stat, tiers, ja, en, desc ja, desc en, icon
+    ("craft", "crafted_total", [1, 100, 1000, 10000, 100000], "クラフト職人", "Crafter", "合計%s回クラフトしましょう", "Craft %s times in total", "crafting_table"),
+    ("craft", "smelted_total", [64, 1000, 10000, 100000], "かまど番長", "Smelting Boss", "かまどから合計%s個取り出しましょう", "Take %s smelted items out of furnaces", "furnace"),
+    ("stats", "blocks_placed", [100, 1000, 10000, 100000, 1000000], "建築家", "Builder", "ブロックを合計%s個置きましょう", "Place %s blocks in total", "bricks"),
+    ("stats", "blocks_broken", [100, 1000, 10000, 100000, 1000000], "解体屋", "Demolisher", "ブロックを合計%s個壊しましょう", "Break %s blocks in total", "iron_pickaxe"),
+    ("stats", "xp_gained", [1000, 10000, 100000, 1000000], "経験豊富", "Experienced", "経験値を合計%s集めましょう", "Collect %s experience in total", "experience_bottle"),
+    ("stats", "max_level", [10, 30, 50, 100, 1000], "レベルアップ", "Level Up", "レベル%sになりましょう", "Reach level %s", "enchanted_book"),
+    ("stats", "food_eaten", [100, 1000, 10000], "大食い", "Big Eater", "食べ物を合計%s回食べましょう", "Eat %s times in total", "cooked_beef"),
+    ("stats", "potions_drunk", [10, 100, 1000], "ポーション中毒", "Potion Lover", "ポーションを合計%s本飲みましょう", "Drink %s potions", "potion"),
+    ("stats", "arrows_shot", [100, 1000, 10000], "弓の名手", "Archer", "弓を%s回引きましょう", "Loose %s arrows", "bow"),
+    ("stats", "animals_tamed", [5, 50, 500], "動物使い", "Beast Tamer", "動物を合計%s回手なずけましょう", "Tame %s animals", "bone"),
+    ("stats", "advancements_earned", [100, 500, 1000, 5000, 10000], "進捗の進捗", "Advancement Advancement", "進捗を合計%s個達成しましょう", "Earn %s advancements", "knowledge_book"),
+]
+IRONS_SCHOOLS = [("fire", "炎", "Fire", "fire_rune"), ("ice", "氷", "Ice", "ice_rune"), ("lightning", "雷", "Lightning", "lightning_rune"),
+                 ("holy", "聖", "Holy", "holy_rune"), ("ender", "エンダー", "Ender", "ender_rune"), ("blood", "血", "Blood", "blood_rune"),
+                 ("evocation", "召喚", "Evocation", "evocation_rune"), ("nature", "自然", "Nature", "nature_rune"), ("eldritch", "異界", "Eldritch", "arcane_rune")]
+JAVA_MOD_STATS = [  # ns, stat, tiers, ja, en, desc ja, desc en, icon (in ns), tier labels (or None)
+    ("irons_spellbooks", "irons_spells_cast", [1, 10, 100, 1000, 10000], "魔法使いの道", "Path of the Mage", "呪文を合計%s回唱えましょう", "Cast %s spells", "gold_spell_book", None),
+    ("irons_spellbooks", "irons_scrolls_used", [1, 10, 100, 1000], "スクロール使い", "Scroll Reader", "スクロールを%s回使いましょう", "Use %s scrolls", "scroll", None),
+    ("ars_nouveau", "ars_spells_cast", [1, 10, 100, 1000, 10000], "術式の使い手", "Glyph Caster", "呪文を合計%s回唱えましょう", "Cast %s spells", "novice_spell_book", None),
+    ("ae2", "ae2_max_bytes", [1024, 4096, 16384, 65536, 262144, 1048576, 16777216], "デジタル倉庫", "Digital Hoard", "MEネットワークにしまったアイテムが%sバイトを超えるようにしましょう", "Store more than %s bytes in an ME network", None,
+     ["1k", "4k", "16k", "64k", "256k", "1M", "16M"]),
+    ("ae2", "ae2_max_items", [10000, 100000, 1000000, 100000000], "物量作戦", "Mass Storage", "MEネットワークにアイテムを合計%s個しまいましょう", "Store %s items in an ME network", "chest", None),
+    ("ae2", "ae2_max_types", [100, 500, 1000, 5000], "なんでも倉庫", "Everything Store", "MEネットワークに%s種類のアイテムをしまいましょう", "Store %s kinds of items in an ME network", "terminal", None),
+]
+AE2_BYTE_ICONS = ["item_storage_cell_1k", "item_storage_cell_4k", "item_storage_cell_16k", "item_storage_cell_64k", "item_storage_cell_256k", "item_storage_cell_256k", "item_storage_cell_256k"]
+
+
+STAT_NAMES = {
+    "crafted_total": ("クラフトした回数", "Times Crafted"), "smelted_total": ("製錬して取り出した数", "Items Smelted"),
+    "blocks_placed": ("置いたブロックの数", "Blocks Placed"), "blocks_broken": ("壊したブロックの数", "Blocks Broken"),
+    "xp_gained": ("集めた経験値", "Experience Collected"), "max_level": ("最高レベル", "Highest Level"),
+    "food_eaten": ("食べた回数", "Times Eaten"), "potions_drunk": ("飲んだポーションの数", "Potions Drunk"),
+    "arrows_shot": ("弓を引いた回数", "Arrows Loosed"), "animals_tamed": ("手なずけた動物の数", "Animals Tamed"),
+    "advancements_earned": ("達成した進捗の数", "Advancements Earned"),
+    "irons_spells_cast": ("Iron's Spells: 唱えた呪文の数", "Iron's Spells: Spells Cast"),
+    "irons_scrolls_used": ("Iron's Spells: 使ったスクロールの数", "Iron's Spells: Scrolls Used"),
+    "ars_spells_cast": ("Ars Nouveau: 唱えた呪文の数", "Ars Nouveau: Spells Cast"),
+    "ae2_max_bytes": ("AE2: MEネットワークの最大使用バイト", "AE2: Most Bytes Stored"),
+    "ae2_max_items": ("AE2: MEネットワークの最大アイテム数", "AE2: Most Items Stored"),
+    "ae2_max_types": ("AE2: MEネットワークの最大種類数", "AE2: Most Item Types Stored"),
+}
+
+
+def gen_actions_vanilla(self):
+    L(f"{NS}.crafted.title", "%s職人 ×%s", "%s Crafter ×%s")
+    L(f"{NS}.crafted.desc", "%sを%s個作りましょう（製錬も含みます）", "Make %2$s %1$s (smelting counts)")
+    L(f"{NS}.used.title", "%sの使い手 ×%s", "%s User ×%s")
+    L(f"{NS}.used.desc", "%sを%s回使いましょう", "Use %s %s times")
+    L(f"{NS}.broken.title", "使いつぶし：%s ×%s", "Worn Out: %s ×%s")
+    L(f"{NS}.broken.desc", "%sを%s回壊しましょう（耐久切れ）", "Break %s %s times (durability)")
+    L(f"{NS}.killedby.title", "%sにやられた", "Killed by %s")
+    L(f"{NS}.killedby.desc", "%sに倒されましょう", "Get killed by %s")
+    L(f"{NS}.killedby10.title", "%sにやられまくった", "Killed by %s Again and Again")
+    L(f"{NS}.killedby10.desc", "%sに10回倒されましょう", "Get killed by %s 10 times")
+    TABS["craft"] = ("クラフト・製錬", "Crafting & Smelting", "crafting_table", "minecraft:textures/block/crafting_table_front.png")
+    TABS["use"] = ("使いこみ", "Well Used", "diamond_pickaxe", "minecraft:textures/block/anvil.png")
+    TABS["deaths"] = ("やられ図鑑", "Death Log", "skeleton_skull", "minecraft:textures/block/soul_sand.png")
+    rc, ru, rd = self.root("craft"), self.root("use"), self.root("deaths")
+    def chain(tab, root, kind, stype, lst):
+        for it, tiers in lst:
+            if it not in self.items:
+                continue
+            prev = root
+            name = self.plain_item_name(it)
+            for ti, n in enumerate(tiers):
+                frame = "challenge" if ti >= 2 else ("goal" if ti == 1 else "task")
+                prev = self.add(f"{tab}/{kind}_{it}_{n}", prev, it, tr(f"{NS}.{kind}.title", name, f"{n:,}"),
+                                tr(f"{NS}.{kind}.desc", name, f"{n:,}"),
+                                {"s": {"trigger": "minecraft:tick", "conditions": {"player": self.player_stat(stype, it, n)}}},
+                                frame=frame, xp=[5, 20, 50][min(ti, 2)])
+    chain("craft", rc, "crafted", "crafted", CRAFTED)
+    chain("use", ru, "used", "used", USED)
+    chain("use", ru, "broken", "broken", BROKEN)
+    for i, m in enumerate([m for m in KILLED_BY if m in self.ents]):
+        p = self.add(f"deaths/{m}", rd, self.mob_icon(m), tr(f"{NS}.killedby.title", self.ent(m)), tr(f"{NS}.killedby.desc", self.ent(m)),
+                     {"s": {"trigger": "minecraft:tick", "conditions": {"player": self.player_stat("killed_by", m, 1)}}}, frame="task", chat=False)
+        self.add(f"deaths/{m}_10", p, self.mob_icon(m), tr(f"{NS}.killedby10.title", self.ent(m)), tr(f"{NS}.killedby10.desc", self.ent(m)),
+                 {"s": {"trigger": "minecraft:tick", "conditions": {"player": self.player_stat("killed_by", m, 10)}}}, frame="goal")
+
+
+def own_stat(self, stat, mn):
+    return {"type_specific": {"type": "minecraft:player" if self.new else "player",
+                              "stats": [{"type": "minecraft:custom", "stat": f"{NS}:{stat}", "value": {"min": mn}}]}}
+
+
+def gen_actions_java(self):
+    for tab, stat, tiers, ja, en, dja, den, icon in JAVA_STATS:
+        L(f"stat.{NS}.{stat}", *STAT_NAMES[stat])
+        t = L(f"{NS}.jstat.{stat}", f"{ja} Lv.%s", f"{en} Lv.%s"); d = L(f"{NS}.jstat.{stat}.desc", dja, den)
+        prev = f"{tab}/root"
+        for ti, n in enumerate(tiers):
+            prev = self.add(f"{tab}/j_{stat}_{ti + 1}", prev, icon, tr(t, ti + 1), tr(d, f"{n:,}"),
+                            {"s": {"trigger": "minecraft:tick", "conditions": {"player": own_stat(self, stat, n)}}},
+                            frame=FRAMES_BY_TIER[min(ti, 4)], xp=[5, 15, 40, 100, 200][min(ti, 4)])
+    data = MODDATA.get(self.v, {})
+    rows = list(JAVA_MOD_STATS) + [("irons_spellbooks", f"irons_school_{k}", [10, 100, 1000], f"{ja}の魔法使い", f"{en} Mage",
+                                    f"{ja}の呪文を%s回唱えましょう", f"Cast %s {en} spells", rune, None) for k, ja, en, rune in IRONS_SCHOOLS]
+    for ns, stat, tiers, ja, en, dja, den, icon, labels in rows:
+        if ns not in data or f"mod_{ns}/_root" not in self.advs:
+            continue
+        modid = data[ns]["modid"]
+        cond = ({"neoforge:conditions": [{"type": "neoforge:mod_loaded", "modid": modid}]} if self.new
+                else {"conditions": [{"type": "forge:mod_loaded", "modid": modid}]})
+        if stat.startswith("irons_school_"):
+            L(f"stat.{NS}.{stat}", f"Iron's Spells: {ja.replace('の魔法使い', '')}の呪文を唱えた数", f"Iron's Spells: {en.replace(' Mage', '')} Spells Cast")
+        else:
+            L(f"stat.{NS}.{stat}", *STAT_NAMES[stat])
+        t = L(f"{NS}.jstat.{stat}", f"{ja} Lv.%s", f"{en} Lv.%s"); d = L(f"{NS}.jstat.{stat}.desc", dja, den)
+        prev = f"mod_{ns}/_root"
+        for ti, n in enumerate(tiers):
+            ic = icon if icon else AE2_BYTE_ICONS[ti]
+            if ic not in data[ns]["items"]:
+                ic = next(iter(data[ns]["items"]))
+            shown = labels[ti] if labels else f"{n:,}"
+            p = self.add(f"mod_{ns}/j_{stat}_{ti + 1}", prev, "stone", tr(t, ti + 1), tr(d, shown),
+                         {"s": {"trigger": "minecraft:tick", "conditions": {"player": own_stat(self, stat, n)}}},
+                         frame=FRAMES_BY_TIER[min(ti, 4)], xp=[5, 15, 40, 100, 200][min(ti, 4)])
+            self.advs[p]["display"]["icon"] = {"id": f"{ns}:{ic}"} if self.new else {"item": f"{ns}:{ic}"}
+            self.advs[p].update(cond)
+            prev = p
+
+
+Gen.gen_actions_vanilla = gen_actions_vanilla
+Gen.gen_actions_java = gen_actions_java
 
 stats = {}
 for v in ["1.20.1", "1.21.1"]:
