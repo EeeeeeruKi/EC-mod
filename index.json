@@ -600,6 +600,32 @@
           "released": "2026-11-01"
         }
       ]
+    },
+    "tonsofadv": {
+      "name": "Tons of Advancements（進捗どっさり）",
+      "summary": "進捗を1700個以上追加するMOD。アイテム集め・モブ討伐・探検・やり込み・ネタ系の進捗がどっさり入っていて、達成すると経験値がもらえます。データパック版もあります。",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/tonsofadv/1.21.1-neoforge/tonsofadv-neoforge-1.21.1-1.0.0.jar",
+          "fileName": "tonsofadv-neoforge-1.21.1-1.0.0.jar",
+          "sha256": "daa0915a5cffee111b7f9d4530a115b6e31ccd4320e80142f141087b19365376",
+          "changelog": "最初の版です。進捗を1700個以上追加します（アイテム集め・モブ討伐・探検・やり込み・ネタ系。報酬は経験値）。",
+          "released": "2026-11-03"
+        },
+        {
+          "version": "1.0.0",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/tonsofadv/1.20.1-forge/tonsofadv-forge-1.20.1-1.0.0.jar",
+          "fileName": "tonsofadv-forge-1.20.1-1.0.0.jar",
+          "sha256": "9670b6ca5e9802a609be8c50789041209d3bb5f68a721da01f3f43ef6e02c570",
+          "changelog": "最初の版です。進捗を1700個以上追加します（アイテム集め・モブ討伐・探検・やり込み・ネタ系。報酬は経験値）。",
+          "released": "2026-11-03"
+        }
+      ]
     }
   }
 }
