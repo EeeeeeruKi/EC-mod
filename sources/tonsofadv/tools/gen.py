@@ -675,7 +675,13 @@ MODS_INFO = {  # ns: (modid, ja, en, preferred icons, background, group)
 }
 MOD_EXCLUDE_KW = ["creative", "debug", "fake_", "dummy", "spawn_egg", "_fluid_block", "boss_spawner", "_spawner", "test_", "missing"]
 MOD_BOSSES = {"naga", "lich", "hydra", "ur_ghast", "snow_queen", "knight_phantom", "minoshroom", "alpha_yeti",
-              "slider", "valkyrie_queen", "sun_spirit", "gaia_guardian", "dead_king", "fire_boss", "wildfire", "wilden_boss"}
+              "slider", "valkyrie_queen", "sun_spirit", "gaia_guardian", "dead_king", "fire_boss", "wildfire", "wilden_boss",
+              "fire_dragon", "ice_dragon", "lightning_dragon", "cyclops", "gorgon", "sea_serpent", "dread_lich",
+              "chaos_guardian", "tremorzilla", "luxtructosaurus"}
+MOD_ITEM_CAP = 400  # mods with thousands of block variants (Chipped, Rechiseled...) are sampled evenly
+AUTO_BGS = ["minecraft:textures/block/stone.png", "minecraft:textures/block/oak_planks.png", "minecraft:textures/block/bricks.png",
+            "minecraft:textures/block/smooth_stone.png", "minecraft:textures/block/spruce_planks.png", "minecraft:textures/block/deepslate.png",
+            "minecraft:textures/block/moss_block.png", "minecraft:textures/block/sandstone.png"]
 MOD_DIMS = {"twilightforest": [("twilightforest:twilight_forest", "黄昏の森へ", "Into the Twilight", "黄昏の森に行きましょう", "Enter the Twilight Forest")],
             "aether": [("aether:the_aether", "天空の楽園", "Paradise Above", "エーテルに行きましょう", "Enter the Aether")]}
 MODDATA = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "modsdata.json"), encoding="utf-8"))
@@ -683,15 +689,29 @@ MODDATA = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__))
 
 def gen_mods(self):
     data = MODDATA.get(self.v, {})
-    for ns, (modid, ja, en, prefer, bg, cat) in MODS_INFO.items():
-        if ns not in data:
-            continue
+    selected = MODDATA.get("_selected", [])
+    for ns in sorted(data, key=lambda n: (data[n]["rank"], n)):
         d = data[ns]
+        if d["key"] not in selected:
+            continue
+        if ns in MODS_INFO:
+            _, ja, en, prefer, bg, cat = MODS_INFO[ns]
+        else:
+            ja = en = d["name"]; prefer = []; bg = AUTO_BGS[d["rank"] % len(AUTO_BGS)]; cat = None
+        modid = d["modid"]
         cond = ({"neoforge:conditions": [{"type": "neoforge:mod_loaded", "modid": modid}]} if self.new
                 else {"conditions": [{"type": "forge:mod_loaded", "modid": modid}]})
         items = {i: k for i, k in d["items"].items() if not any(w in i for w in MOD_EXCLUDE_KW)}
         ids = sorted(items)
-        icon = next((p for p in prefer if p in items), ids[0])
+        if len(ids) > MOD_ITEM_CAP:
+            step = len(ids) / MOD_ITEM_CAP
+            ids = [ids[int(n * step)] for n in range(MOD_ITEM_CAP)]
+            items = {i: items[i] for i in ids}
+        egg_mobs = [e for e in d["entities"] if (f"{e}_spawn_egg" in d["items"] or f"spawn_egg_{e}" in d["items"] or e in MOD_BOSSES)]
+        if not ids and not egg_mobs and not d["biomes"]:
+            continue
+        real_items = [i for i in ids if items[i] == "item"]
+        icon = next((p for p in prefer if p in items), (real_items or ids or [None])[0])
         def mod_icon(i):
             return {"id": f"{ns}:{i}"} if self.new else {"item": f"{ns}:{i}"}
         def mod_ipred(i):
@@ -714,8 +734,9 @@ def gen_mods(self):
             tkey = f"mod_{ns}" + ("" if ci == 0 else str(ci + 1))
             sfx = "" if ci == 0 else f" {ci + 1}"
             t = L(f"{NS}.tab.{tkey}", f"どっさり：{ja}{sfx}", f"Tons: {en}{sfx}")
-            ds = L(f"{NS}.tab.{tkey}.desc", f"{ja}（{cat}系）の進捗がどっさり詰まっています", f"Lots of {en} advancements")
-            r = add(f"{tkey}/_root", None, mod_icon(icon if ci == 0 else chunk[0]), tr(t), tr(ds),
+            ds = L(f"{NS}.tab.{tkey}.desc", f"{ja}（{cat}系）の進捗がどっさり詰まっています" if cat else f"{ja}の進捗がどっさり詰まっています", f"Lots of {en} advancements")
+            root_icon = (icon if ci == 0 else chunk[0]) if (icon or chunk) else None
+            r = add(f"{tkey}/_root", None, mod_icon(root_icon) if root_icon else self.icon("book"), tr(t), tr(ds),
                     {"tick": {"trigger": "minecraft:tick"}}, xp=0, bgx=bg)
             self.advs[r]["display"]["show_toast"] = False
             self.advs[r]["display"]["announce_to_chat"] = False
@@ -735,8 +756,7 @@ def gen_mods(self):
         r0 = roots[0]
         # mobs
         prev = None
-        mobs = [e for e in d["entities"] if (f"{e}_spawn_egg" in d["items"] or f"spawn_egg_{e}" in d["items"] or e in MOD_BOSSES)]
-        for mi, e in enumerate(mobs):
+        for mi, e in enumerate(egg_mobs):
             egg = f"{e}_spawn_egg" if f"{e}_spawn_egg" in d["items"] else (f"spawn_egg_{e}" if f"spawn_egg_{e}" in d["items"] else None)
             ic = mod_icon(egg) if egg else self.icon("netherite_sword")
             name = vtr(f"entity.{ns}.{e}")

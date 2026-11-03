@@ -13,3 +13,7 @@
 `tools/modsdata.json` に、各MODの公開ソース（GitHub）の言語ファイルとモデルから集めたアイテム・モブ・バイオームのIDが入っています。
 生成される進捗には、Forge 1.20.1 では `conditions`（`forge:mod_loaded`）、NeoForge 1.21.1 では `neoforge:conditions`（`neoforge:mod_loaded`）が付くので、そのMODが入っている時だけ読み込まれます。
 データパック版にはMOD連携の進捗は入りません（出力の `dp1201` / `dp1211` がバニラだけの分）。
+
+## 人気MOD100個（v1.4.0〜）
+
+`tools/modsdata.json` の `_selected` が対応している100個のMODです（人気順の目安）。各MODのGitHubのソースから、1.20.1 Forge と 1.21.1 NeoForge の両方のブランチのデータを集めています。ブロックの種類が400を超えるMODは均等に間引いています。

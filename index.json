@@ -603,8 +603,28 @@
     },
     "tonsofadv": {
       "name": "Tons of Advancements（進捗どっさり）",
-      "summary": "進捗を1700個以上追加するMOD。アイテム集め・モブ討伐・探検・やり込み・ネタ系の進捗がどっさり入っていて、達成すると経験値がもらえます。v1.1.0 から Mekanism・Create・AE2・黄昏の森などのMODの進捗も追加されます。データパック版もあります。",
+      "summary": "進捗を1700個以上追加するMOD。アイテム集め・モブ討伐・探検・やり込み・ネタ系の進捗がどっさり入っていて、達成すると経験値がもらえます。v1.4.0 から、人気のMOD100個（Create・Mekanism・AE2・黄昏の森など）の進捗も追加されます。データパック版もあります。",
       "versions": [
+        {
+          "version": "1.4.0",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/tonsofadv/1.21.1-neoforge/tonsofadv-neoforge-1.21.1-1.4.0.jar",
+          "fileName": "tonsofadv-neoforge-1.21.1-1.4.0.jar",
+          "sha256": "f81dfe0e60895186fc3b9a0f713cbf325bfd1796a47d40e1f112bfa678254981",
+          "changelog": "MOD連携を人気のMOD100個に広げました（Create・Mekanism・AE2・黄昏の森・エーテル・Quark・Botania・Tinkers' Construct など、MOD連携の進捗は合計約14000個）。入っているMODの分だけ読み込まれます。",
+          "released": "2026-11-03"
+        },
+        {
+          "version": "1.4.0",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/tonsofadv/1.20.1-forge/tonsofadv-forge-1.20.1-1.4.0.jar",
+          "fileName": "tonsofadv-forge-1.20.1-1.4.0.jar",
+          "sha256": "2e8778ee20efea1f67e65742b7c1f637ad4024c32c825c1233a949446b0d2c65",
+          "changelog": "MOD連携を人気のMOD100個に広げました（Create・Mekanism・AE2・黄昏の森・エーテル・Quark・Botania・Tinkers' Construct など、MOD連携の進捗は合計約14000個）。入っているMODの分だけ読み込まれます。",
+          "released": "2026-11-03"
+        },
         {
           "version": "1.3.0",
           "mc": "1.21.1",
