@@ -10,7 +10,7 @@ authors="EeeeeeruKi"
 description='''
 進捗を1700個以上追加します。アイテム集め・モブ討伐・バイオームや構造物の探検・やり込み・ネタ系の進捗がどっさり入っています。報酬は経験値です。
 v1.1.0 から、Mekanism・Create・AE2・Immersive Engineering・黄昏の森・エーテル・Alex's Mobs・Iron's Spells・Botania・Ars Nouveau・Farmer's Delight が入っていると、そのMODの進捗（合計5000個以上）も追加されます。
-v1.2.0 から、エーテルのタブの進捗を達成すると、エーテルの進捗の音が鳴ります。
+v1.2.0 から、エーテルのタブの進捗のトーストが出たときに、エーテルの進捗の音が鳴ります。
 '''
 
 [[dependencies.${mod_id}]]

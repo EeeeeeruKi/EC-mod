@@ -606,6 +606,26 @@
       "summary": "進捗を1700個以上追加するMOD。アイテム集め・モブ討伐・探検・やり込み・ネタ系の進捗がどっさり入っていて、達成すると経験値がもらえます。v1.1.0 から Mekanism・Create・AE2・黄昏の森などのMODの進捗も追加されます。データパック版もあります。",
       "versions": [
         {
+          "version": "1.3.0",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/tonsofadv/1.21.1-neoforge/tonsofadv-neoforge-1.21.1-1.3.0.jar",
+          "fileName": "tonsofadv-neoforge-1.21.1-1.3.0.jar",
+          "sha256": "f7eef6331a336f348545d93dbd46cc897c6062518e8967a56117700362b2e1da",
+          "changelog": "エーテルの音を、進捗を達成した瞬間ではなく、トーストが画面に出たときに鳴らすようにしました。エーテルを入れているときはサーバーとクライアントの両方にこのMODを入れてください。",
+          "released": "2026-11-03"
+        },
+        {
+          "version": "1.3.0",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/tonsofadv/1.20.1-forge/tonsofadv-forge-1.20.1-1.3.0.jar",
+          "fileName": "tonsofadv-forge-1.20.1-1.3.0.jar",
+          "sha256": "2f413c7b7f8da35ed01587a6be16043b69575b643b6fbfca1d7b0aac7a6f6544",
+          "changelog": "エーテルの音を、進捗を達成した瞬間ではなく、トーストが画面に出たときに鳴らすようにしました。エーテルを入れているときはサーバーとクライアントの両方にこのMODを入れてください。",
+          "released": "2026-11-03"
+        },
+        {
           "version": "1.2.0",
           "mc": "1.21.1",
           "loader": "neoforge",
