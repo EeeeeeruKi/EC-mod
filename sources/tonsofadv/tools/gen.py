@@ -697,6 +697,8 @@ def gen_mods(self):
         def mod_ipred(i):
             return {"items": f"{ns}:{i}"} if self.new else {"items": [f"{ns}:{i}"]}
         def add(path, parent, iconspec, title, desc, criteria, frame="task", xp=None, bgx=None):
+            if ns == "aether" and frame == "challenge":
+                frame = "goal"  # the Aether sound plays instead of the vanilla challenge jingle
             p = self.add(path, parent, "stone", title, desc, criteria, frame=frame, xp=xp, bg=bgx,
                          chat=False if frame == "task" else None)
             a = self.advs[p]

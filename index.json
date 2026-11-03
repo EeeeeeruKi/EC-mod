@@ -606,6 +606,26 @@
       "summary": "進捗を1700個以上追加するMOD。アイテム集め・モブ討伐・探検・やり込み・ネタ系の進捗がどっさり入っていて、達成すると経験値がもらえます。v1.1.0 から Mekanism・Create・AE2・黄昏の森などのMODの進捗も追加されます。データパック版もあります。",
       "versions": [
         {
+          "version": "1.2.0",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/tonsofadv/1.21.1-neoforge/tonsofadv-neoforge-1.21.1-1.2.0.jar",
+          "fileName": "tonsofadv-neoforge-1.21.1-1.2.0.jar",
+          "sha256": "198a176d1bcd9879fd520b6a39b662d200456b44050539482c8bda2ed011912d",
+          "changelog": "エーテルが入っていると、エーテルのタブの進捗を達成したときにエーテルの進捗の音が鳴るようにしました（ダンジョンのボスは銅・銀・金の音）。",
+          "released": "2026-11-03"
+        },
+        {
+          "version": "1.2.0",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/tonsofadv/1.20.1-forge/tonsofadv-forge-1.20.1-1.2.0.jar",
+          "fileName": "tonsofadv-forge-1.20.1-1.2.0.jar",
+          "sha256": "101a885d9919acade464e376467b36b8912fcf1c1db251579659ac811f8bc02e",
+          "changelog": "エーテルが入っていると、エーテルのタブの進捗を達成したときにエーテルの進捗の音が鳴るようにしました（ダンジョンのボスは銅・銀・金の音）。",
+          "released": "2026-11-03"
+        },
+        {
           "version": "1.1.0",
           "mc": "1.21.1",
           "loader": "neoforge",
