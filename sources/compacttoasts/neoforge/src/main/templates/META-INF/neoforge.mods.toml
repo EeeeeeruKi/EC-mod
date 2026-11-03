@@ -1,0 +1,29 @@
+modLoader="javafml"
+loaderVersion="${loader_version_range}"
+license="${mod_license}"
+
+[[mods]]
+modId="${mod_id}"
+version="${mod_version}"
+displayName="${mod_name}"
+authors="EeeeeeruKi"
+description='''
+画面右上のトースト（進捗・レシピ解除などの通知）をコンパクトにします。
+表示中のトーストが一定の数以上になると、1件ずつ1行の表示にまとめます。
+同時に表示できるトーストの数も 5 から 20 に増えます（どちらも設定で変更できます）。
+クライアント専用のMODです。
+'''
+
+[[dependencies.${mod_id}]]
+    modId="neoforge"
+    type="required"
+    versionRange="[21.1,)"
+    ordering="NONE"
+    side="CLIENT"
+
+[[dependencies.${mod_id}]]
+    modId="minecraft"
+    type="required"
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="CLIENT"

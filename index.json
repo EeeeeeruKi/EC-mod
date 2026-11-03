@@ -626,6 +626,32 @@
           "released": "2026-11-03"
         }
       ]
+    },
+    "compacttoasts": {
+      "name": "Compact Toasts",
+      "summary": "画面右上のトースト（進捗・レシピ解除などの通知）をコンパクトにするMOD。たくさん出たときは1件ずつ1行にまとめ、同時に表示できる数も 5 から 20 に増えます。",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/compacttoasts/1.21.1-neoforge/compacttoasts-neoforge-1.21.1-1.0.0.jar",
+          "fileName": "compacttoasts-neoforge-1.21.1-1.0.0.jar",
+          "sha256": "45594b56c290eb0f245634ee5ebffe471aba1e776185f7b559cc0b562359424a",
+          "changelog": "最初の版です。トーストが4つ以上表示されると1件ずつ1行にまとめ、同時に表示できる数を5から20に増やします。どちらの数も設定で変えられます。",
+          "released": "2026-11-03"
+        },
+        {
+          "version": "1.0.0",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/compacttoasts/1.20.1-forge/compacttoasts-forge-1.20.1-1.0.0.jar",
+          "fileName": "compacttoasts-forge-1.20.1-1.0.0.jar",
+          "sha256": "90060dd4410f20d718370c53cc6d3d26181a6ce4d765c576e6fb9ee418fecb74",
+          "changelog": "最初の版です。トーストが4つ以上表示されると1件ずつ1行にまとめ、同時に表示できる数を5から20に増やします。どちらの数も設定で変えられます。",
+          "released": "2026-11-03"
+        }
+      ]
     }
   }
 }

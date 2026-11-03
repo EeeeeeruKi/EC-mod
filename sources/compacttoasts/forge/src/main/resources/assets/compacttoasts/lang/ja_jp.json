@@ -1,0 +1,17 @@
+{
+  "compacttoasts.config.title": "Compact Toasts の設定",
+  "compacttoasts.config.maxToasts": "最大表示数: %s",
+  "compacttoasts.config.compactThreshold": "コンパクト表示: %s個以上",
+  "compacttoasts.config.compactOff": "コンパクト表示: オフ",
+  "compacttoasts.config.hint1": "同時に表示できるトーストの数です（バニラは5です）。",
+  "compacttoasts.config.hint2": "表示中のトーストがこの数以上になると、1件ずつ1行にまとめます。",
+  "compacttoasts.config.test": "テスト用のトーストを表示",
+  "compacttoasts.config.toasts": "トースト",
+  "compacttoasts.config.toasts.tooltip": "トーストの表示に関する設定です。",
+  "compacttoasts.config.maxToasts.tooltip": "同時に表示できるトーストの数です。",
+  "compacttoasts.config.compactThreshold.tooltip": "この数以上のトーストが表示されると、1行の表示になります。",
+  "compacttoasts.recipe": "レシピ解除: %s",
+  "compacttoasts.more": "ほか%s件",
+  "compacttoasts.test.title": "テストトースト %s",
+  "compacttoasts.test.message": "これはテスト用のトーストです。"
+}
