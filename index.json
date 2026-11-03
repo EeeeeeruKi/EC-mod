@@ -603,8 +603,28 @@
     },
     "tonsofadv": {
       "name": "Tons of Advancements（進捗どっさり）",
-      "summary": "進捗を1700個以上追加するMOD。アイテム集め・モブ討伐・探検・やり込み・ネタ系の進捗がどっさり入っていて、達成すると経験値がもらえます。データパック版もあります。",
+      "summary": "進捗を1700個以上追加するMOD。アイテム集め・モブ討伐・探検・やり込み・ネタ系の進捗がどっさり入っていて、達成すると経験値がもらえます。v1.1.0 から Mekanism・Create・AE2・黄昏の森などのMODの進捗も追加されます。データパック版もあります。",
       "versions": [
+        {
+          "version": "1.1.0",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/tonsofadv/1.21.1-neoforge/tonsofadv-neoforge-1.21.1-1.1.0.jar",
+          "fileName": "tonsofadv-neoforge-1.21.1-1.1.0.jar",
+          "sha256": "a5522a9a5046da5a8bd0c2b21281701eb1a38de4d238b512b5e0e3de016298cc",
+          "changelog": "Mekanism・Create・AE2・Immersive Engineering・黄昏の森・エーテル・Alex's Mobs・Iron's Spells・Botania・Ars Nouveau・Farmer's Delight の進捗を追加しました（入っているMODの分だけ読み込まれます）。",
+          "released": "2026-11-03"
+        },
+        {
+          "version": "1.1.0",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/tonsofadv/1.20.1-forge/tonsofadv-forge-1.20.1-1.1.0.jar",
+          "fileName": "tonsofadv-forge-1.20.1-1.1.0.jar",
+          "sha256": "ea6dd0e74690bf277eb1b995d9282974560608256fec3354af1b085d657d1eef",
+          "changelog": "Mekanism・Create・AE2・Immersive Engineering・黄昏の森・エーテル・Alex's Mobs・Iron's Spells・Botania・Ars Nouveau・Farmer's Delight の進捗を追加しました（入っているMODの分だけ読み込まれます）。",
+          "released": "2026-11-03"
+        },
         {
           "version": "1.0.0",
           "mc": "1.21.1",

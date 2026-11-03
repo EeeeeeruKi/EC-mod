@@ -631,29 +631,144 @@ class Gen:
     def run(self):
         self.gen_obtain(); self.gen_eat(); self.gen_kill(); self.gen_animals()
         self.gen_explore(); self.gen_mining(); self.gen_stats(); self.gen_fun()
+        self.vanilla_paths = set(self.advs)
+        self.gen_mods()
         # sanity: icons must exist, parents must exist
         for p, a in self.advs.items():
             ic = a["display"]["icon"]
-            iid = (ic.get("id") or ic.get("item")).split(":")[1]
-            assert iid in self.items, (self.v, p, iid)
+            full = ic.get("id") or ic.get("item")
+            if full.startswith("minecraft:"):
+                assert full.split(":")[1] in self.items, (self.v, p, full)
             if "parent" in a:
                 assert a["parent"].split(":")[1] in self.advs, (p, a["parent"])
         folder = "advancement" if self.new else "advancements"
-        base = os.path.join(OUT, "v1211" if self.new else "v1201", "data", NS, folder)
-        for p, a in self.advs.items():
-            fp = os.path.join(base, p + ".json")
-            os.makedirs(os.path.dirname(fp), exist_ok=True)
-            with open(fp, "w", encoding="utf-8") as f:
-                json.dump(a, f, ensure_ascii=False, separators=(",", ":"))
+        tag = "1211" if self.new else "1201"
+        # v<tag>: everything (mod jar); dp<tag>: vanilla only (datapack)
+        for root, only_vanilla in ((f"v{tag}", False), (f"dp{tag}", True)):
+            base = os.path.join(OUT, root, "data", NS, folder)
+            for p, a in self.advs.items():
+                if only_vanilla and p not in self.vanilla_paths:
+                    continue
+                fp = os.path.join(base, p + ".json")
+                os.makedirs(os.path.dirname(fp), exist_ok=True)
+                with open(fp, "w", encoding="utf-8") as f:
+                    json.dump(a, f, ensure_ascii=False, separators=(",", ":"))
         return len(self.advs)
 
+
+# ---------------- mod integration ----------------
+MODS_INFO = {  # ns: (modid, ja, en, preferred icons, background, group)
+    "mekanism": ("mekanism", "Mekanism", "Mekanism", ["metallurgic_infuser", "steel_casing", "ingot_osmium"], "minecraft:textures/block/iron_block.png", "工業"),
+    "mekanismgenerators": ("mekanismgenerators", "Mekanism Generators", "Mekanism Generators", ["heat_generator", "solar_generator"], "minecraft:textures/block/iron_block.png", "工業"),
+    "mekanismtools": ("mekanismtools", "Mekanism Tools", "Mekanism Tools", ["osmium_pickaxe", "steel_sword"], "minecraft:textures/block/iron_block.png", "工業"),
+    "mekanismadditions": ("mekanismadditions", "Mekanism Additions", "Mekanism Additions", ["red_balloon", "white_plastic"], "minecraft:textures/block/white_concrete.png", "工業"),
+    "create": ("create", "Create", "Create", ["cogwheel", "andesite_alloy", "brass_ingot"], "minecraft:textures/block/spruce_planks.png", "工業"),
+    "ae2": ("ae2", "Applied Energistics 2", "Applied Energistics 2", ["controller", "certus_quartz_crystal", "fluix_crystal"], "minecraft:textures/block/smooth_stone.png", "工業"),
+    "immersiveengineering": ("immersiveengineering", "Immersive Engineering", "Immersive Engineering", ["hammer", "ingot_steel", "coke"], "minecraft:textures/block/bricks.png", "工業"),
+    "twilightforest": ("twilightforest", "黄昏の森", "The Twilight Forest", ["twilight_portal_miniature_structure", "naga_scale", "raven_feather", "liveroot"], "minecraft:textures/block/podzol_top.png", "冒険"),
+    "aether": ("aether", "エーテル", "The Aether", ["golden_parachute", "ambrosium_shard", "zanite_gemstone", "skyroot_planks"], "minecraft:textures/block/snow.png", "冒険"),
+    "alexsmobs": ("alexsmobs", "Alex's Mobs", "Alex's Mobs", ["animal_dictionary", "banana", "bear_fur"], "minecraft:textures/block/grass_block_top.png", "冒険"),
+    "irons_spellbooks": ("irons_spellbooks", "Iron's Spells 'n Spellbooks", "Iron's Spells 'n Spellbooks", ["gold_spell_book", "copper_spell_book", "arcane_essence"], "minecraft:textures/block/purpur_block.png", "冒険"),
+    "botania": ("botania", "Botania", "Botania", ["lexicon", "manasteel_ingot", "mana_pool"], "minecraft:textures/block/moss_block.png", "魔法"),
+    "ars_nouveau": ("ars_nouveau", "Ars Nouveau", "Ars Nouveau", ["novice_spell_book", "source_gem", "worn_notebook"], "minecraft:textures/block/amethyst_block.png", "魔法"),
+    "farmersdelight": ("farmersdelight", "Farmer's Delight", "Farmer's Delight", ["cooking_pot", "tomato", "cabbage"], "minecraft:textures/block/composter_side.png", "その他"),
+}
+MOD_EXCLUDE_KW = ["creative", "debug", "fake_", "dummy", "spawn_egg", "_fluid_block", "boss_spawner", "_spawner", "test_", "missing"]
+MOD_BOSSES = {"naga", "lich", "hydra", "ur_ghast", "snow_queen", "knight_phantom", "minoshroom", "alpha_yeti",
+              "slider", "valkyrie_queen", "sun_spirit", "gaia_guardian", "dead_king", "fire_boss", "wildfire", "wilden_boss"}
+MOD_DIMS = {"twilightforest": [("twilightforest:twilight_forest", "黄昏の森へ", "Into the Twilight", "黄昏の森に行きましょう", "Enter the Twilight Forest")],
+            "aether": [("aether:the_aether", "天空の楽園", "Paradise Above", "エーテルに行きましょう", "Enter the Aether")]}
+MODDATA = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "modsdata.json"), encoding="utf-8"))
+
+
+def gen_mods(self):
+    data = MODDATA.get(self.v, {})
+    for ns, (modid, ja, en, prefer, bg, cat) in MODS_INFO.items():
+        if ns not in data:
+            continue
+        d = data[ns]
+        cond = ({"neoforge:conditions": [{"type": "neoforge:mod_loaded", "modid": modid}]} if self.new
+                else {"conditions": [{"type": "forge:mod_loaded", "modid": modid}]})
+        items = {i: k for i, k in d["items"].items() if not any(w in i for w in MOD_EXCLUDE_KW)}
+        ids = sorted(items)
+        icon = next((p for p in prefer if p in items), ids[0])
+        def mod_icon(i):
+            return {"id": f"{ns}:{i}"} if self.new else {"item": f"{ns}:{i}"}
+        def mod_ipred(i):
+            return {"items": f"{ns}:{i}"} if self.new else {"items": [f"{ns}:{i}"]}
+        def add(path, parent, iconspec, title, desc, criteria, frame="task", xp=None, bgx=None):
+            p = self.add(path, parent, "stone", title, desc, criteria, frame=frame, xp=xp, bg=bgx,
+                         chat=False if frame == "task" else None)
+            a = self.advs[p]
+            a["display"]["icon"] = iconspec
+            a.update(cond)
+            return p
+        # split items into tabs of ~150
+        chunks = [ids[i:i + 150] for i in range(0, len(ids), 150)]
+        if len(chunks) > 1 and len(chunks[-1]) < 40:
+            chunks[-2].extend(chunks.pop())
+        roots = []
+        for ci, chunk in enumerate(chunks or [[]]):
+            tkey = f"mod_{ns}" + ("" if ci == 0 else str(ci + 1))
+            sfx = "" if ci == 0 else f" {ci + 1}"
+            t = L(f"{NS}.tab.{tkey}", f"どっさり：{ja}{sfx}", f"Tons: {en}{sfx}")
+            ds = L(f"{NS}.tab.{tkey}.desc", f"{ja}（{cat}系）の進捗がどっさり詰まっています", f"Lots of {en} advancements")
+            r = add(f"{tkey}/_root", None, mod_icon(icon if ci == 0 else chunk[0]), tr(t), tr(ds),
+                    {"tick": {"trigger": "minecraft:tick"}}, xp=0, bgx=bg)
+            self.advs[r]["display"]["show_toast"] = False
+            self.advs[r]["display"]["announce_to_chat"] = False
+            roots.append(r)
+            for gi in range(0, len(chunk), 12):
+                g = chunk[gi:gi + 12]
+                # prefer a real item (not a block) as the group head
+                g.sort(key=lambda i: (items[i] != "item", i))
+                head = None
+                for i in g:
+                    frame = "challenge" if any(w in i for w in ("netherite", "ultimate", "infinity", "gaia", "terrasteel")) else (
+                        "goal" if any(w in i for w in ("elite", "trophy", "_core", "diamond", "atomic", "fusion", "fission", "spell_book")) else "task")
+                    key = f"{items[i]}.{ns}.{i}"
+                    p = add(f"{tkey}/{i}", head or r, mod_icon(i), vtr(key), tr(f"{NS}.obtain.desc", vtr(key)),
+                            {"get": {"trigger": "minecraft:inventory_changed", "conditions": {"items": [mod_ipred(i)]}}}, frame=frame)
+                    head = head or p
+        r0 = roots[0]
+        # mobs
+        prev = None
+        mobs = [e for e in d["entities"] if (f"{e}_spawn_egg" in d["items"] or f"spawn_egg_{e}" in d["items"] or e in MOD_BOSSES)]
+        for mi, e in enumerate(mobs):
+            egg = f"{e}_spawn_egg" if f"{e}_spawn_egg" in d["items"] else (f"spawn_egg_{e}" if f"spawn_egg_{e}" in d["items"] else None)
+            ic = mod_icon(egg) if egg else self.icon("netherite_sword")
+            name = vtr(f"entity.{ns}.{e}")
+            boss = e in MOD_BOSSES
+            prev = add(f"mod_{ns}/kill_{e}", r0 if (mi % 10 == 0 or prev is None) else prev, ic,
+                       tr(f"{NS}.kill.title", name), tr(f"{NS}.kill.desc", name),
+                       {"kill": {"trigger": "minecraft:player_killed_entity", "conditions": {"entity": {"type": f"{ns}:{e}"}}}},
+                       frame="challenge" if boss else "task", xp=100 if boss else None)
+        # biomes
+        prev = None
+        for bi, b in enumerate(d["biomes"]):
+            if ns == "ae2":
+                continue
+            name = vtr(f"biome.{ns}.{b}")
+            loc = {"biomes": f"{ns}:{b}"} if self.new else {"biome": f"{ns}:{b}"}
+            prev = add(f"mod_{ns}/biome_{b}", r0 if (bi % 8 == 0 or prev is None) else prev, self.icon("filled_map"),
+                       name, tr(f"{NS}.biome.desc", name),
+                       {"v": {"trigger": "minecraft:location", "conditions": {"player": {"location": loc}}}})
+        for dim, dja, den, dd, ddn in MOD_DIMS.get(ns, []):
+            k = dim.split(":")[1]
+            t = L(f"{NS}.dim.{k}", dja, den); dsk = L(f"{NS}.dim.{k}.desc", dd, ddn)
+            add(f"mod_{ns}/dim_{k}", r0, self.icon("ender_eye"), tr(t), tr(dsk),
+                {"d": {"trigger": "minecraft:changed_dimension", "conditions": {"to": dim}}}, frame="goal")
+
+
+Gen.gen_mods = gen_mods
 
 stats = {}
 for v in ["1.20.1", "1.21.1"]:
     g = Gen(v)
     n = g.run()
-    roots = sum(1 for p in g.advs if p.endswith("/root"))
+    roots = sum(1 for p in g.advs if p.endswith("root"))
     stats[v] = {"total": n, "roots": roots, "advancements": n - roots,
+                "vanilla": len(g.vanilla_paths) - sum(1 for p in g.vanilla_paths if p.endswith("root")),
                 "by_tab": {}}
     for p in g.advs:
         t = p.split("/")[0]
