@@ -7,13 +7,32 @@ Writes:
   <out>/lang/ja_jp.json, en_us.json
   <out>/stats.json
 """
-import json, os, sys
+import json, os, re, sys
 
 REG, OUT = sys.argv[1], sys.argv[2]
 NS = "tonsofadv"
 LANG_JA, LANG_EN = {}, {}
 
+GODAN_SHI = ("倒し", "壊し", "治し", "渡し", "らし", "たし", "とし", "こし", "ごし", "話し", "出し", "かし", "減らし")
+ICHIDAN_I = ("尽き", "延び", "落ち", "生き")
+GODAN = {"き": "こ", "ぎ": "ご", "り": "ろ", "み": "も", "び": "ぼ", "ち": "と", "い": "お"}
+
+
+def soften(text):
+    """ゲーム内の文章を柔らかくします（〜しましょう → 〜しよう、〜しています → 〜してるよ）"""
+    def vol(m):
+        stem = m.group(1)
+        if stem.endswith("し"):
+            return stem[:-1] + "そう" if stem.endswith(GODAN_SHI) else stem + "よう"
+        if stem[-1] in GODAN and not stem.endswith(ICHIDAN_I):
+            return stem[:-1] + GODAN[stem[-1]] + "う"
+        return stem + "よう"
+    text = re.sub(r"(\S{1,6}?)ましょう", vol, text)
+    return (text.replace("詰まっています", "詰まってるよ").replace("（製錬も含みます）", "（製錬も入るよ）"))
+
+
 def L(key, ja, en):
+    ja = soften(ja)
     LANG_JA[key] = ja
     LANG_EN[key] = en
     return key
@@ -279,7 +298,7 @@ class Gen:
 
     def player_stat(self, stype, stat, mn):
         return {"type_specific": {"type": "minecraft:player" if self.new else "player",
-                                  "stats": [{"type": f"minecraft:{stype}", "stat": f"minecraft:{stat}", "value": {"min": mn}}]}}
+                                  "stats": [{"type": f"minecraft:{stype}", "stat": stat if ":" in stat else f"minecraft:{stat}", "value": {"min": mn}}]}}
 
     def loc_biome(self, b):
         return {"biomes": f"minecraft:{b}"} if self.new else {"biome": f"minecraft:{b}"}
@@ -309,6 +328,9 @@ class Gen:
                 "hidden": hidden}
         if bg:
             disp["background"] = bg
+        for c in criteria.values():
+            if c.get("trigger") == "minecraft:tick" and c.get("conditions"):
+                c["trigger"] = "minecraft:location"
         a = {"display": disp, "criteria": criteria, "requirements": [list(criteria.keys())]}
         if parent:
             a["parent"] = f"{NS}:{parent}"
@@ -654,6 +676,7 @@ class Gen:
         self.gen_obtain(); self.gen_eat(); self.gen_kill(); self.gen_animals()
         self.gen_explore(); self.gen_mining(); self.gen_stats(); self.gen_fun()
         self.gen_actions_vanilla()
+        self.gen_more_vanilla()
         self.vanilla_paths = set(self.advs)
         self.gen_mods()
         self.gen_actions_java()
@@ -789,6 +812,12 @@ def gen_mods(self):
                        tr(f"{NS}.kill.title", name), tr(f"{NS}.kill.desc", name),
                        {"kill": {"trigger": "minecraft:player_killed_entity", "conditions": {"entity": {"type": f"{ns}:{e}"}}}},
                        frame="challenge" if boss else "task", xp=100 if boss else None)
+            if not boss:
+                kp = prev
+                for ti, n in enumerate([10, 100]):
+                    kp = add(f"mod_{ns}/killn_{e}_{n}", kp, ic, tr(f"{NS}.killn.title", name, n), tr(f"{NS}.killn.desc", name, n),
+                             {"s": {"trigger": "minecraft:tick", "conditions": {"player": self.player_stat("killed", f"{ns}:{e}", n)}}},
+                             frame=["goal", "challenge"][ti], xp=[10, 30][ti])
         # biomes
         prev = None
         for bi, b in enumerate(d["biomes"]):
@@ -863,6 +892,17 @@ JAVA_STATS = [  # tab, stat, tiers, ja, en, desc ja, desc en, icon
     ("stats", "arrows_shot", [100, 1000, 10000], "弓の名手", "Archer", "弓を%s回引きましょう", "Loose %s arrows", "bow"),
     ("stats", "animals_tamed", [5, 50, 500], "動物使い", "Beast Tamer", "動物を合計%s回手なずけましょう", "Tame %s animals", "bone"),
     ("stats", "advancements_earned", [100, 500, 1000, 5000, 10000], "進捗の進捗", "Advancement Advancement", "進捗を合計%s個達成しましょう", "Earn %s advancements", "knowledge_book"),
+    ("stats", "chat_messages", [1, 100, 1000, 10000], "おしゃべり", "Chatterbox", "チャットを%s回送りましょう", "Send %s chat messages", "writable_book"),
+    ("stats", "commands_used", [1, 100, 1000], "コマンド使い", "Commander", "コマンドを%s回使いましょう", "Run %s commands", "command_block"),
+    ("stats", "dims_changed", [10, 100, 1000], "次元の旅人", "Dimension Hopper", "ディメンションを%s回移動しましょう", "Change dimensions %s times", "obsidian"),
+    ("stats", "crit_hits", [10, 100, 1000, 10000], "会心の一撃", "Critical Hit", "クリティカルを%s回出しましょう", "Land %s critical hits", "diamond_sword"),
+    ("stats", "projectile_hits", [10, 100, 1000], "命中", "Bullseye", "飛び道具を生き物に%s回当てましょう", "Hit creatures with projectiles %s times", "arrow"),
+    ("stats", "xp_orbs", [100, 1000, 10000], "経験値オーブ集め", "Orb Collector", "経験値オーブを%s個拾いましょう", "Pick up %s experience orbs", "experience_bottle"),
+    ("stats", "crops_harvested", [100, 1000, 10000], "収穫祭", "Harvest Festival", "育った作物を%s回収穫しましょう", "Harvest %s grown crops", "wheat"),
+    ("stats", "logs_chopped", [100, 1000, 10000], "きこり", "Lumberjack", "原木を%s個切りましょう", "Chop %s logs", "iron_axe"),
+    ("stats", "ores_mined", [100, 1000, 10000], "鉱夫", "Miner", "鉱石を%s個掘りましょう", "Mine %s ores", "iron_ore"),
+    ("stats", "entity_interactions", [100, 1000, 10000], "ふれあい", "Hands On", "生き物に%s回右クリックしましょう", "Interact with creatures %s times", "lead"),
+    ("stats", "anvil_repairs", [10, 100, 1000], "金床の常連", "Anvil Regular", "金床で%s回仕上げましょう", "Use an anvil %s times", "anvil"),
 ]
 IRONS_SCHOOLS = [("fire", "炎", "Fire", "fire_rune"), ("ice", "氷", "Ice", "ice_rune"), ("lightning", "雷", "Lightning", "lightning_rune"),
                  ("holy", "聖", "Holy", "holy_rune"), ("ender", "エンダー", "Ender", "ender_rune"), ("blood", "血", "Blood", "blood_rune"),
@@ -886,6 +926,12 @@ STAT_NAMES = {
     "food_eaten": ("食べた回数", "Times Eaten"), "potions_drunk": ("飲んだポーションの数", "Potions Drunk"),
     "arrows_shot": ("弓を引いた回数", "Arrows Loosed"), "animals_tamed": ("手なずけた動物の数", "Animals Tamed"),
     "advancements_earned": ("達成した進捗の数", "Advancements Earned"),
+    "chat_messages": ("送ったチャットの数", "Chat Messages Sent"), "commands_used": ("使ったコマンドの数", "Commands Run"),
+    "dims_changed": ("ディメンションを移動した回数", "Dimension Changes"), "crit_hits": ("クリティカルの数", "Critical Hits"),
+    "projectile_hits": ("飛び道具を当てた数", "Projectile Hits"), "xp_orbs": ("拾った経験値オーブの数", "Experience Orbs Picked Up"),
+    "crops_harvested": ("収穫した作物の数", "Crops Harvested"), "logs_chopped": ("切った原木の数", "Logs Chopped"),
+    "ores_mined": ("掘った鉱石の数", "Ores Mined"), "entity_interactions": ("生き物を右クリックした回数", "Creature Interactions"),
+    "anvil_repairs": ("金床で仕上げた回数", "Anvil Uses"),
     "irons_spells_cast": ("Iron's Spells: 唱えた呪文の数", "Iron's Spells: Spells Cast"),
     "irons_scrolls_used": ("Iron's Spells: 使ったスクロールの数", "Iron's Spells: Scrolls Used"),
     "ars_spells_cast": ("Ars Nouveau: 唱えた呪文の数", "Ars Nouveau: Spells Cast"),
@@ -896,7 +942,14 @@ STAT_NAMES = {
 
 
 def gen_actions_vanilla(self):
+    L(f"{NS}.configuration.title", "進捗どっさりの設定", "Tons of Advancements Settings")
+    L(f"{NS}.configuration.specialSounds", "特別な進捗の音", "Special advancement sounds")
+    L(f"{NS}.configuration.specialSounds.tooltip", "エーテルなどのタブの進捗で、そのMODの特別な音を鳴らすよ（オフにすると普通の音になるよ）",
+      "Play the special sound of mods like the Aether for their tabs (off = normal sound)")
     L(f"{NS}.crafted.title", "%s職人 ×%s", "%s Crafter ×%s")
+    L(f"{NS}.crafted.title1", "%s職人", "%s Crafter")
+    L(f"{NS}.used.title1", "%sの使い手", "%s User")
+    L(f"{NS}.broken.title1", "使いつぶし：%s", "Worn Out: %s")
     L(f"{NS}.crafted.desc", "%sを%s個作りましょう（製錬も含みます）", "Make %2$s %1$s (smelting counts)")
     L(f"{NS}.used.title", "%sの使い手 ×%s", "%s User ×%s")
     L(f"{NS}.used.desc", "%sを%s回使いましょう", "Use %s %s times")
@@ -918,7 +971,8 @@ def gen_actions_vanilla(self):
             name = self.plain_item_name(it)
             for ti, n in enumerate(tiers):
                 frame = "challenge" if ti >= 2 else ("goal" if ti == 1 else "task")
-                prev = self.add(f"{tab}/{kind}_{it}_{n}", prev, it, tr(f"{NS}.{kind}.title", name, f"{n:,}"),
+                prev = self.add(f"{tab}/{kind}_{it}_{n}", prev, it,
+                                tr(f"{NS}.{kind}.title1", name) if n == 1 else tr(f"{NS}.{kind}.title", name, f"{n:,}"),
                                 tr(f"{NS}.{kind}.desc", name, f"{n:,}"),
                                 {"s": {"trigger": "minecraft:tick", "conditions": {"player": self.player_stat(stype, it, n)}}},
                                 frame=frame, xp=[5, 20, 50][min(ti, 2)])
@@ -976,6 +1030,216 @@ def gen_actions_java(self):
 
 Gen.gen_actions_vanilla = gen_actions_vanilla
 Gen.gen_actions_java = gen_actions_java
+
+
+# ---------------- v1.6.0: an advancement for (almost) every action ----------------
+ENCH_MAX = {"protection": 4, "fire_protection": 4, "feather_falling": 4, "blast_protection": 4, "projectile_protection": 4,
+            "respiration": 3, "thorns": 3, "depth_strider": 3, "frost_walker": 2, "soul_speed": 3, "swift_sneak": 3,
+            "sharpness": 5, "smite": 5, "bane_of_arthropods": 5, "knockback": 2, "fire_aspect": 2, "looting": 3, "sweeping": 3,
+            "sweeping_edge": 3, "efficiency": 5, "unbreaking": 3, "fortune": 3, "power": 5, "punch": 2, "luck_of_the_sea": 3,
+            "lure": 3, "loyalty": 3, "impaling": 5, "riptide": 3, "quick_charge": 3, "piercing": 4, "density": 5, "breach": 4,
+            "wind_burst": 3}
+FISHED = ["cod", "salmon", "tropical_fish", "pufferfish", "enchanted_book", "name_tag", "saddle", "nautilus_shell", "bow",
+          "fishing_rod", "lily_pad", "bowl", "leather_boots", "rotten_flesh", "stick", "string", "ink_sac", "tripwire_hook",
+          "bone", "bamboo", "cocoa_beans", "potion"]
+TRADED = ["enchanted_book", "name_tag", "bell", "filled_map", "diamond_sword", "diamond_pickaxe", "diamond_axe", "diamond_chestplate",
+          "diamond_helmet", "iron_sword", "iron_chestplate", "bread", "pumpkin_pie", "cooked_chicken", "arrow", "glass", "bookshelf",
+          "lantern", "clock", "compass", "ender_pearl", "experience_bottle", "redstone", "lapis_lazuli", "glowstone", "painting",
+          "white_wool", "white_bed", "shears", "cake", "golden_carrot", "glistering_melon_slice", "emerald", "sea_pickle",
+          "blue_ice", "packed_ice", "nautilus_shell", "pointed_dripstone", "small_dripleaf", "moss_block", "rooted_dirt",
+          "mutton", "cooked_porkchop", "rabbit_stew", "suspicious_stew", "quartz_block", "terracotta", "crossbow", "shield",
+          "iron_axe", "bell", "tipped_arrow"]
+DAMAGE = [("is_fire", "あちっ", "Ouch, Hot", "火でダメージを受けよう", "Take fire damage", "blaze_powder"),
+          ("is_fall", "着地失敗", "Bad Landing", "落下ダメージを受けよう", "Take fall damage", "feather"),
+          ("is_explosion", "ドカーン", "Kaboom", "爆発でダメージを受けよう", "Take explosion damage", "tnt"),
+          ("is_projectile", "被弾", "Hit!", "飛び道具でダメージを受けよう", "Get hit by a projectile", "arrow"),
+          ("is_lightning", "ビリビリ", "Zap", "雷に打たれよう", "Get struck by lightning", "lightning_rod"),
+          ("is_freezing", "こごえる", "Freezing", "粉雪で凍えよう", "Freeze in powder snow", "powder_snow_bucket"),
+          ("is_drowning", "ごぼごぼ", "Glub Glub", "おぼれてダメージを受けよう", "Take drowning damage", "water_bucket")]
+VEHICLES = ["horse", "donkey", "mule", "pig", "strider", "camel", "llama", "trader_llama", "skeleton_horse", "zombie_horse",
+            "boat", "chest_boat", "minecart"]
+VEHICLE_ICON = {"boat": "oak_boat", "chest_boat": "oak_chest_boat", "minecart": "minecart"}
+AXES = ["wooden_axe", "stone_axe", "iron_axe", "golden_axe", "diamond_axe", "netherite_axe"]
+HOES = ["wooden_hoe", "stone_hoe", "iron_hoe", "golden_hoe", "diamond_hoe", "netherite_hoe"]
+SHOVELS = ["wooden_shovel", "stone_shovel", "iron_shovel", "golden_shovel", "diamond_shovel", "netherite_shovel"]
+DYES = [f"{c}_dye" for c in COLORS]
+NO_EFFECT = {"instant_health", "instant_damage"}
+
+
+def chunked(self, base, ja, en, icon, bg, entries, size=200):
+    """entries: (path, icon, title, desc, criteria, frame, xp, chain?) — tabs base, base2, ... with groups of 10"""
+    for ci in range(0, len(entries), size):
+        part = entries[ci:ci + size]
+        k = ci // size
+        tkey = base if k == 0 else f"{base}{k + 1}"
+        TABS[tkey] = (ja if k == 0 else f"{ja} {k + 1}", en if k == 0 else f"{en} {k + 1}", part[0][1], bg)
+        r = self.root(tkey)
+        prev = r
+        for i, (path, ic, title, desc, crit, frame, xp) in enumerate(part):
+            prev = self.add(f"{tkey}/{path}", r if i % 10 == 0 else prev, ic, title, desc, crit, frame=frame, xp=xp,
+                            chat=False if frame == "task" else None)
+
+
+def ioub(self, blocks, items):
+    tool = {"items": [f"minecraft:{i}" for i in items]} if not self.new else {"items": [f"minecraft:{i}" for i in items] if len(items) > 1 else f"minecraft:{items[0]}"}
+    return {"c": {"trigger": "minecraft:item_used_on_block", "conditions": {"location": [
+        {"condition": "minecraft:location_check", "predicate": {"block": {"blocks": [f"minecraft:{b}" for b in blocks]}}},
+        {"condition": "minecraft:match_tool", "predicate": tool}]}}}
+
+
+def gen_more_vanilla(self):
+    reg = self.reg
+    statc = lambda stype, it, n: {"s": {"trigger": "minecraft:tick", "conditions": {"player": self.player_stat(stype, it, n)}}}
+    L(f"{NS}.make1.title", "%sを作った", "Made %s"); L(f"{NS}.make1.desc", "%sを作ろう（製錬も入るよ）", "Make %s (smelting counts)")
+    L(f"{NS}.place.title", "%s設置 ×%s", "%s Placer ×%s"); L(f"{NS}.place.desc", "%sを%s個置きましょう", "Place %2$s %1$s")
+    L(f"{NS}.mineall.title", "%s採掘 ×%s", "%s Miner ×%s"); L(f"{NS}.mineall.desc", "%sを%s個掘りましょう", "Mine %2$s %1$s")
+    L(f"{NS}.effect.title", "%s状態", "Under %s"); L(f"{NS}.effect.desc", "%sの効果を受けましょう", "Get the %s effect")
+    L(f"{NS}.brew.title", "醸造：%s%s", "Brewed: %s%s"); L(f"{NS}.brew.desc", "%s%sを醸造しましょう", "Brew %s%s")
+    L(f"{NS}.brew.long", "（延長）", " (Long)"); L(f"{NS}.brew.strong", "（強化）", " (Strong)"); L(f"{NS}.brew.none", "", "")
+    L(f"{NS}.ench.title", "%sの力", "Power of %s"); L(f"{NS}.ench.desc", "%sが付いたアイテムかエンチャントの本を手に入れましょう", "Get an item or book with %s")
+    L(f"{NS}.enchmax.title", "極めし%s %s", "Mastered %s %s"); L(f"{NS}.enchmax.desc", "%s %sが付いたアイテムかエンチャントの本を手に入れましょう", "Get an item or book with %s %s")
+    L(f"{NS}.fish.title", "%sを釣り上げた", "Fished Up %s"); L(f"{NS}.fish.desc", "釣りで%sを釣り上げましょう", "Fish up %s")
+    L(f"{NS}.trade.title", "%sを買った", "Bought %s"); L(f"{NS}.trade.desc", "村人との取引で%sを手に入れましょう", "Get %s by trading with a villager")
+    L(f"{NS}.ride.title", "%sに乗った", "Rode a %s"); L(f"{NS}.ride.desc", "%sに乗りましょう", "Ride a %s")
+    L(f"{NS}.hurtby.title", "%sの攻撃を受けた", "Attacked by %s"); L(f"{NS}.hurtby.desc", "%sに攻撃されましょう", "Get hurt by %s")
+    L(f"{NS}.strip.title", "皮むき：%s", "Stripped: %s"); L(f"{NS}.strip.desc", "斧で%sの皮をはぎましょう", "Strip %s with an axe")
+    L(f"{NS}.disc.title", "%sを聴いた", "Listened to %s"); L(f"{NS}.disc.desc", "ジュークボックスで%sをかけましょう", "Play %s in a jukebox")
+    # make every craftable/smeltable item once
+    recipe_items = set()
+    for rid in reg["recipe"]:
+        base = rid.split("_from_")[0]
+        for cand in (rid, base):
+            if cand in self.items:
+                recipe_items.add(cand)
+    crafted_tiered = {it for it, _ in CRAFTED}
+    ent = []
+    for it in sorted(recipe_items - crafted_tiered - EXCLUDE):
+        n = self.plain_item_name(it)
+        ent.append((f"make_{it}", it, tr(f"{NS}.make1.title", n), tr(f"{NS}.make1.desc", n), statc("crafted", it, 1), "task", 5))
+    TABS_JA = ("作ってみた", "Made It")
+    chunked(self, "make", *TABS_JA, "crafting_table", "minecraft:textures/block/crafting_table_top.png", ent)
+    # place every block 64 times
+    ent = []
+    for it in sorted(self.items & self.blocks - EXCLUDE):
+        if it.endswith(("_spawn_egg",)) or it in ("water", "lava", "fire", "soul_fire") or it.startswith("infested_"):
+            continue
+        n = self.plain_item_name(it)
+        ent.append((f"place_{it}", it, tr(f"{NS}.place.title", n, 64), tr(f"{NS}.place.desc", n, 64), statc("used", it, 64), "task", 5))
+    chunked(self, "place", "設置", "Placing", "bricks", "minecraft:textures/block/bricks.png", ent)
+    # mine every block 100 times
+    ent = []
+    for it in sorted(self.items & self.blocks - EXCLUDE - set(MINE_TIERS)):
+        if it.startswith("infested_") or it in ("dragon_egg", "end_portal", "nether_portal", "sculk_shrieker"):
+            continue
+        n = vtr(f"block.minecraft.{it}")
+        ent.append((f"mine_{it}", it, tr(f"{NS}.mineall.title", n, 100), tr(f"{NS}.mineall.desc", n, 100), statc("mined", it, 100), "task", 5))
+    chunked(self, "mineall", "掘りまくり", "Dig Everything", "iron_pickaxe", "minecraft:textures/block/cobblestone.png", ent)
+    # experiences: effects, potions, enchantments, fishing, trading, damage, riding, using items on blocks
+    ent = []
+    for e in sorted(reg["mob_effect"]):
+        if e in NO_EFFECT:
+            continue
+        n = vtr(f"effect.minecraft.{e}")
+        ent.append((f"effect_{e}", "potion", tr(f"{NS}.effect.title", n), tr(f"{NS}.effect.desc", n),
+                    {"c": {"trigger": "minecraft:effects_changed", "conditions": {"effects": {f"minecraft:{e}": {}}}}}, "task", 10))
+    for pot in sorted(reg["potion"]):
+        if pot in ("water", "empty"):
+            continue
+        b = pot.replace("long_", "").replace("strong_", "")
+        sfx = "long" if pot.startswith("long_") else ("strong" if pot.startswith("strong_") else "none")
+        n = vtr(f"item.minecraft.potion.effect.{b}")
+        ent.append((f"brew_{pot}", "brewing_stand", tr(f"{NS}.brew.title", n, tr(f"{NS}.brew.{sfx}")), tr(f"{NS}.brew.desc", n, tr(f"{NS}.brew.{sfx}")),
+                    {"c": {"trigger": "minecraft:brewed_potion", "conditions": {"potion": f"minecraft:{pot}"}}}, "task", 10))
+    enchs = reg.get("enchantment", [])
+    for en_ in sorted(enchs):
+        n = vtr(f"enchantment.minecraft.{en_}")
+        for lvl in sorted({1, ENCH_MAX.get(en_, 1)}):
+            if self.new:
+                a = {"predicates": {"minecraft:enchantments": [{"enchantments": f"minecraft:{en_}", "levels": {"min": lvl}}]}}
+                b = {"items": "minecraft:enchanted_book", "predicates": {"minecraft:stored_enchantments": [{"enchantments": f"minecraft:{en_}", "levels": {"min": lvl}}]}}
+            else:
+                a = {"enchantments": [{"enchantment": f"minecraft:{en_}", "levels": {"min": lvl}}]}
+                b = {"items": ["minecraft:enchanted_book"], "stored_enchantments": [{"enchantment": f"minecraft:{en_}", "levels": {"min": lvl}}]}
+            crit = {"a": {"trigger": "minecraft:inventory_changed", "conditions": {"items": [a]}},
+                    "b": {"trigger": "minecraft:inventory_changed", "conditions": {"items": [b]}}}
+            if lvl == 1:
+                ent.append((f"ench_{en_}", "enchanted_book", tr(f"{NS}.ench.title", n), tr(f"{NS}.ench.desc", n), crit, "task", 10))
+            else:
+                lv = vtr(f"enchantment.level.{lvl}")
+                ent.append((f"ench_{en_}_{lvl}", "enchanted_book", tr(f"{NS}.enchmax.title", n, lv), tr(f"{NS}.enchmax.desc", n, lv), crit, "goal", 20))
+    for it in FISHED:
+        if it in self.items:
+            n = self.plain_item_name(it)
+            ent.append((f"fish_{it}", it, tr(f"{NS}.fish.title", n), tr(f"{NS}.fish.desc", n),
+                        {"c": {"trigger": "minecraft:fishing_rod_hooked", "conditions": {"item": self.ipred(it)}}},
+                        "goal" if it in ("enchanted_book", "name_tag", "saddle", "nautilus_shell") else "task", 10))
+    for it in dict.fromkeys(TRADED):
+        if it in self.items:
+            n = self.plain_item_name(it)
+            ent.append((f"trade_{it}", it, tr(f"{NS}.trade.title", n), tr(f"{NS}.trade.desc", n),
+                        {"c": {"trigger": "minecraft:villager_trade", "conditions": {"item": self.ipred(it)}}}, "task", 10))
+    for tag, ja, en, dja, den, ic in DAMAGE:
+        t = L(f"{NS}.dmg.{tag}", ja, en); d = L(f"{NS}.dmg.{tag}.desc", dja, den)
+        ent.append((f"dmg_{tag}", ic, tr(t), tr(d), {"c": {"trigger": "minecraft:entity_hurt_player", "conditions": {
+            "damage": {"type": {"tags": [{"id": f"minecraft:{tag}", "expected": True}]}}}}}, "task", 5))
+    for m in [m for m in dict.fromkeys(MOBS) if m in self.ents and m not in ("bat", "cod", "salmon", "squid", "glow_squid", "tadpole", "tropical_fish", "chicken", "cow", "pig", "sheep", "mooshroom", "rabbit", "turtle", "horse", "donkey", "mule", "camel", "sniffer", "armadillo", "allay", "frog", "ocelot", "cat", "parrot", "villager", "wandering_trader", "snow_golem", "fox", "skeleton_horse", "zombie_horse", "strider")]:
+        n = self.ent(m)
+        ent.append((f"hurtby_{m}", self.mob_icon(m), tr(f"{NS}.hurtby.title", n), tr(f"{NS}.hurtby.desc", n),
+                    {"c": {"trigger": "minecraft:entity_hurt_player", "conditions": {"damage": {"source_entity": {"type": f"minecraft:{m}"}}}}}, "task", 5))
+    for v in VEHICLES:
+        if v in self.ents:
+            n = self.ent(v)
+            ent.append((f"ride_{v}", VEHICLE_ICON.get(v, self.mob_icon(v)), tr(f"{NS}.ride.title", n), tr(f"{NS}.ride.desc", n),
+                        {"c": {"trigger": "minecraft:tick", "conditions": {"player": {"vehicle": {"type": f"minecraft:{v}"}}}}}, "task", 5))
+    for w in WOODS:
+        logs = [x for x in (f"{w}_log", f"{w}_wood", f"{w}_stem", f"{w}_hyphae", f"{w}_block") if x in self.blocks]
+        if not logs:
+            continue
+        n = self.plain_item_name(logs[0])
+        ent.append((f"strip_{w}", logs[0], tr(f"{NS}.strip.title", n), tr(f"{NS}.strip.desc", n), ioub(self, logs, AXES), "task", 5))
+    singles = [
+        ("till", "耕した", "Tilled", "クワで土を耕そう", "Till dirt with a hoe", "wooden_hoe", ["dirt", "grass_block", "dirt_path", "coarse_dirt", "rooted_dirt"], HOES),
+        ("path", "道づくり", "Path Maker", "シャベルで道を作ろう", "Make a path with a shovel", "wooden_shovel", ["grass_block", "dirt", "podzol", "coarse_dirt", "mycelium", "rooted_dirt"], SHOVELS),
+        ("carve", "顔を彫った", "Carver", "ハサミでカボチャを彫ろう", "Carve a pumpkin with shears", "carved_pumpkin", ["pumpkin"], ["shears"]),
+        ("scrape", "サビ落とし", "Rust Remover", "斧で銅のサビを落とそう", "Scrape copper with an axe", "copper_block", [b for b in self.blocks if b.startswith(("exposed_", "weathered_", "oxidized_")) and "copper" in b], AXES),
+        ("unwax", "ろう落とし", "Unwaxed", "斧で銅のろうを落とそう", "Remove wax from copper with an axe", "honeycomb", [b for b in self.blocks if b.startswith("waxed_")], AXES),
+        ("brush", "考古学者", "Archaeologist", "怪しげな砂か砂利をブラシではこう", "Brush suspicious sand or gravel", "brush", [b for b in ("suspicious_sand", "suspicious_gravel") if b in self.blocks], ["brush"]),
+        ("glowsign", "光る看板", "Glowing Sign", "看板に輝くイカスミを塗ろう", "Use a glow ink sac on a sign", "glow_ink_sac", [b for b in self.blocks if b.endswith("_sign")], ["glow_ink_sac"]),
+        ("dyesign", "色つき看板", "Colored Sign", "看板を染料で染めよう", "Dye a sign", "red_dye", [b for b in self.blocks if b.endswith("_sign")], DYES),
+        ("tnt", "点火", "Ignition", "火打石と打ち金でTNTに火をつけよう", "Light TNT with flint and steel", "tnt", ["tnt"], ["flint_and_steel"]),
+        ("anchor", "アンカー充電", "Charged", "リスポーンアンカーにグロウストーンを入れよう", "Charge a respawn anchor", "respawn_anchor", ["respawn_anchor"], ["glowstone"]),
+        ("lodestone", "ロードストーンの導き", "Lodestone Link", "コンパスをロードストーンに使おう", "Use a compass on a lodestone", "lodestone", ["lodestone"], ["compass"]),
+        ("candlecake", "ハッピーバースデー", "Happy Birthday", "ケーキにろうそくを立てよう", "Put a candle on a cake", "cake", ["cake"], ["candle"]),
+        ("eye", "目をはめた", "Eye Fitted", "エンドポータルフレームにエンダーアイをはめよう", "Put an eye of ender in an end portal frame", "ender_eye", ["end_portal_frame"], ["ender_eye"]),
+        ("bonemeal", "肥料まき", "Fertilizer", "骨粉で草を生やそう", "Use bone meal on grass", "bone_meal", ["grass_block", "moss_block"], ["bone_meal"]),
+    ]
+    for key, ja, en, dja, den, ic, blocks, tools in singles:
+        blocks = sorted(b for b in blocks if b in self.blocks); tools = [t for t in tools if t in self.items]
+        if not blocks or not tools or ic not in self.items:
+            continue
+        t = L(f"{NS}.act.{key}", ja, en); d = L(f"{NS}.act.{key}.desc", dja, den)
+        ent.append((f"act_{key}", ic, tr(t), tr(d), ioub(self, blocks, tools), "task", 5))
+    for disc in sorted(i for i in self.items if i.startswith("music_disc_")):
+        n = vtr(f"item.minecraft.{disc}.desc")
+        ent.append((f"disc_{disc}", disc, tr(f"{NS}.disc.title", n), tr(f"{NS}.disc.desc", n), ioub(self, ["jukebox"], [disc]), "task", 10))
+    chunked(self, "exp", "体験", "Experiences", "potion", "minecraft:textures/block/amethyst_block.png", ent)
+    # every mob: 10 / 100 / 1000 kills, every tool: broken
+    have = {m for m in KILL_TIERS}
+    r2 = "killn/root"
+    for m in [m for m in MOBS if m in self.ents and m not in have and m not in MOB_CHALLENGE]:
+        prev = r2
+        for ti, n in enumerate([10, 100, 1000]):
+            prev = self.add(f"killn/{m}_{n}", prev, self.mob_icon(m), tr(f"{NS}.killn.title", self.ent(m), n),
+                            tr(f"{NS}.killn.desc", self.ent(m), n), statc("killed", m, n), frame=FRAMES_BY_TIER[ti + 1], xp=[10, 30, 100][ti])
+    broken_have = {it for it, _ in BROKEN}
+    tools = sorted(it for it in self.items if (it.endswith(tuple(EQUIP_SUFFIX[:9])) or it in ("bow", "crossbow", "trident", "shield", "fishing_rod", "flint_and_steel", "shears", "carrot_on_a_stick", "warped_fungus_on_a_stick", "brush", "mace", "elytra", "turtle_helmet")) and it not in broken_have)
+    for it in tools:
+        name = self.plain_item_name(it)
+        p = self.add(f"use/broken_{it}_1", "use/root", it, tr(f"{NS}.broken.title1", name), tr(f"{NS}.broken.desc", name, 1), statc("broken", it, 1), xp=5)
+        self.add(f"use/broken_{it}_10", p, it, tr(f"{NS}.broken.title", name, 10), tr(f"{NS}.broken.desc", name, 10), statc("broken", it, 10), frame="goal", xp=20)
+
+
+Gen.gen_more_vanilla = gen_more_vanilla
 
 stats = {}
 for v in ["1.20.1", "1.21.1"]:

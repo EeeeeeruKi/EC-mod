@@ -31,6 +31,20 @@ import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.RegistryObject;
 
+import net.minecraft.tags.BlockTags;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.block.CropBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraftforge.common.Tags;
+import net.minecraftforge.event.CommandEvent;
+import net.minecraftforge.event.ServerChatEvent;
+import net.minecraftforge.event.entity.ProjectileImpactEvent;
+import net.minecraftforge.event.entity.player.AnvilRepairEvent;
+import net.minecraftforge.event.entity.player.CriticalHitEvent;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.LinkedHashMap;
@@ -47,7 +61,9 @@ final class ActionStats {
             "potions_drunk", "arrows_shot", "animals_tamed", "advancements_earned",
             "irons_spells_cast", "irons_scrolls_used", "ars_spells_cast", "ae2_max_bytes", "ae2_max_items", "ae2_max_types",
             "irons_school_fire", "irons_school_ice", "irons_school_lightning", "irons_school_holy", "irons_school_ender",
-            "irons_school_blood", "irons_school_evocation", "irons_school_nature", "irons_school_eldritch"};
+            "irons_school_blood", "irons_school_evocation", "irons_school_nature", "irons_school_eldritch",
+            "chat_messages", "commands_used", "dims_changed", "crit_hits", "projectile_hits", "xp_orbs", "crops_harvested",
+            "logs_chopped", "ores_mined", "entity_interactions", "anvil_repairs"};
     private static final DeferredRegister<ResourceLocation> STATS = DeferredRegister.create(Registries.CUSTOM_STAT, TonsOfAdv.MOD_ID);
     private static final Map<String, RegistryObject<ResourceLocation>> IDS = new LinkedHashMap<>();
 
@@ -70,8 +86,28 @@ final class ActionStats {
             if (e.getEntity() instanceof Player p) add(p, "blocks_placed", 1);
         });
         bus.addListener((BlockEvent.BreakEvent e) -> {
-            if (!e.getPlayer().isCreative()) add(e.getPlayer(), "blocks_broken", 1);
+            if (e.getPlayer().isCreative()) return;
+            add(e.getPlayer(), "blocks_broken", 1);
+            BlockState state = e.getState();
+            if (state.getBlock() instanceof CropBlock crop && crop.isMaxAge(state)) add(e.getPlayer(), "crops_harvested", 1);
+            if (state.is(BlockTags.LOGS)) add(e.getPlayer(), "logs_chopped", 1);
+            if (state.is(Tags.Blocks.ORES)) add(e.getPlayer(), "ores_mined", 1);
         });
+        bus.addListener((ServerChatEvent e) -> add(e.getPlayer(), "chat_messages", 1));
+        bus.addListener((CommandEvent e) -> add(e.getParseResults().getContext().getSource().getPlayer(), "commands_used", 1));
+        bus.addListener((PlayerEvent.PlayerChangedDimensionEvent e) -> add(e.getEntity(), "dims_changed", 1));
+        bus.addListener((CriticalHitEvent e) -> {
+            if ((e.getResult() == Event.Result.ALLOW || (e.getResult() == Event.Result.DEFAULT && e.isVanillaCritical()))) add(e.getEntity(), "crit_hits", 1);
+        });
+        bus.addListener((ProjectileImpactEvent e) -> {
+            if (e.getRayTraceResult() instanceof EntityHitResult hit && hit.getEntity() instanceof LivingEntity
+                    && e.getProjectile().getOwner() instanceof Player p) add(p, "projectile_hits", 1);
+        });
+        bus.addListener((PlayerXpEvent.PickupXp e) -> add(e.getEntity(), "xp_orbs", 1));
+        bus.addListener((PlayerInteractEvent.EntityInteract e) -> {
+            if (e.getHand() == InteractionHand.MAIN_HAND) add(e.getEntity(), "entity_interactions", 1);
+        });
+        bus.addListener((AnvilRepairEvent e) -> add(e.getEntity(), "anvil_repairs", 1));
         bus.addListener((PlayerXpEvent.XpChange e) -> add(e.getEntity(), "xp_gained", e.getAmount()));
         bus.addListener((LivingEntityUseItemEvent.Finish e) -> {
             if (!(e.getEntity() instanceof Player p)) return;
@@ -102,6 +138,7 @@ final class ActionStats {
     }
 
     static void add(Player player, String name, int amount) {
+        if (player == null) return;
         if (amount > 0 && player instanceof ServerPlayer sp && !(sp instanceof FakePlayer)) sp.awardStat(stat(name), amount);
     }
 

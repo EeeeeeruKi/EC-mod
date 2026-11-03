@@ -2,7 +2,7 @@
   "pack": {
     "pack_format": 15,
     "supported_formats": [15, 48],
-    "description": "進捗どっさり — 進捗を2000個以上追加します（1.20.1 / 1.21.1）"
+    "description": "進捗どっさり — 進捗を5000個くらい追加するよ（1.20.1 / 1.21.1）"
   },
   "overlays": {
     "entries": [

@@ -34,6 +34,7 @@ final class AetherCompat {
             DeferredRegister<Object> register = DeferredRegister.create(key, TonsOfAdv.MOD_ID);
             for (String sound : SOUNDS) {
                 Predicate<Object> matches = advancement -> {
+                    if (!Config.specialSounds()) return false;
                     ResourceLocation id = ((Advancement) advancement).getId();
                     return sound.equals(AetherSounds.pick(id.getNamespace(), id.getPath()));
                 };

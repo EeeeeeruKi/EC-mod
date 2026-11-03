@@ -606,6 +606,26 @@
       "summary": "進捗を1700個以上追加するMOD。アイテム集め・モブ討伐・探検・やり込み・ネタ系の進捗がどっさり入っていて、達成すると経験値がもらえます。v1.4.0 から、人気のMOD100個（Create・Mekanism・AE2・黄昏の森など）の進捗も追加されます。データパック版もあります。",
       "versions": [
         {
+          "version": "1.6.0",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/tonsofadv/1.21.1-neoforge/tonsofadv-neoforge-1.21.1-1.6.0.jar",
+          "fileName": "tonsofadv-neoforge-1.21.1-1.6.0.jar",
+          "sha256": "35d988cb5356092e873b9f9161126e080248dbe01495154ad1ecc89c343d572e",
+          "changelog": "ほぼ全部の行動に進捗を追加しました（全部のブロックの設置・採掘、全部のアイテム作り、効果・醸造・エンチャント・釣り・取引など）。エーテルなどの特別な音を設定でオフにできるようにしました。説明を柔らかい言い方にして、×1 の表示をなくしました。",
+          "released": "2026-11-04"
+        },
+        {
+          "version": "1.6.0",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/tonsofadv/1.20.1-forge/tonsofadv-forge-1.20.1-1.6.0.jar",
+          "fileName": "tonsofadv-forge-1.20.1-1.6.0.jar",
+          "sha256": "bb428b2aa5676400e3061d3c8b102f0b52249069d72939bf024a5a9fc1345455",
+          "changelog": "ほぼ全部の行動に進捗を追加しました（全部のブロックの設置・採掘、全部のアイテム作り、効果・醸造・エンチャント・釣り・取引など）。エーテルなどの特別な音を設定でオフにできるようにしました。説明を柔らかい言い方にして、×1 の表示をなくしました。",
+          "released": "2026-11-04"
+        },
+        {
           "version": "1.5.0",
           "mc": "1.21.1",
           "loader": "neoforge",
