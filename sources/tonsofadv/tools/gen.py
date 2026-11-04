@@ -1021,6 +1021,9 @@ def gen_actions_vanilla(self):
     L(f"{NS}.configuration.specialSounds", "特別な進捗の音", "Special advancement sounds")
     L(f"{NS}.configuration.specialSounds.tooltip", "エーテルなどのタブの進捗で、そのMODの特別な音を鳴らすよ（オフにすると普通の音になるよ）",
       "Play the special sound of mods like the Aether for their tabs (off = normal sound)")
+    L(f"{NS}.configuration.soundsAsRecords", "エーテルの音をジュークボックスの音量で", "Aether sounds use Jukebox volume")
+    L(f"{NS}.configuration.soundsAsRecords.tooltip", "エーテルの進捗の音の大きさを「ジュークボックス/音ブロック」の音量で変えられるよ（オフにすると「音楽」の音量になるよ）",
+      "Aether advancement sounds follow the Jukebox/Note Blocks volume (off = Music volume)")
     L(f"{NS}.crafted.title", "%s職人 ×%s", "%s Crafter ×%s")
     L(f"{NS}.crafted.title1", "%s職人", "%s Crafter")
     L(f"{NS}.used.title1", "%sの使い手", "%s User")

@@ -421,6 +421,8 @@
  "tonsofadv.configuration.title": "Tons of Advancements Settings",
  "tonsofadv.configuration.specialSounds": "Special advancement sounds",
  "tonsofadv.configuration.specialSounds.tooltip": "Play the special sound of mods like the Aether for their tabs (off = normal sound)",
+ "tonsofadv.configuration.soundsAsRecords": "Aether sounds use Jukebox volume",
+ "tonsofadv.configuration.soundsAsRecords.tooltip": "Aether advancement sounds follow the Jukebox/Note Blocks volume (off = Music volume)",
  "tonsofadv.crafted.title": "%s Crafter ×%s",
  "tonsofadv.crafted.title1": "%s Crafter",
  "tonsofadv.used.title1": "%s User",

@@ -421,6 +421,8 @@
  "tonsofadv.configuration.title": "進捗どっさりの設定",
  "tonsofadv.configuration.specialSounds": "特別な進捗の音",
  "tonsofadv.configuration.specialSounds.tooltip": "エーテルなどのタブの進捗で、そのMODの特別な音を鳴らすよ（オフにすると普通の音になるよ）",
+ "tonsofadv.configuration.soundsAsRecords": "エーテルの音をジュークボックスの音量で",
+ "tonsofadv.configuration.soundsAsRecords.tooltip": "エーテルの進捗の音の大きさを「ジュークボックス/音ブロック」の音量で変えられるよ（オフにすると「音楽」の音量になるよ）",
  "tonsofadv.crafted.title": "%s職人 ×%s",
  "tonsofadv.crafted.title1": "%s職人",
  "tonsofadv.used.title1": "%sの使い手",

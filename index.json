@@ -606,6 +606,26 @@
       "summary": "進捗を1700個以上追加するMOD。アイテム集め・モブ討伐・探検・やり込み・ネタ系の進捗がどっさり入っていて、達成すると経験値がもらえます。v1.4.0 から、人気のMOD100個（Create・Mekanism・AE2・黄昏の森など）の進捗も追加されます。データパック版もあります。",
       "versions": [
         {
+          "version": "1.8.1",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/tonsofadv/1.21.1-neoforge/tonsofadv-neoforge-1.21.1-1.8.1.jar",
+          "fileName": "tonsofadv-neoforge-1.21.1-1.8.1.jar",
+          "sha256": "88a16b5199ecca7970d3d4579ee45df645e83266ce92145931b1e9060a5028bf",
+          "changelog": "エーテルの進捗の音（エーテル本体の進捗の音も）を「音楽」ではなく「ジュークボックス/音ブロック」の音量で鳴らすようにしました。設定の soundsAsRecords を false にすると元に戻せます。",
+          "released": "2026-11-05"
+        },
+        {
+          "version": "1.8.1",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/tonsofadv/1.20.1-forge/tonsofadv-forge-1.20.1-1.8.1.jar",
+          "fileName": "tonsofadv-forge-1.20.1-1.8.1.jar",
+          "sha256": "b062b6d2a67eed13780eb7d4395477899869c2663c9e49af31c05fbd93fe7f78",
+          "changelog": "エーテルの進捗の音（エーテル本体の進捗の音も）を「音楽」ではなく「ジュークボックス/音ブロック」の音量で鳴らすようにしました。設定の soundsAsRecords を false にすると元に戻せます。",
+          "released": "2026-11-05"
+        },
+        {
           "version": "1.8.0",
           "mc": "26.2",
           "loader": "neoforge",
