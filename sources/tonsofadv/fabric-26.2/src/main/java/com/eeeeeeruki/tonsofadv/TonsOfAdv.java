@@ -40,6 +40,7 @@ import java.util.Map;
 public class TonsOfAdv implements ModInitializer {
     public static final String MOD_ID = "tonsofadv";
     static final String[] NAMES = {
+            "turned_right", "turned_left", "looked_up", "looked_down", "looked_straight_up", "looked_straight_down", "moved_backward", "moved_left", "moved_right", "sneak_presses",
             "crafted_total", "smelted_total", "blocks_placed", "blocks_broken", "xp_gained", "max_level", "food_eaten",
             "potions_drunk", "arrows_shot", "animals_tamed", "advancements_earned",
             "chat_messages", "commands_used", "dims_changed", "crops_harvested",
@@ -74,6 +75,9 @@ public class TonsOfAdv implements ModInitializer {
 
     private static void tick(MinecraftServer server) {
         int t = server.getTickCount();
+        for (ServerPlayer p : server.getPlayerList().getPlayers()) {
+            if (!(p instanceof net.fabricmc.fabric.api.entity.FakePlayer)) Gestures.tick(p);
+        }
         if (t % 20 != 0) return;
         boolean slow = t % 100 == 0;
         for (ServerPlayer p : server.getPlayerList().getPlayers()) {

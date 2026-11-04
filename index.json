@@ -606,6 +606,46 @@
       "summary": "進捗を1700個以上追加するMOD。アイテム集め・モブ討伐・探検・やり込み・ネタ系の進捗がどっさり入っていて、達成すると経験値がもらえます。v1.4.0 から、人気のMOD100個（Create・Mekanism・AE2・黄昏の森など）の進捗も追加されます。データパック版もあります。",
       "versions": [
         {
+          "version": "1.8.0",
+          "mc": "26.2",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/tonsofadv/26.2-neoforge/tonsofadv-neoforge-26.2-1.8.0.jar",
+          "fileName": "tonsofadv-neoforge-26.2-1.8.0.jar",
+          "sha256": "6aedbdc5b1fa6f07467c9998c240185039834d31870893a91964a8eb9308e9c1",
+          "changelog": "「ちょっとした行動」タブを追加しました（歩いた・ジャンプした・チェストを開けたなどの「はじめての○○」と、右を向いた・上を見た・後ろに歩いた・カニ歩き・キョロキョロなど）。",
+          "released": "2026-11-04"
+        },
+        {
+          "version": "1.8.0",
+          "mc": "26.2",
+          "loader": "fabric",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/tonsofadv/26.2-fabric/tonsofadv-fabric-26.2-1.8.0.jar",
+          "fileName": "tonsofadv-fabric-26.2-1.8.0.jar",
+          "sha256": "10abd942f804ddaa17649854cbf86df5c4015ef8a06019d23484ea8bafe305bb",
+          "changelog": "「ちょっとした行動」タブを追加しました（歩いた・ジャンプした・チェストを開けたなどの「はじめての○○」と、右を向いた・上を見た・後ろに歩いた・カニ歩き・キョロキョロなど）。",
+          "released": "2026-11-04"
+        },
+        {
+          "version": "1.8.0",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/tonsofadv/1.21.1-neoforge/tonsofadv-neoforge-1.21.1-1.8.0.jar",
+          "fileName": "tonsofadv-neoforge-1.21.1-1.8.0.jar",
+          "sha256": "631f5cb9c84bd3e94db60a5a999a28091b5c91dddd46c923c0768882b0a7b014",
+          "changelog": "「ちょっとした行動」タブを追加しました（歩いた・ジャンプした・チェストを開けたなどの「はじめての○○」と、右を向いた・上を見た・後ろに歩いた・カニ歩き・キョロキョロなど）。",
+          "released": "2026-11-04"
+        },
+        {
+          "version": "1.8.0",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/tonsofadv/1.20.1-forge/tonsofadv-forge-1.20.1-1.8.0.jar",
+          "fileName": "tonsofadv-forge-1.20.1-1.8.0.jar",
+          "sha256": "12203557f2a80cb8e87f90a7553b6a49ebb44d9c228c6307b002e3c8d4b7a3b6",
+          "changelog": "「ちょっとした行動」タブを追加しました（歩いた・ジャンプした・チェストを開けたなどの「はじめての○○」と、右を向いた・上を見た・後ろに歩いた・カニ歩き・キョロキョロなど）。",
+          "released": "2026-11-04"
+        },
+        {
           "version": "1.7.1",
           "mc": "26.2",
           "loader": "neoforge",

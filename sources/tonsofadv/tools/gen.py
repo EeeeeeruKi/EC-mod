@@ -13,8 +13,8 @@ REG, OUT = sys.argv[1], sys.argv[2]
 NS = "tonsofadv"
 LANG_JA, LANG_EN = {}, {}
 
-GODAN_SHI = ("倒し", "壊し", "治し", "渡し", "らし", "たし", "とし", "こし", "ごし", "話し", "出し", "かし", "減らし")
-ICHIDAN_I = ("尽き", "延び", "落ち", "生き")
+GODAN_SHI = ("倒し", "壊し", "治し", "渡し", "らし", "たし", "とし", "こし", "ごし", "話し", "出し", "かし", "減らし", "回し")
+ICHIDAN_I = ("尽き", "延び", "落ち", "生き", "てみ", "でみ")
 GODAN = {"き": "こ", "ぎ": "ご", "り": "ろ", "み": "も", "び": "ぼ", "ち": "と", "い": "お"}
 
 
@@ -743,9 +743,11 @@ class Gen:
         self.gen_explore(); self.gen_mining(); self.gen_stats(); self.gen_fun()
         self.gen_actions_vanilla()
         self.gen_more_vanilla()
+        self.gen_small_vanilla()
         self.vanilla_paths = set(self.advs)
         self.gen_mods()
         self.gen_actions_java()
+        self.gen_small_java()
         # sanity: icons must exist, parents must exist
         for p, a in self.advs.items():
             ic = a["display"]["icon"]
@@ -1313,6 +1315,127 @@ def gen_more_vanilla(self):
 
 
 Gen.gen_more_vanilla = gen_more_vanilla
+
+
+# ---------------- v1.8.0: small everyday actions ----------------
+FIRST = [  # custom stat, minimum, title (past tense), description
+    ("walk_one_cm", 100, "歩いた", "歩いてみましょう"), ("sprint_one_cm", 100, "走った", "走ってみましょう"),
+    ("crouch_one_cm", 100, "そろりそろり", "しゃがんだまま歩いてみましょう"), ("sneak_time", 20, "しゃがんだ", "しゃがんでみましょう"),
+    ("jump", 1, "ジャンプした", "ジャンプしてみましょう"), ("swim_one_cm", 100, "泳いだ", "泳いでみましょう"),
+    ("walk_on_water_one_cm", 100, "水の上を歩いた", "浅い水の上を歩いてみましょう"), ("walk_under_water_one_cm", 100, "水の中を歩いた", "水の中を歩いてみましょう"),
+    ("climb_one_cm", 100, "登った", "はしごやツタを登ってみましょう"), ("fall_one_cm", 100, "落ちた", "1ブロック以上落ちてみましょう"),
+    ("fly_one_cm", 100, "飛んだ", "クリエイティブで飛んでみましょう"), ("aviate_one_cm", 100, "滑空した", "エリトラで飛んでみましょう"),
+    ("boat_one_cm", 100, "ボートをこいだ", "ボートで進んでみましょう"), ("minecart_one_cm", 100, "トロッコに乗った", "トロッコで進んでみましょう"),
+    ("horse_one_cm", 100, "ウマで走った", "ウマに乗って進んでみましょう"), ("pig_one_cm", 100, "ブタで進んだ", "ブタに乗って進んでみましょう"),
+    ("strider_one_cm", 100, "ストライダーで進んだ", "ストライダーに乗って進んでみましょう"),
+    ("happy_ghast_one_cm", 100, "ハッピーガストで飛んだ", "ハッピーガストに乗って飛んでみましょう"),
+    ("nautilus_one_cm", 100, "オウムガイで泳いだ", "オウムガイに乗って泳いでみましょう"),
+    ("play_time", 1200, "遊びはじめた", "1分遊びましょう"), ("drop", 1, "アイテムを捨てた", "アイテムを捨ててみましょう"),
+    ("damage_dealt", 1, "なぐった", "何かにダメージを与えましょう"), ("damage_taken", 1, "いたっ", "ダメージを受けましょう"),
+    ("damage_blocked_by_shield", 1, "盾で防いだ", "盾で攻撃を防ぎましょう"), ("mob_kills", 1, "はじめての討伐", "モブを倒しましょう"),
+    ("fish_caught", 1, "釣れた", "魚を釣りましょう"), ("talked_to_villager", 1, "話しかけた", "村人に話しかけましょう"),
+    ("traded_with_villager", 1, "取引した", "村人と取引しましょう"), ("animals_bred", 1, "はじめての繁殖", "動物を繁殖させましょう"),
+    ("open_chest", 1, "チェストを開けた", "チェストを開けましょう"), ("open_barrel", 1, "たるを開けた", "たるを開けましょう"),
+    ("open_enderchest", 1, "エンダーチェストを開けた", "エンダーチェストを開けましょう"), ("open_shulker_box", 1, "シュルカーボックスを開けた", "シュルカーボックスを開けましょう"),
+    ("interact_with_crafting_table", 1, "作業台を使った", "作業台を開きましょう"), ("interact_with_furnace", 1, "かまどを使った", "かまどを開きましょう"),
+    ("interact_with_blast_furnace", 1, "溶鉱炉を使った", "溶鉱炉を開きましょう"), ("interact_with_smoker", 1, "燻製器を使った", "燻製器を開きましょう"),
+    ("interact_with_campfire", 1, "焚き火で焼いた", "焚き火に食べ物を置きましょう"), ("interact_with_anvil", 1, "金床を使った", "金床を開きましょう"),
+    ("interact_with_grindstone", 1, "砥石を使った", "砥石を開きましょう"), ("interact_with_stonecutter", 1, "石切台を使った", "石切台を開きましょう"),
+    ("interact_with_loom", 1, "機織り機を使った", "機織り機を開きましょう"), ("interact_with_cartography_table", 1, "製図台を使った", "製図台を開きましょう"),
+    ("interact_with_smithing_table", 1, "鍛冶台を使った", "鍛冶台を開きましょう"), ("interact_with_brewingstand", 1, "醸造台を使った", "醸造台を開きましょう"),
+    ("interact_with_beacon", 1, "ビーコンを使った", "ビーコンを開きましょう"), ("interact_with_lectern", 1, "書見台を使った", "書見台で本を読みましょう"),
+    ("inspect_hopper", 1, "ホッパーをのぞいた", "ホッパーを開きましょう"), ("inspect_dispenser", 1, "発射装置をのぞいた", "発射装置を開きましょう"),
+    ("inspect_dropper", 1, "ドロッパーをのぞいた", "ドロッパーを開きましょう"), ("trigger_trapped_chest", 1, "トラップチェストを開けた", "トラップチェストを開けましょう"),
+    ("play_noteblock", 1, "音ブロックを鳴らした", "音ブロックを鳴らしましょう"), ("tune_noteblock", 1, "音ブロックを調律した", "音ブロックを調律しましょう"),
+    ("play_record", 1, "レコードをかけた", "ジュークボックスでレコードをかけましょう"), ("pot_flower", 1, "植木鉢に植えた", "植木鉢に植えましょう"),
+    ("fill_cauldron", 1, "大釜に水を入れた", "大釜を満たしましょう"), ("use_cauldron", 1, "大釜の水を使った", "大釜の水を使いましょう"),
+    ("clean_armor", 1, "革の防具を洗った", "大釜で革の防具を洗いましょう"), ("clean_banner", 1, "旗を洗った", "大釜で旗を洗いましょう"),
+    ("clean_shulker_box", 1, "シュルカーボックスを洗った", "大釜でシュルカーボックスを洗いましょう"), ("bell_ring", 1, "鐘を鳴らした", "鐘を鳴らしましょう"),
+    ("target_hit", 1, "的に当てた", "的に当てましょう"), ("enchant_item", 1, "エンチャントした", "エンチャントしましょう"),
+    ("sleep_in_bed", 1, "おやすみ", "ベッドで寝ましょう"), ("leave_game", 1, "セーブして終了した", "ゲームを終了しましょう"),
+]
+FIRST_ICON = {"walk_one_cm": "leather_boots", "sprint_one_cm": "golden_boots", "crouch_one_cm": "leather_leggings", "sneak_time": "leather_leggings",
+              "jump": "rabbit_foot", "swim_one_cm": "cod", "walk_on_water_one_cm": "lily_pad", "walk_under_water_one_cm": "turtle_helmet",
+              "climb_one_cm": "ladder", "fall_one_cm": "feather", "fly_one_cm": "elytra", "aviate_one_cm": "elytra", "boat_one_cm": "oak_boat",
+              "minecart_one_cm": "minecart", "horse_one_cm": "saddle", "pig_one_cm": "carrot_on_a_stick", "strider_one_cm": "warped_fungus_on_a_stick",
+              "happy_ghast_one_cm": "white_harness", "nautilus_one_cm": "nautilus_shell", "play_time": "clock", "drop": "rotten_flesh",
+              "damage_dealt": "wooden_sword", "damage_taken": "bone", "damage_blocked_by_shield": "shield", "mob_kills": "iron_sword",
+              "fish_caught": "fishing_rod", "talked_to_villager": "emerald", "traded_with_villager": "emerald", "animals_bred": "wheat",
+              "open_chest": "chest", "open_barrel": "barrel", "open_enderchest": "ender_chest", "open_shulker_box": "shulker_box",
+              "interact_with_crafting_table": "crafting_table", "interact_with_furnace": "furnace", "interact_with_blast_furnace": "blast_furnace",
+              "interact_with_smoker": "smoker", "interact_with_campfire": "campfire", "interact_with_anvil": "anvil", "interact_with_grindstone": "grindstone",
+              "interact_with_stonecutter": "stonecutter", "interact_with_loom": "loom", "interact_with_cartography_table": "cartography_table",
+              "interact_with_smithing_table": "smithing_table", "interact_with_brewingstand": "brewing_stand", "interact_with_beacon": "beacon",
+              "interact_with_lectern": "lectern", "inspect_hopper": "hopper", "inspect_dispenser": "dispenser", "inspect_dropper": "dropper",
+              "trigger_trapped_chest": "trapped_chest", "play_noteblock": "note_block", "tune_noteblock": "note_block", "play_record": "jukebox",
+              "pot_flower": "flower_pot", "fill_cauldron": "water_bucket", "use_cauldron": "cauldron", "clean_armor": "leather_chestplate",
+              "clean_banner": "white_banner", "clean_shulker_box": "shulker_box", "bell_ring": "bell", "target_hit": "target",
+              "enchant_item": "enchanting_table", "sleep_in_bed": "red_bed", "leave_game": "oak_door"}
+# counted by this mod's own code (mod jars only): look direction, turning and side/back steps
+GESTURES = [  # stat, tiers, titles per tier, desc (%s = shown amount), icon, divisor for the shown amount
+    ("turned_right", [45, 360, 3600, 36000, 360000], ["右を向いた", "右に一回転", "右に10回転", "右に100回転", "右に1000回転"], "右に%s度回りましょう", "compass", 1),
+    ("turned_left", [45, 360, 3600, 36000, 360000], ["左を向いた", "左に一回転", "左に10回転", "左に100回転", "左に1000回転"], "左に%s度回りましょう", "compass", 1),
+    ("looked_up", [1, 100, 1000], ["上を見た", "空ばかり見ている", "首が痛い（上）"], "上を%s回見ましょう", "feather", 1),
+    ("looked_down", [1, 100, 1000], ["下を見た", "足もとに注意", "首が痛い（下）"], "下を%s回見ましょう", "leather_boots", 1),
+    ("looked_straight_up", [1], ["真上を見た"], "真上を見ましょう", "spyglass", 1),
+    ("looked_straight_down", [1], ["真下を見た"], "真下を見ましょう", "spyglass", 1),
+    ("moved_backward", [100, 10000, 100000], ["後ろに歩いた", "後ろ歩き名人", "ムーンウォーカー"], "後ろ向きに%sm進みましょう", "leather_boots", 100),
+    ("moved_left", [100, 10000, 100000], ["左に歩いた", "左歩き名人", "左歩きの達人"], "左に%sm歩きましょう", "leather_boots", 100),
+    ("moved_right", [100, 10000, 100000], ["右に歩いた", "右歩き名人", "右歩きの達人"], "右に%sm歩きましょう", "leather_boots", 100),
+    ("sneak_presses", [100, 1000, 10000], ["しゃがみ連打", "屈伸マスター", "屈伸の神"], "%s回しゃがみましょう", "leather_leggings", 1),
+]
+GESTURE_COMBOS = [  # key, title, desc, icon, [(stat, min)]
+    ("kyoro", "キョロキョロ", "右と左を見回しましょう", "spyglass", [("turned_right", 90), ("turned_left", 90)]),
+    ("nod", "うなずいた", "上と下を10回ずつ見ましょう", "player_head", [("looked_up", 10), ("looked_down", 10)]),
+    ("crab", "カニ歩き", "右と左に100mずつ歩きましょう", "crab_claw", [("moved_left", 10000), ("moved_right", 10000)]),
+    ("allround", "全方向マスター", "前後左右の全部に歩きましょう", "compass", [("moved_backward", 100), ("moved_left", 100), ("moved_right", 100)]),
+]
+
+
+def gen_small_vanilla(self):
+    TABS["small"] = ("ちょっとした行動", "Little Things", "leather_boots", "minecraft:textures/block/oak_planks.png")
+    r = self.root("small")
+    have = {st for st, tiers, *_ in STATS if tiers[0] <= 1}
+    prev = r
+    i = 0
+    for st, mn, ja, dja in FIRST:
+        if st not in self.reg["custom_stat"] or st in have:
+            continue
+        ic = FIRST_ICON.get(st, "book")
+        if ic not in self.items:
+            ic = "book"
+        t = L(f"{NS}.small.{st}", ja, ja); d = L(f"{NS}.small.{st}.desc", dja, dja)
+        prev = self.add(f"small/first_{st}", r if i % 10 == 0 else prev, ic, tr(t), tr(d),
+                        {"s": {"trigger": "minecraft:tick", "conditions": {"player": self.player_stat("custom", st, mn)}}}, xp=2, chat=False)
+        i += 1
+
+
+def gen_small_java(self):
+    STAT_NAMES.update({"turned_right": ("右に回った角度", "Degrees Turned Right"), "turned_left": ("左に回った角度", "Degrees Turned Left"),
+                       "looked_up": ("上を見た回数", "Times Looked Up"), "looked_down": ("下を見た回数", "Times Looked Down"),
+                       "looked_straight_up": ("真上を見た回数", "Times Looked Straight Up"), "looked_straight_down": ("真下を見た回数", "Times Looked Straight Down"),
+                       "moved_backward": ("後ろに歩いた距離", "Distance Moved Backward"), "moved_left": ("左に歩いた距離", "Distance Moved Left"),
+                       "moved_right": ("右に歩いた距離", "Distance Moved Right"), "sneak_presses": ("しゃがんだ回数", "Times Sneaked")})
+    for st, tiers, titles, dja, icon, div in GESTURES:
+        L(f"stat.{NS}.{st}", *STAT_NAMES[st])
+        d = L(f"{NS}.gesture.{st}.desc", dja, dja)
+        prev = "small/root"
+        for ti, n in enumerate(tiers):
+            t = L(f"{NS}.gesture.{st}.{ti}", titles[ti], titles[ti])
+            shown = n // div if n % div == 0 else n / div
+            prev = self.add(f"small/g_{st}_{ti + 1}", prev, icon if icon in self.items else "compass", tr(t), tr(d, f"{shown:,}"),
+                            {"s": {"trigger": "minecraft:tick", "conditions": {"player": own_stat(self, st, n)}}},
+                            frame=["task", "task", "goal", "challenge", "challenge"][ti], xp=[2, 10, 30, 60, 100][ti], chat=False if ti == 0 else None)
+    for key, ja, dja, icon, need in GESTURE_COMBOS:
+        t = L(f"{NS}.gesture.{key}", ja, ja); d = L(f"{NS}.gesture.{key}.desc", dja, dja)
+        pred = {"type_specific": {"type": "minecraft:player" if self.new else "player",
+                                  "stats": [{"type": "minecraft:custom", "stat": f"{NS}:{st}", "value": {"min": mn}} for st, mn in need]}}
+        self.add(f"small/g_{key}", "small/root", icon if icon in self.items else "compass", tr(t), tr(d),
+                 {"s": {"trigger": "minecraft:tick", "conditions": {"player": pred}}}, frame="goal", xp=10)
+
+
+Gen.gen_small_vanilla = gen_small_vanilla
+Gen.gen_small_java = gen_small_java
 
 stats = {}
 for v in ["1.20.1", "1.21.1", "26.2"]:

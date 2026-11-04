@@ -51,6 +51,7 @@ import java.util.Map;
  */
 final class ActionStats {
     static final String[] NAMES = {
+            "turned_right", "turned_left", "looked_up", "looked_down", "looked_straight_up", "looked_straight_down", "moved_backward", "moved_left", "moved_right", "sneak_presses",
             "crafted_total", "smelted_total", "blocks_placed", "blocks_broken", "xp_gained", "max_level", "food_eaten",
             "potions_drunk", "arrows_shot", "animals_tamed", "advancements_earned",
             "chat_messages", "commands_used", "dims_changed", "crit_hits", "projectile_hits", "xp_orbs", "crops_harvested",
@@ -116,6 +117,7 @@ final class ActionStats {
         });
         bus.addListener((PlayerTickEvent.Post e) -> {
             if (!(e.getEntity() instanceof ServerPlayer sp) || sp instanceof FakePlayer) return;
+            Gestures.tick(sp);
             if (sp.tickCount % 20 == 0) max(sp, "max_level", sp.experienceLevel);
         });
     }

@@ -57,6 +57,7 @@ import java.util.function.Consumer;
  */
 final class ActionStats {
     static final String[] NAMES = {
+            "turned_right", "turned_left", "looked_up", "looked_down", "looked_straight_up", "looked_straight_down", "moved_backward", "moved_left", "moved_right", "sneak_presses",
             "crafted_total", "smelted_total", "blocks_placed", "blocks_broken", "xp_gained", "max_level", "food_eaten",
             "potions_drunk", "arrows_shot", "animals_tamed", "advancements_earned",
             "irons_spells_cast", "irons_scrolls_used", "ars_spells_cast", "ae2_max_bytes", "ae2_max_items", "ae2_max_types",
@@ -125,6 +126,7 @@ final class ActionStats {
         });
         bus.addListener((PlayerTickEvent.Post e) -> {
             if (!(e.getEntity() instanceof ServerPlayer sp) || sp instanceof FakePlayer) return;
+            Gestures.tick(sp);
             if (sp.tickCount % 20 == 0) max(sp, "max_level", sp.experienceLevel);
             if (sp.tickCount % 40 == 0) Ae2.check(sp);
         });
