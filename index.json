@@ -7,6 +7,16 @@
       "versions": [
         {
           "version": "1.3.0",
+          "mc": "1.21.1",
+          "loader": "fabric",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/claudeupdater/1.21.1-fabric/claudeupdater-1.3.0-fabric-1.21.1.jar",
+          "fileName": "claudeupdater-1.3.0-fabric-1.21.1.jar",
+          "sha256": "bd1e982a21609061f5f474fba845f511597b944cba86ddb676b6a4807c9421fd",
+          "changelog": "Fabric 1.21.1 版を追加しました。メニューで Ctrl+U を押すと更新の確認画面が開きます。",
+          "released": "2026-11-05"
+        },
+        {
+          "version": "1.3.0",
           "mc": "1.20.1",
           "loader": "forge",
           "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/claudeupdater/1.20.1-forge/claudeupdater-1.3.0-forge-1.20.1.jar",

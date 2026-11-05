@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "claudeupdater",
+  "version": "${version}",
+  "name": "Claude MOD Updater",
+  "description": "起動時に MOD ライブラリの新しい版を確認し、選んだ MOD をダウンロードします。入れ替えはゲームを終了したあとに行われ、次の起動から新しい版になります。タイトル画面で Ctrl+U を押すか、更新ボタン（矢印のアイコン）か、Mod Menu の設定ボタンから、いつでも確認し直せます。",
+  "authors": ["EeeeeeruKi"],
+  "license": "All Rights Reserved",
+  "icon": "assets/claudeupdater/textures/gui/update.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["com.eeeeeeruki.claudeupdater.ClaudeUpdater"],
+    "client": ["com.eeeeeeruki.claudeupdater.ClaudeUpdaterClient"],
+    "modmenu": ["com.eeeeeeruki.claudeupdater.ModMenuIntegration"]
+  },
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "minecraft": "~1.21.1",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}
