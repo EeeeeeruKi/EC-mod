@@ -1,0 +1,29 @@
+modLoader="javafml"
+loaderVersion="[4,)"
+license="All Rights Reserved"
+
+[[mods]]
+modId="claudeupdater"
+version="${version}"
+displayName="Claude MOD Updater"
+displayTest="IGNORE_ALL_VERSION"
+authors="EeeeeeruKi"
+description='''
+起動時に MOD ライブラリの新しい版を確認し、選んだ MOD をダウンロードします。
+入れ替えはゲームを終了したあとに行われ、次の起動から新しい版になります。
+タイトル画面で Ctrl+U を押すか、更新ボタン（矢印のアイコン）か、MOD一覧の「設定」ボタンから、いつでも確認し直せます。
+'''
+
+[[dependencies.claudeupdater]]
+modId="neoforge"
+type="required"
+versionRange="[21.1,)"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.claudeupdater]]
+modId="minecraft"
+type="required"
+versionRange="[1.21.1,1.21.2)"
+ordering="NONE"
+side="BOTH"

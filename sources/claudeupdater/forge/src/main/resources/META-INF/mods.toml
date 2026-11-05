@@ -1,0 +1,28 @@
+modLoader="javafml"
+loaderVersion="[47,)"
+license="All Rights Reserved"
+
+[[mods]]
+modId="claudeupdater"
+version="${version}"
+displayName="Claude MOD Updater"
+authors="EeeeeeruKi"
+description='''
+起動時に MOD ライブラリの新しい版を確認し、選んだ MOD をダウンロードします。
+入れ替えはゲームを終了したあとに行われ、次の起動から新しい版になります。
+タイトル画面で Ctrl+U を押すか、更新ボタン（矢印のアイコン）か、MOD一覧の「設定」ボタンから、いつでも確認し直せます。
+'''
+
+[[dependencies.claudeupdater]]
+modId="forge"
+mandatory=true
+versionRange="[47,)"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.claudeupdater]]
+modId="minecraft"
+mandatory=true
+versionRange="[1.20.1,1.20.2)"
+ordering="NONE"
+side="BOTH"

@@ -1,0 +1,45 @@
+plugins {
+    id 'java-library'
+    id 'idea'
+    id 'net.neoforged.moddev' version '[2.0.0,2.1)'
+}
+
+version = "${mod_version}"
+group = 'com.eeeeeeruki.claudeupdater'
+
+base {
+    archivesName = "claudeupdater"
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+neoForge {
+    version = project.neo_version
+    mods {
+        "${mod_id}" {
+            sourceSet(sourceSets.main)
+        }
+    }
+}
+
+processResources {
+    inputs.property 'version', version
+    filesMatching('META-INF/neoforge.mods.toml') {
+        expand 'version': version
+    }
+}
+
+jar {
+    archiveFileName = "claudeupdater-${version}-neoforge-${minecraft_version}.jar"
+    manifest {
+        attributes([
+            'Implementation-Title'  : 'Claude MOD Updater',
+            'Implementation-Version': version,
+            'Implementation-Vendor' : 'EeeeeeruKi'
+        ])
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
