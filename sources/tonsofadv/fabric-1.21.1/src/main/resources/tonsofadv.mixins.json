@@ -8,12 +8,16 @@
 		"FurnaceResultSlotMixin",
 		"PlayerMixin",
 		"ResultSlotMixin",
-		"TamableAnimalMixin"
+		"TamableAnimalMixin",
+		"AetherSoundOverridesMixin"
 	],
 	"injectors": {
 		"defaultRequire": 0
 	},
 	"overwrites": {
 		"requireAnnotations": true
-	}
+	},
+	"client": [
+		"SoundManagerMixin"
+	]
 }

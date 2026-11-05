@@ -123,6 +123,12 @@ public class TonsOfAdv implements ModInitializer {
         if (amount > 0 && player instanceof ServerPlayer sp && !(sp instanceof net.fabricmc.fabric.api.entity.FakePlayer)) sp.awardStat(stat(name), amount);
     }
 
+    /** @return このMODのエーテルのタブの進捗なら鳴らすエーテルの音（aether名前空間のパス）、それ以外は null */
+    public static String aetherSound(ResourceLocation id) {
+        if (!Config.specialSounds()) return null;
+        return AetherSounds.pick(id.getNamespace(), id.getPath());
+    }
+
     static void max(ServerPlayer player, String name, long value) {
         int v = (int) Math.min(value, Integer.MAX_VALUE);
         Stat<ResourceLocation> s = stat(name);

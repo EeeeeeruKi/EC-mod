@@ -626,6 +626,26 @@
       "summary": "進捗を1700個以上追加するMOD。アイテム集め・モブ討伐・探検・やり込み・ネタ系の進捗がどっさり入っていて、達成すると経験値がもらえます。v1.4.0 から、人気のMOD100個（Create・Mekanism・AE2・黄昏の森など）の進捗も追加されます。データパック版もあります。",
       "versions": [
         {
+          "version": "1.8.2",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/tonsofadv/1.21.1-neoforge/tonsofadv-neoforge-1.21.1-1.8.2.jar",
+          "fileName": "tonsofadv-neoforge-1.21.1-1.8.2.jar",
+          "sha256": "f5456f53aeb5545363c70ec82f355b74fb0c2c929469c06231fe22dca14f9f02",
+          "changelog": "このMODのエーテルのタブの進捗で、エーテルの音が鳴っていなかったのを直しました。",
+          "released": "2026-11-05"
+        },
+        {
+          "version": "1.8.2",
+          "mc": "1.21.1",
+          "loader": "fabric",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/tonsofadv/1.21.1-fabric/tonsofadv-fabric-1.21.1-1.8.2.jar",
+          "fileName": "tonsofadv-fabric-1.21.1-1.8.2.jar",
+          "sha256": "44dbcdb2ecff821121beff19dffb0b09443c51d69aa7869b5c403f2dec37b080",
+          "changelog": "エーテル（Fabric 版）に対応しました。エーテルのタブの進捗でエーテルの音が鳴り、音量は「ジュークボックス/音ブロック」で調節できます。設定は config/tonsofadv-client.properties です。",
+          "released": "2026-11-05"
+        },
+        {
           "version": "1.8.1",
           "mc": "1.21.1",
           "loader": "fabric",

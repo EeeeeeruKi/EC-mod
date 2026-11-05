@@ -2,8 +2,6 @@ package com.eeeeeeruki.tonsofadv;
 
 import com.mojang.logging.LogUtils;
 import net.minecraft.advancements.AdvancementHolder;
-import net.minecraft.core.Registry;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.neoforged.bus.api.IEventBus;
@@ -30,8 +28,10 @@ final class AetherCompat {
         try {
             Class<?> overrideClass = Class.forName("com.aetherteam.aether.api.registers.AdvancementSoundOverride");
             Constructor<?> ctor = overrideClass.getConstructor(int.class, Predicate.class, Supplier.class);
-            ResourceKey<Registry<Object>> key = ResourceKey.createRegistryKey(ResourceLocation.fromNamespaceAndPath("aether", "advancement_sound_override"));
-            DeferredRegister<Object> register = DeferredRegister.create(key, TonsOfAdv.MOD_ID);
+            // エーテルは自分の DeferredRegister に入っているものだけを見るので、そこに足します（RegisterEvent より前＝MODの読み込み中）
+            Class<?> overrides = Class.forName("com.aetherteam.aether.api.AetherAdvancementSoundOverrides");
+            @SuppressWarnings("unchecked")
+            DeferredRegister<Object> register = (DeferredRegister<Object>) overrides.getField("ADVANCEMENT_SOUND_OVERRIDES").get(null);
             for (String sound : SOUNDS) {
                 Predicate<Object> matches = advancement -> {
                     if (!Config.specialSounds()) return false;
@@ -39,7 +39,7 @@ final class AetherCompat {
                     return sound.equals(AetherSounds.pick(id.getNamespace(), id.getPath()));
                 };
                 Supplier<SoundEvent> soundEvent = () -> BuiltInRegistries.SOUND_EVENT.get(ResourceLocation.fromNamespaceAndPath("aether", sound));
-                register.register(sound.substring("ui.toast.".length()), () -> {
+                register.register(TonsOfAdv.MOD_ID + "_" + sound.substring("ui.toast.aether_".length()), () -> {
                     try {
                         return ctor.newInstance(20, matches, soundEvent);
                     } catch (ReflectiveOperationException e) {
@@ -47,7 +47,6 @@ final class AetherCompat {
                     }
                 });
             }
-            register.register(modBus);
         } catch (ReflectiveOperationException | RuntimeException e) {
             LogUtils.getLogger().warn("[tonsofadv] エーテルの進捗の音を登録できませんでした: {}", e.toString());
         }
