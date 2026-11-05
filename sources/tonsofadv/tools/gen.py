@@ -278,10 +278,8 @@ XP = {"task": 5, "goal": 20, "challenge": 50}
 
 
 def mod_cond(self, modid):
-    if self.v26:
-        return {"_modid": modid}  # becomes neoforge:conditions or fabric:load_conditions when written
     if self.new:
-        return {"neoforge:conditions": [{"type": "neoforge:mod_loaded", "modid": modid}]}
+        return {"_modid": modid}  # becomes neoforge:conditions or fabric:load_conditions when written
     return {"conditions": [{"type": "forge:mod_loaded", "modid": modid}]}
 
 
@@ -330,7 +328,17 @@ def loader_cond(a, loader):
     return a
 
 
-FABRIC_SKIP_STATS = ("crit_hits", "projectile_hits", "xp_orbs")
+# the custom stats the Fabric builds keep (TonsOfAdv.NAMES in the Fabric projects); others are skipped there
+FABRIC_STATS = {"turned_right", "turned_left", "looked_up", "looked_down", "looked_straight_up", "looked_straight_down",
+                "moved_backward", "moved_left", "moved_right", "sneak_presses",
+                "crafted_total", "smelted_total", "blocks_placed", "blocks_broken", "xp_gained", "max_level", "food_eaten",
+                "potions_drunk", "arrows_shot", "animals_tamed", "advancements_earned",
+                "chat_messages", "commands_used", "dims_changed", "crops_harvested",
+                "logs_chopped", "ores_mined", "entity_interactions", "anvil_repairs"}
+
+
+def fabric_ok(a):
+    return all(st in FABRIC_STATS for st in re.findall(r'"' + NS + r':([a-z0-9_]+)"', json.dumps(a["criteria"])))
 
 
 class Gen:
@@ -762,13 +770,18 @@ class Gen:
             for a in self.advs.values():
                 fix26(a)
         # v<tag>: everything (mod jar); dp<tag>: vanilla only (datapack); 26.x: one mod jar folder per loader
-        roots = [(f"v{tag}n", False, "neoforge"), (f"v{tag}f", False, "fabric")] if self.v26 else [(f"v{tag}", False, None)]
+        if self.v26:
+            roots = [(f"v{tag}n", False, "neoforge"), (f"v{tag}f", False, "fabric")]
+        elif self.new:
+            roots = [(f"v{tag}", False, "neoforge"), (f"v{tag}f", False, "fabric")]
+        else:
+            roots = [(f"v{tag}", False, None)]
         for root, only_vanilla, loader in roots + [(f"dp{tag}", True, None)]:
             base = os.path.join(OUT, root, "data", NS, folder)
             for p, a in self.advs.items():
                 if only_vanilla and p not in self.vanilla_paths:
                     continue
-                if loader == "fabric" and any(f'"{NS}:{st}"' in json.dumps(a["criteria"]) for st in FABRIC_SKIP_STATS):
+                if loader == "fabric" and not fabric_ok(a):
                     continue  # counters that the Fabric build does not keep
                 if loader:
                     a = loader_cond(a, loader)

@@ -608,6 +608,16 @@
         {
           "version": "1.8.1",
           "mc": "1.21.1",
+          "loader": "fabric",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/tonsofadv/1.21.1-fabric/tonsofadv-fabric-1.21.1-1.8.1.jar",
+          "fileName": "tonsofadv-fabric-1.21.1-1.8.1.jar",
+          "sha256": "e6cff2dccf0e2f73d74f6e20b32534061c0d09b03fd26ad61661e173bb16ebd7",
+          "changelog": "1.21.1 の Fabric 版を追加しました（Fabric API が必要です）。進捗は NeoForge 1.21.1 版と同じですが、一部の回数の進捗とエーテルの音はありません。",
+          "released": "2026-11-05"
+        },
+        {
+          "version": "1.8.1",
+          "mc": "1.21.1",
           "loader": "neoforge",
           "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/tonsofadv/1.21.1-neoforge/tonsofadv-neoforge-1.21.1-1.8.1.jar",
           "fileName": "tonsofadv-neoforge-1.21.1-1.8.1.jar",
