@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "id": "compacttoasts",
+  "version": "${version}",
+  "name": "Compact Toasts",
+  "description": "画面右上のトースト（進捗・レシピ解除などの通知）をコンパクトにします。表示中のトーストが一定の数以上になると、1件ずつ1行の表示にまとめます。同時に表示できるトーストの数も 5 から 20 に増えます（どちらも設定で変更できます）。設定は Mod Menu の設定ボタンか、/compacttoasts で開けます。クライアント専用のMODです。",
+  "authors": ["EeeeeeruKi"],
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {
+    "client": ["com.eeeeeeruki.compacttoasts.CompactToasts"],
+    "modmenu": ["com.eeeeeeruki.compacttoasts.ModMenuIntegration"]
+  },
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "minecraft": "~1.21.1",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}

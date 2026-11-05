@@ -954,6 +954,16 @@
         {
           "version": "1.0.0",
           "mc": "1.21.1",
+          "loader": "fabric",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/compacttoasts/1.21.1-fabric/compacttoasts-fabric-1.21.1-1.0.0.jar",
+          "fileName": "compacttoasts-fabric-1.21.1-1.0.0.jar",
+          "sha256": "a8d45bcc24c9a9470ebc1055f89cdc48da973bf570914f2c83c2a54bb389cb12",
+          "changelog": "Fabric 1.21.1 版の最初の版です。中身は NeoForge 版と同じです。設定は Mod Menu の設定ボタンか /compacttoasts で開けます。",
+          "released": "2026-11-05"
+        },
+        {
+          "version": "1.0.0",
+          "mc": "1.21.1",
           "loader": "neoforge",
           "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/compacttoasts/1.21.1-neoforge/compacttoasts-neoforge-1.21.1-1.0.0.jar",
           "fileName": "compacttoasts-neoforge-1.21.1-1.0.0.jar",

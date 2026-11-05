@@ -1,0 +1,17 @@
+{
+  "compacttoasts.config.title": "Compact Toasts Settings",
+  "compacttoasts.config.maxToasts": "Max toasts: %s",
+  "compacttoasts.config.compactThreshold": "Compact when: %s or more",
+  "compacttoasts.config.compactOff": "Compact mode: Off",
+  "compacttoasts.config.hint1": "How many toasts can be shown at once (vanilla is 5).",
+  "compacttoasts.config.hint2": "When this many toasts are shown, each one shrinks to a single line.",
+  "compacttoasts.config.test": "Show test toasts",
+  "compacttoasts.config.toasts": "Toasts",
+  "compacttoasts.config.toasts.tooltip": "Settings for toast display.",
+  "compacttoasts.config.maxToasts.tooltip": "How many toasts can be shown at once.",
+  "compacttoasts.config.compactThreshold.tooltip": "When this many toasts are shown, they switch to single-line rows.",
+  "compacttoasts.recipe": "Recipe: %s",
+  "compacttoasts.more": "+%s more",
+  "compacttoasts.test.title": "Test toast %s",
+  "compacttoasts.test.message": "This is a test toast."
+}
