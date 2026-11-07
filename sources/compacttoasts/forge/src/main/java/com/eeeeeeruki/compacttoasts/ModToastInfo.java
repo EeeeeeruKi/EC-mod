@@ -63,7 +63,7 @@ final class ModToastInfo {
         }
         if (title == null && icon != null && !icon.isEmpty()) title = icon.getHoverName();
         if (title == null) return null;
-        return new ToastInfo(icon, null, title, Component.translatable("patchouli.gui.lexicon.toast.info"), ACCENT_BOOK);
+        return new ToastInfo(icon, null, title, null, ACCENT_BOOK, Component.translatable("patchouli.gui.lexicon.toast.info"), false);
     }
 
     /** getTitle() などのメソッドを持つトースト（FTB Quests など）。 */
@@ -87,7 +87,7 @@ final class ModToastInfo {
         }
         // FTB のクエスト完了トーストは「クエスト完了！」がタイトルで、クエスト名がサブタイトル
         if (ftb && extra != null) {
-            return new ToastInfo(icon, painter, extra, title, accent);
+            return new ToastInfo(icon, painter, extra, null, accent, title, false);
         }
         return new ToastInfo(icon, painter, title, extra, accent);
     }

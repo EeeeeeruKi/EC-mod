@@ -13,5 +13,11 @@
   "compacttoasts.recipe": "Recipe: %s",
   "compacttoasts.more": "+%s more",
   "compacttoasts.test.title": "Test toast %s",
-  "compacttoasts.test.message": "This is a test toast."
+  "compacttoasts.test.message": "This is a test toast.",
+  "compacttoasts.config.header": "Headers: %s",
+  "compacttoasts.config.header.name": "Headers",
+  "compacttoasts.config.header.all": "On",
+  "compacttoasts.config.header.except_advancements": "Except advancements",
+  "compacttoasts.config.header.none": "Off",
+  "compacttoasts.config.hint3": "Shows \"Advancement Made!\" etc. for 2 seconds, then the name."
 }

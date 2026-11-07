@@ -17,6 +17,7 @@ public class ToastsConfigScreen extends Screen {
     private final Screen parent;
     private int max;
     private int threshold;
+    private HeaderMode headerMode;
     private IntSlider thresholdSlider;
 
     public ToastsConfigScreen(@Nullable Screen parent) {
@@ -24,6 +25,7 @@ public class ToastsConfigScreen extends Screen {
         this.parent = parent;
         this.max = ToastsConfig.maxToasts();
         this.threshold = ToastsConfig.compactThreshold();
+        this.headerMode = ToastsConfig.headerMode();
     }
 
     @Override
@@ -41,6 +43,10 @@ public class ToastsConfigScreen extends Screen {
                         ? Component.translatable("compacttoasts.config.compactOff")
                         : Component.translatable("compacttoasts.config.compactThreshold", v),
                 v -> this.threshold = v));
+        this.addRenderableWidget(Button.builder(headerLabel(), b -> {
+            this.headerMode = this.headerMode.next();
+            b.setMessage(headerLabel());
+        }).bounds(x, y + 80, 200, 20).build());
         this.addRenderableWidget(Button.builder(Component.translatable("compacttoasts.config.test"), b -> {
             this.apply();
             for (int i = 1; i <= 6; i++) {
@@ -48,13 +54,17 @@ public class ToastsConfigScreen extends Screen {
                         Component.translatable("compacttoasts.test.title", i),
                         Component.translatable("compacttoasts.test.message"));
             }
-        }).bounds(x, y + 84, 200, 20).build());
+        }).bounds(x, y + 124, 200, 20).build());
         this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, b -> this.onClose())
-                .bounds(x, y + 112, 200, 20).build());
+                .bounds(x, y + 150, 200, 20).build());
+    }
+
+    private Component headerLabel() {
+        return Component.translatable("compacttoasts.config.header", Component.translatable(this.headerMode.key()));
     }
 
     private void apply() {
-        ToastsConfig.save(this.max, this.threshold);
+        ToastsConfig.save(this.max, this.threshold, this.headerMode);
     }
 
     @Override
@@ -71,6 +81,7 @@ public class ToastsConfigScreen extends Screen {
         g.drawCenteredString(this.font, this.title, this.width / 2, y - 24, 0xFFFFFF);
         g.drawCenteredString(this.font, Component.translatable("compacttoasts.config.hint1"), this.width / 2, y + 23, 0xA0A0A0);
         g.drawCenteredString(this.font, Component.translatable("compacttoasts.config.hint2"), this.width / 2, y + 63, 0xA0A0A0);
+        g.drawCenteredString(this.font, Component.translatable("compacttoasts.config.hint3"), this.width / 2, y + 103, 0xA0A0A0);
     }
 
     private static final class IntSlider extends AbstractSliderButton {

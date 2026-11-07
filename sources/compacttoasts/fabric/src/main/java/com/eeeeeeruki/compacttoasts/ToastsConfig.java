@@ -20,6 +20,7 @@ public final class ToastsConfig {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static int maxToasts = DEFAULT_MAX;
     private static int compactThreshold = DEFAULT_THRESHOLD;
+    private static HeaderMode headerMode = HeaderMode.EXCEPT_ADVANCEMENTS;
 
     private ToastsConfig() {}
 
@@ -35,6 +36,7 @@ public final class ToastsConfig {
                 if (o != null) {
                     if (o.has("maxToasts")) maxToasts = clamp(o.get("maxToasts").getAsInt(), 1, MAX_LIMIT);
                     if (o.has("compactThreshold")) compactThreshold = clamp(o.get("compactThreshold").getAsInt(), 1, MAX_LIMIT + 1);
+                    if (o.has("headerMode")) headerMode = HeaderMode.parse(o.get("headerMode").getAsString());
                 }
             } catch (Exception e) {
                 CompactToasts.LOGGER.warn("Could not read {}", f, e);
@@ -51,7 +53,12 @@ public final class ToastsConfig {
         return compactThreshold;
     }
 
-    public static void save(int max, int threshold) {
+    public static HeaderMode headerMode() {
+        return headerMode;
+    }
+
+    public static void save(int max, int threshold, HeaderMode mode) {
+        headerMode = mode;
         maxToasts = clamp(max, 1, MAX_LIMIT);
         compactThreshold = clamp(threshold, 1, MAX_LIMIT + 1);
         write();
@@ -63,6 +70,8 @@ public final class ToastsConfig {
         o.addProperty("maxToasts", maxToasts);
         o.addProperty("_comment_compactThreshold", "表示中のトーストがこの数以上になると、1件ずつ1行の表示にまとめます（maxToasts より大きくするとオフ）。");
         o.addProperty("compactThreshold", compactThreshold);
+        o.addProperty("_comment_headerMode", "コンパクト表示で「実績達成！」「クエスト完了！」などの見出しを2秒出すかどうかです（ALL＝有効、EXCEPT_ADVANCEMENTS＝進捗以外、NONE＝無効）。");
+        o.addProperty("headerMode", headerMode.name());
         try {
             Files.createDirectories(file().getParent());
             try (Writer w = Files.newBufferedWriter(file(), StandardCharsets.UTF_8)) {

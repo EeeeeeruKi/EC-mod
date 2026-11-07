@@ -1,6 +1,6 @@
 # Compact Toasts ソース
 
-最新版（1.1.0）のソース。
+最新版（1.2.0）のソース。
 
 - forge/ … 1.20.1 Forge
 - neoforge/ … 1.21.1 NeoForge

@@ -13,5 +13,11 @@
   "compacttoasts.recipe": "レシピ解除: %s",
   "compacttoasts.more": "ほか%s件",
   "compacttoasts.test.title": "テストトースト %s",
-  "compacttoasts.test.message": "これはテスト用のトーストです。"
+  "compacttoasts.test.message": "これはテスト用のトーストです。",
+  "compacttoasts.config.header": "見出しの表示: %s",
+  "compacttoasts.config.header.name": "見出しの表示",
+  "compacttoasts.config.header.all": "有効",
+  "compacttoasts.config.header.except_advancements": "進捗以外",
+  "compacttoasts.config.header.none": "無効",
+  "compacttoasts.config.hint3": "「実績達成！」などを2秒出してから名前に切り替えます。"
 }

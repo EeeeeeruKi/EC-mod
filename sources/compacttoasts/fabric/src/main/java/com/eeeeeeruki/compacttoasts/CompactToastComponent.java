@@ -30,6 +30,7 @@ public class CompactToastComponent extends ToastComponent {
     static final int ROW_W = 160;
     static final int ROW_H = 16;
     static final int ROW_GAP = 1;
+    static final long HEADER_TIME = 2000L;
 
     private final Minecraft mc;
     private final List<Entry> visibleEntries = new ArrayList<>();
@@ -198,7 +199,7 @@ public class CompactToastComponent extends ToastComponent {
 
                     g.pose().pushPose();
                     g.pose().translate((float) screenW - (float) ROW_W * s, this.y, 800.0F);
-                    drawRow(g, info);
+                    drawRow(g, info, shown);
                     g.pose().popPose();
                 } else {
                     // 中身が分からないトーストは縮小して表示する
@@ -220,7 +221,7 @@ public class CompactToastComponent extends ToastComponent {
         }
     }
 
-    private void drawRow(GuiGraphics g, ToastInfo info) {
+    private void drawRow(GuiGraphics g, ToastInfo info, long shown) {
         Font font = this.mc.font;
         g.fill(0, 0, ROW_W, ROW_H, 0xE0101014);
         g.fill(0, 0, 2, ROW_H, info.accent());
@@ -237,6 +238,11 @@ public class CompactToastComponent extends ToastComponent {
         }
         int maxW = ROW_W - textX - 3;
         int y = (ROW_H - 8) / 2;
+        // バニラと同じく、はじめの2秒は「実績達成！」などの見出しを出してから名前に切り替える
+        if (info.header() != null && shown < HEADER_TIME && ToastsConfig.headerMode().show(info.advancement())) {
+            drawClipped(g, font, info.header(), textX, y, maxW, info.accent() & 0xFFFFFF);
+            return;
+        }
         Component text = info.text();
         if (info.extra() != null) {
             int mainW = font.width(text);

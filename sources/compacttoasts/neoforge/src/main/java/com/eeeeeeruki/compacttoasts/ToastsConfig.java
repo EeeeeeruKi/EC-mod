@@ -10,6 +10,7 @@ public final class ToastsConfig {
     public static final ModConfigSpec SPEC;
     public static final ModConfigSpec.IntValue MAX_TOASTS;
     public static final ModConfigSpec.IntValue COMPACT_THRESHOLD;
+    public static final ModConfigSpec.EnumValue<HeaderMode> HEADER_MODE;
 
     static {
         ModConfigSpec.Builder b = new ModConfigSpec.Builder();
@@ -23,6 +24,11 @@ public final class ToastsConfig {
                         "maxToasts より大きくすると、コンパクト表示は行われません。")
                 .translation("compacttoasts.config.compactThreshold")
                 .defineInRange("compactThreshold", DEFAULT_THRESHOLD, 1, MAX_LIMIT + 1);
+        HEADER_MODE = b
+                .comment("コンパクト表示で「実績達成！」「クエスト完了！」などの見出しを2秒出してから名前に切り替えるかどうかです。",
+                        "ALL＝有効、EXCEPT_ADVANCEMENTS＝進捗以外、NONE＝無効")
+                .translation("compacttoasts.config.header.name")
+                .defineEnum("headerMode", HeaderMode.EXCEPT_ADVANCEMENTS);
         b.pop();
         SPEC = b.build();
     }
@@ -45,8 +51,17 @@ public final class ToastsConfig {
         }
     }
 
-    public static void save(int max, int threshold) {
+    public static HeaderMode headerMode() {
         try {
+            return HEADER_MODE.get();
+        } catch (Throwable t) {
+            return HeaderMode.EXCEPT_ADVANCEMENTS;
+        }
+    }
+
+    public static void save(int max, int threshold, HeaderMode mode) {
+        try {
+            HEADER_MODE.set(mode);
             MAX_TOASTS.set(max);
             COMPACT_THRESHOLD.set(threshold);
             SPEC.save();

@@ -24,7 +24,12 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 /** コンパクト表示の1行に出す内容。バニラのトーストから取り出す。 */
-record ToastInfo(@Nullable ItemStack icon, @Nullable IconPainter painter, Component text, @Nullable Component extra, int accent) {
+record ToastInfo(@Nullable ItemStack icon, @Nullable IconPainter painter, Component text, @Nullable Component extra, int accent,
+                 @Nullable Component header, boolean advancement) {
+    ToastInfo(@Nullable ItemStack icon, @Nullable IconPainter painter, Component text, @Nullable Component extra, int accent) {
+        this(icon, painter, text, extra, accent, null, false);
+    }
+
     /** ItemStack 以外のアイコン（FTB Library の Icon など）を描く。 */
     interface IconPainter {
         void paint(net.minecraft.client.gui.GuiGraphics g, int x, int y);
@@ -55,7 +60,7 @@ record ToastInfo(@Nullable ItemStack icon, @Nullable IconPainter painter, Compon
         ChatFormatting fmt = display.getFrame().getChatColor();
         Integer color = fmt.getColor();
         int accent = 0xFF000000 | (color != null ? color : 0xFFFF55);
-        return new ToastInfo(display.getIcon(), null, display.getTitle(), null, accent);
+        return new ToastInfo(display.getIcon(), null, display.getTitle(), null, accent, display.getFrame().getDisplayName(), true);
     }
 
     @Nullable
@@ -69,7 +74,8 @@ record ToastInfo(@Nullable ItemStack icon, @Nullable IconPainter painter, Compon
         ItemStack icon = result.isEmpty() ? recipe.getToastSymbol() : result;
         Component name = result.isEmpty() ? Component.translatable("recipe.toast.title") : result.getHoverName();
         Component extra = recipes.size() > 1 ? Component.translatable("compacttoasts.more", recipes.size() - 1) : null;
-        return new ToastInfo(icon, null, Component.translatable("compacttoasts.recipe", name), extra, 0xFF55FF55);
+        return new ToastInfo(icon, null, Component.translatable("compacttoasts.recipe", name), extra, 0xFF55FF55,
+                Component.translatable("recipe.toast.title"), false);
     }
 
     @Nullable
