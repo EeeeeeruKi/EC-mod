@@ -1002,6 +1002,36 @@
       "summary": "画面右上のトースト（進捗・レシピ解除などの通知）をコンパクトにするMOD。たくさん出たときは1件ずつ1行にまとめ、同時に表示できる数も 5 から 20 に増えます。",
       "versions": [
         {
+          "version": "1.1.0",
+          "mc": "1.21.1",
+          "loader": "fabric",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/compacttoasts/1.21.1-fabric/compacttoasts-fabric-1.21.1-1.1.0.jar",
+          "fileName": "compacttoasts-fabric-1.21.1-1.1.0.jar",
+          "sha256": "31a69483015d763cf89af84cca7d96b90633c994fbe040a06f0bb22d2ad81f43",
+          "changelog": "FTB Quests のトースト（クエスト完了・報酬など）と、ボタニアの辞典など Patchouli の本のトーストも、アイコンと名前の1行で表示するようにしました。ほかのMODのトーストも、タイトルやアイコンを読み取れれば1行で表示します。",
+          "released": "2026-11-07"
+        },
+        {
+          "version": "1.1.0",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/compacttoasts/1.21.1-neoforge/compacttoasts-neoforge-1.21.1-1.1.0.jar",
+          "fileName": "compacttoasts-neoforge-1.21.1-1.1.0.jar",
+          "sha256": "74e08836688d9c1c272e43cf172f02d954a521598afcd69636d90fc9edfca784",
+          "changelog": "FTB Quests のトースト（クエスト完了・報酬など）と、ボタニアの辞典など Patchouli の本のトーストも、アイコンと名前の1行で表示するようにしました。ほかのMODのトーストも、タイトルやアイコンを読み取れれば1行で表示します。",
+          "released": "2026-11-07"
+        },
+        {
+          "version": "1.1.0",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/compacttoasts/1.20.1-forge/compacttoasts-forge-1.20.1-1.1.0.jar",
+          "fileName": "compacttoasts-forge-1.20.1-1.1.0.jar",
+          "sha256": "eb843b86375501a8e2f894368279ce777aaf30d63a4fb5818d7ce36b1145bde0",
+          "changelog": "FTB Quests のトースト（クエスト完了・報酬など）と、ボタニアの辞典など Patchouli の本のトーストも、アイコンと名前の1行で表示するようにしました。ほかのMODのトーストも、タイトルやアイコンを読み取れれば1行で表示します。",
+          "released": "2026-11-07"
+        },
+        {
           "version": "1.0.0",
           "mc": "1.21.1",
           "loader": "fabric",

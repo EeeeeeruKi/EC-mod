@@ -24,7 +24,12 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 /** コンパクト表示の1行に出す内容。バニラのトーストから取り出す。 */
-record ToastInfo(@Nullable ItemStack icon, Component text, @Nullable Component extra, int accent) {
+record ToastInfo(@Nullable ItemStack icon, @Nullable IconPainter painter, Component text, @Nullable Component extra, int accent) {
+    /** ItemStack 以外のアイコン（FTB Library の Icon など）を描く。 */
+    interface IconPainter {
+        void paint(net.minecraft.client.gui.GuiGraphics g, int x, int y);
+    }
+
     private static final Map<String, Optional<Field>> FIELDS = new ConcurrentHashMap<>();
 
     @Nullable
@@ -34,6 +39,7 @@ record ToastInfo(@Nullable ItemStack icon, Component text, @Nullable Component e
             if (toast instanceof RecipeToast) return recipe(toast);
             if (toast instanceof SystemToast) return system(toast);
             if (toast instanceof TutorialToast) return tutorial(toast);
+            return ModToastInfo.of(toast);
         } catch (Throwable t) {
             // 取り出せないときは縮小表示に任せる
         }
@@ -49,7 +55,7 @@ record ToastInfo(@Nullable ItemStack icon, Component text, @Nullable Component e
         ChatFormatting fmt = display.getType().getChatColor();
         Integer color = fmt.getColor();
         int accent = 0xFF000000 | (color != null ? color : 0xFFFF55);
-        return new ToastInfo(display.getIcon(), display.getTitle(), null, accent);
+        return new ToastInfo(display.getIcon(), null, display.getTitle(), null, accent);
     }
 
     @Nullable
@@ -64,7 +70,7 @@ record ToastInfo(@Nullable ItemStack icon, Component text, @Nullable Component e
         ItemStack icon = result.isEmpty() ? recipe.getToastSymbol() : result;
         Component name = result.isEmpty() ? Component.translatable("recipe.toast.title") : result.getHoverName();
         Component extra = recipes.size() > 1 ? Component.translatable("compacttoasts.more", recipes.size() - 1) : null;
-        return new ToastInfo(icon, Component.translatable("compacttoasts.recipe", name), extra, 0xFF55FF55);
+        return new ToastInfo(icon, null, Component.translatable("compacttoasts.recipe", name), extra, 0xFF55FF55);
     }
 
     @Nullable
@@ -77,7 +83,7 @@ record ToastInfo(@Nullable ItemStack icon, Component text, @Nullable Component e
             String s = plain(seq);
             if (!s.isBlank()) extra = Component.literal(s);
         }
-        return new ToastInfo(null, title, extra, 0xFF5599FF);
+        return new ToastInfo(null, null, title, extra, 0xFF5599FF);
     }
 
     @Nullable
@@ -85,7 +91,7 @@ record ToastInfo(@Nullable ItemStack icon, Component text, @Nullable Component e
         Component title = get(toast, Component.class, 0);
         if (title == null) return null;
         Component message = get(toast, Component.class, 1);
-        return new ToastInfo(null, title, message, 0xFFAAAAAA);
+        return new ToastInfo(null, null, title, message, 0xFFAAAAAA);
     }
 
     private static String plain(FormattedCharSequence seq) {

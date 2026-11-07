@@ -228,6 +228,12 @@ public class CompactToastComponent extends ToastComponent {
         if (info.icon() != null && !info.icon().isEmpty()) {
             g.renderFakeItem(info.icon(), 4, 0);
             textX = 22;
+        } else if (info.painter() != null) {
+            try {
+                info.painter().paint(g, 4, 0);
+            } catch (Throwable ignored) {
+            }
+            textX = 22;
         }
         int maxW = ROW_W - textX - 3;
         int y = (ROW_H - 8) / 2;
