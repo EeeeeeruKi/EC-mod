@@ -636,6 +636,56 @@
       "summary": "進捗を1700個以上追加するMOD。アイテム集め・モブ討伐・探検・やり込み・ネタ系の進捗がどっさり入っていて、達成すると経験値がもらえます。v1.4.0 から、人気のMOD100個（Create・Mekanism・AE2・黄昏の森など）の進捗も追加されます。データパック版もあります。",
       "versions": [
         {
+          "version": "1.8.3",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/tonsofadv/1.20.1-forge/tonsofadv-forge-1.20.1-1.8.3.jar",
+          "fileName": "tonsofadv-forge-1.20.1-1.8.3.jar",
+          "sha256": "6b6f8fc648c2f5fd4029e4a25fe4087bc7b99d5c1bcef4e1f41fb79a63b81fc4",
+          "changelog": "ATM9 No Frills に入っているMODのほとんど（約56個）の進捗を足しました（1.20.1）。段階があるアイテム（基本→上級→エリート、Tier 1→2→3 など）とアップグレードのアイテムを、進捗の画面で順番に一列に並べました。",
+          "released": "2026-11-07"
+        },
+        {
+          "version": "1.8.3",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/tonsofadv/1.21.1-neoforge/tonsofadv-neoforge-1.21.1-1.8.3.jar",
+          "fileName": "tonsofadv-neoforge-1.21.1-1.8.3.jar",
+          "sha256": "d523d30072dbbcf16d58f01fc4bc9c3f0f0e79132db608c74d410c2037095ccb",
+          "changelog": "段階があるアイテム（基本→上級→エリート、Tier 1→2→3 など）とアップグレードのアイテムを、進捗の画面で順番に一列に並べました。",
+          "released": "2026-11-07"
+        },
+        {
+          "version": "1.8.3",
+          "mc": "1.21.1",
+          "loader": "fabric",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/tonsofadv/1.21.1-fabric/tonsofadv-fabric-1.21.1-1.8.3.jar",
+          "fileName": "tonsofadv-fabric-1.21.1-1.8.3.jar",
+          "sha256": "389235c0dc49092a01b5478ccc69ac92d49328bfa4e7b44b511c298242d69a17",
+          "changelog": "段階があるアイテム（基本→上級→エリート、Tier 1→2→3 など）とアップグレードのアイテムを、進捗の画面で順番に一列に並べました。",
+          "released": "2026-11-07"
+        },
+        {
+          "version": "1.8.3",
+          "mc": "26.2",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/tonsofadv/26.2-neoforge/tonsofadv-neoforge-26.2-1.8.3.jar",
+          "fileName": "tonsofadv-neoforge-26.2-1.8.3.jar",
+          "sha256": "51779c7d6731e4e473904f346dcbee1414337351cd211b7b6f08d0ebf1b1abf8",
+          "changelog": "段階があるアイテム（基本→上級→エリート、Tier 1→2→3 など）とアップグレードのアイテムを、進捗の画面で順番に一列に並べました。",
+          "released": "2026-11-07"
+        },
+        {
+          "version": "1.8.3",
+          "mc": "26.2",
+          "loader": "fabric",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/tonsofadv/26.2-fabric/tonsofadv-fabric-26.2-1.8.3.jar",
+          "fileName": "tonsofadv-fabric-26.2-1.8.3.jar",
+          "sha256": "81dd4bb973e6e1e637883fab4e43f99a23ec986dfd0e3ec81e078e3efe7ffa37",
+          "changelog": "段階があるアイテム（基本→上級→エリート、Tier 1→2→3 など）とアップグレードのアイテムを、進捗の画面で順番に一列に並べました。",
+          "released": "2026-11-07"
+        },
+        {
           "version": "1.8.2",
           "mc": "1.21.1",
           "loader": "neoforge",

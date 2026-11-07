@@ -823,6 +823,58 @@ MOD_DIMS = {"twilightforest": [("twilightforest:twilight_forest", "黄昏の森�
 MODDATA = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "modsdata.json"), encoding="utf-8"))
 
 
+
+# ---------------- items that come in steps ----------------
+TIER_WORDS = ["primitive", "crude", "wooden", "wood", "leather", "stone", "basic", "simple", "starter", "copper", "common",
+              "standard", "normal", "iron", "bronze", "improved", "hardened", "reinforced", "silver", "gold", "golden",
+              "advanced", "enhanced", "uncommon", "steel", "signalum", "lumium", "emerald", "diamond", "elite", "rare", "epic",
+              "resonant", "enderium", "obsidian", "netherite", "ultimate", "legendary", "allthemodium", "vibranium",
+              "unobtainium", "insane", "supreme", "infinity", "creative"]
+TIER_RANK = {w: n for n, w in enumerate(TIER_WORDS)}
+ROW_MAX = 16
+
+
+def tier_of(tok):
+    """rank of one word of an item id (None if it is not a step word)"""
+    if tok in TIER_RANK:
+        return TIER_RANK[tok] * 100
+    m = re.fullmatch(r"(?:tier|t|mk|lv|level)?(\d{1,2})", tok)
+    if m:
+        return 10000 + int(m.group(1))
+    return None
+
+
+def item_units(ids, items):
+    """[("row", [ids in step order]) | ("group", [ids])] -- every id once"""
+    fam = {}
+    for i in ids:
+        toks = i.split("_")
+        rank = [tier_of(t) for t in toks]
+        base = "_".join(t for t, r in zip(toks, rank) if r is None)
+        if base:
+            fam.setdefault(base, []).append((sum(r for r in rank if r is not None), i, any(r is not None for r in rank)))
+    used, units = set(), []
+    for base in sorted(fam):
+        members = fam[base]
+        if len(members) < 2 or sum(1 for m in members if m[2]) < 1 or len({m[0] for m in members}) < len(members):
+            continue  # not a ladder (or two items on the same step)
+        g = [i for _, i, _ in sorted(members)]
+        for k in range(0, len(g), ROW_MAX):
+            units.append(("row", g[k:k + ROW_MAX]))
+        used.update(g)
+    ups = [i for i in ids if i not in used and "upgrade" in i]
+    for k in range(0, len(ups), ROW_MAX):
+        units.append(("row", ups[k:k + ROW_MAX]))
+    used.update(ups)
+    rest = [i for i in ids if i not in used]
+    for k in range(0, len(rest), 12):
+        g = sorted(rest[k:k + 12], key=lambda i: (items[i] != "item", i))  # prefer a real item (not a block) as the group head
+        units.append(("group", g))
+    order = {i: n for n, i in enumerate(ids)}
+    units.sort(key=lambda u: min(order[i] for i in u[1]))  # keep the tabs roughly in name order
+    return units
+
+
 def gen_mods(self):
     data = MODDATA.get(self.v, {})
     selected = MODDATA.get("_selected_" + self.v) or MODDATA.get("_selected", [])
@@ -860,9 +912,17 @@ def gen_mods(self):
             a["display"]["icon"] = iconspec
             a.update(cond)
             return p
-        # split items into tabs of ~150
-        chunks = [ids[i:i + 150] for i in range(0, len(ids), 150)]
-        if len(chunks) > 1 and len(chunks[-1]) < 40:
+        # items in steps (basic → advanced → elite → ultimate, tier 1 → 2 → 3, iron → diamond → netherite ...) are lined up
+        # in a row in that order; other upgrades get a row of their own; the rest come in groups of 12 as before
+        units = item_units(ids, items)
+        chunks, cur = [], []
+        for u in units:
+            if cur and sum(len(x[1]) for x in cur) + len(u[1]) > 150:
+                chunks.append(cur); cur = []
+            cur.append(u)
+        if cur:
+            chunks.append(cur)
+        if len(chunks) > 1 and sum(len(x[1]) for x in chunks[-1]) < 40:
             chunks[-2].extend(chunks.pop())
         roots = []
         for ci, chunk in enumerate(chunks or [[]]):
@@ -870,24 +930,27 @@ def gen_mods(self):
             sfx = "" if ci == 0 else f" {ci + 1}"
             t = L(f"{NS}.tab.{tkey}", f"どっさり：{ja}{sfx}", f"Tons: {en}{sfx}")
             ds = L(f"{NS}.tab.{tkey}.desc", f"{ja}（{cat}系）の進捗がどっさり詰まっています" if cat else f"{ja}の進捗がどっさり詰まっています", f"Lots of {en} advancements")
-            root_icon = (icon if ci == 0 else chunk[0]) if (icon or chunk) else None
+            first = chunk[0][1][0] if chunk else None
+            root_icon = (icon if ci == 0 else first) if (icon or first) else None
             r = add(f"{tkey}/_root", None, mod_icon(root_icon) if root_icon else self.icon("book"), tr(t), tr(ds),
                     {"tick": {"trigger": "minecraft:tick"}}, xp=0, bgx=bg)
             self.advs[r]["display"]["show_toast"] = False
             self.advs[r]["display"]["announce_to_chat"] = False
             roots.append(r)
-            for gi in range(0, len(chunk), 12):
-                g = chunk[gi:gi + 12]
-                # prefer a real item (not a block) as the group head
-                g.sort(key=lambda i: (items[i] != "item", i))
+            for kind, g in chunk:
                 head = None
-                for i in g:
+                prev = r
+                for n, i in enumerate(g):
                     frame = "challenge" if any(w in i for w in ("netherite", "ultimate", "infinity", "gaia", "terrasteel")) else (
                         "goal" if any(w in i for w in ("elite", "trophy", "_core", "diamond", "atomic", "fusion", "fission", "spell_book")) else "task")
+                    if kind == "row" and n == len(g) - 1 and len(g) >= 3 and frame == "task":
+                        frame = "goal"  # the last step of a row
                     key = f"{items[i]}.{ns}.{i}"
-                    p = add(f"{tkey}/{i}", head or r, mod_icon(i), vtr(key), tr(f"{NS}.obtain.desc", vtr(key)),
+                    parent = prev if kind == "row" else (head or r)
+                    p = add(f"{tkey}/{i}", parent, mod_icon(i), vtr(key), tr(f"{NS}.obtain.desc", vtr(key)),
                             {"get": {"trigger": "minecraft:inventory_changed", "conditions": {"items": [mod_ipred(i)]}}}, frame=frame)
                     head = head or p
+                    prev = p
         r0 = roots[0]
         # mobs
         prev = None
