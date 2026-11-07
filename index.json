@@ -636,6 +636,56 @@
       "summary": "進捗を1700個以上追加するMOD。アイテム集め・モブ討伐・探検・やり込み・ネタ系の進捗がどっさり入っていて、達成すると経験値がもらえます。v1.4.0 から、人気のMOD100個（Create・Mekanism・AE2・黄昏の森など）の進捗も追加されます。データパック版もあります。",
       "versions": [
         {
+          "version": "1.8.4",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/tonsofadv/1.20.1-forge/tonsofadv-forge-1.20.1-1.8.4.jar",
+          "fileName": "tonsofadv-forge-1.20.1-1.8.4.jar",
+          "sha256": "b6e6eb56cdd95d6677c679dbd3aea436a146ee04cdc85897482e42fd7af7a88a",
+          "changelog": "同じことをすると同時に達成される進捗（「おやすみ」と「すやすや」、「泳いだ」と「クロール」など）を1つにまとめました。",
+          "released": "2026-11-07"
+        },
+        {
+          "version": "1.8.4",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/tonsofadv/1.21.1-neoforge/tonsofadv-neoforge-1.21.1-1.8.4.jar",
+          "fileName": "tonsofadv-neoforge-1.21.1-1.8.4.jar",
+          "sha256": "77c2128a235fe015264e145cfd59028c180a3c12de45a9565ffed0066893cc5f",
+          "changelog": "同じことをすると同時に達成される進捗（「おやすみ」と「すやすや」、「泳いだ」と「クロール」など）を1つにまとめました。",
+          "released": "2026-11-07"
+        },
+        {
+          "version": "1.8.4",
+          "mc": "1.21.1",
+          "loader": "fabric",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/tonsofadv/1.21.1-fabric/tonsofadv-fabric-1.21.1-1.8.4.jar",
+          "fileName": "tonsofadv-fabric-1.21.1-1.8.4.jar",
+          "sha256": "0befe4df4bbc437c4a92b0a81caeae6c4c8a5644772a13e567bf826abf7771cf",
+          "changelog": "同じことをすると同時に達成される進捗（「おやすみ」と「すやすや」、「泳いだ」と「クロール」など）を1つにまとめました。",
+          "released": "2026-11-07"
+        },
+        {
+          "version": "1.8.4",
+          "mc": "26.2",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/tonsofadv/26.2-neoforge/tonsofadv-neoforge-26.2-1.8.4.jar",
+          "fileName": "tonsofadv-neoforge-26.2-1.8.4.jar",
+          "sha256": "a138ad32c6dc512e5972b56f804704c6977549ddc91db05f4c6b784d2d07e66d",
+          "changelog": "同じことをすると同時に達成される進捗（「おやすみ」と「すやすや」、「泳いだ」と「クロール」など）を1つにまとめました。",
+          "released": "2026-11-07"
+        },
+        {
+          "version": "1.8.4",
+          "mc": "26.2",
+          "loader": "fabric",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/tonsofadv/26.2-fabric/tonsofadv-fabric-26.2-1.8.4.jar",
+          "fileName": "tonsofadv-fabric-26.2-1.8.4.jar",
+          "sha256": "7888c4b7a7a0213a33001b7a5b50794caf93503b70b3c2c8f86e595f7e0da843",
+          "changelog": "同じことをすると同時に達成される進捗（「おやすみ」と「すやすや」、「泳いだ」と「クロール」など）を1つにまとめました。",
+          "released": "2026-11-07"
+        },
+        {
           "version": "1.8.3",
           "mc": "1.20.1",
           "loader": "forge",

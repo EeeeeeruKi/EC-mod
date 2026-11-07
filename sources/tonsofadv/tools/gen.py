@@ -756,6 +756,7 @@ class Gen:
         self.gen_mods()
         self.gen_actions_java()
         self.gen_small_java()
+        self.dedupe()
         # sanity: icons must exist, parents must exist
         for p, a in self.advs.items():
             ic = a["display"]["icon"]
@@ -987,6 +988,114 @@ def gen_mods(self):
 
 
 Gen.gen_mods = gen_mods
+
+
+# ---------------- the same thing twice ----------------
+FIRST_TRIGGERS = {  # trigger without conditions -> the stat that counts the same thing
+    "minecraft:slept_in_bed": ("custom", "minecraft:sleep_in_bed"),
+    "minecraft:fishing_rod_hooked": ("custom", "minecraft:fish_caught"),
+    "minecraft:villager_trade": ("custom", "minecraft:traded_with_villager"),
+    "minecraft:enchanted_item": ("custom", "minecraft:enchant_item"),
+    "minecraft:bred_animals": ("custom", "minecraft:animals_bred"),
+}
+FLAG_STATS = {"is_swimming": "minecraft:swim_one_cm", "is_sneaking": "minecraft:crouch_one_cm", "is_sprinting": "minecraft:sprint_one_cm",
+              "is_fall_flying": "minecraft:aviate_one_cm", "is_on_fire": "on_fire"}
+VEHICLE_STATS = {"minecraft:boat": "minecraft:boat_one_cm", "minecraft:minecart": "minecraft:minecart_one_cm", "minecraft:horse": "minecraft:horse_one_cm",
+                 "minecraft:pig": "minecraft:pig_one_cm", "minecraft:strider": "minecraft:strider_one_cm"}
+
+
+def _one(v):
+    if isinstance(v, list):
+        return v[0] if len(v) == 1 else None
+    return v
+
+
+def meaning(a):
+    """what an advancement asks for, so that two advancements asking for the same first-time thing compare equal"""
+    crit = list(a["criteria"].values())
+    if len(crit) != 1:
+        return None
+    c = crit[0]
+    t = c["trigger"]
+    cond = c.get("conditions") or {}
+    if t in ("minecraft:location", "minecraft:tick"):
+        pl = cond.get("player") or {}
+        if not pl:
+            return None
+        if set(pl) == {"type_specific"}:
+            st = pl["type_specific"].get("stats") or []
+            if len(st) == 1 and set(pl["type_specific"]) <= {"type", "stats"}:
+                x = st[0]
+                mn = x.get("value", {}).get("min")
+                stype = x["type"].split(":")[-1]
+                small = mn is not None and (mn <= 1 or (str(x["stat"]).endswith("_one_cm") and mn <= 1000))
+                if small:
+                    return ("first", stype, x["stat"])
+                return ("stat", stype, x["stat"], mn)
+        if set(pl) == {"flags"} and len(pl["flags"]) == 1:
+            (f, v), = pl["flags"].items()
+            if v is True and f in FLAG_STATS:
+                return ("first", "custom", FLAG_STATS[f])
+        if set(pl) == {"vehicle"} and set(pl["vehicle"]) == {"type"} and pl["vehicle"]["type"] in VEHICLE_STATS:
+            return ("first", "custom", VEHICLE_STATS[pl["vehicle"]["type"]])
+        return ("same", json.dumps(c, sort_keys=True))
+    if t == "minecraft:entity_hurt_player" and set(cond) == {"damage"} and set(cond["damage"]) == {"type"}:
+        tags = cond["damage"]["type"].get("tags") or []
+        if set(cond["damage"]["type"]) == {"tags"} and len(tags) == 1 and tags[0].get("expected") and tags[0]["id"] == "minecraft:is_fire":
+            return ("first", "custom", "on_fire")  # catching fire = getting hurt by fire
+    if t in FIRST_TRIGGERS and not cond:
+        return ("first",) + FIRST_TRIGGERS[t]
+    if t == "minecraft:consume_item" and set(cond) == {"item"} and set(cond["item"]) == {"items"}:
+        it = _one(cond["item"]["items"])
+        if isinstance(it, str) and not it.startswith("#"):
+            return ("first", "used", it)
+    if t == "minecraft:player_killed_entity" and set(cond) == {"entity"} and set(cond["entity"]) == {"type"}:
+        e = cond["entity"]["type"]
+        if isinstance(e, str) and not e.startswith("#"):
+            return ("first", "killed", e)
+    return ("same", json.dumps(c, sort_keys=True))
+
+
+def dedupe(self):
+    """drop an advancement when another one already asks for the same thing (for example 「おやすみ」 and 「すやすや」)"""
+    seen, drop = {}, {}
+    for p, a in self.advs.items():
+        if "display" not in a or p.endswith("root"):
+            continue
+        k = meaning(a)
+        if k is None:
+            continue
+        if k not in seen:
+            seen[k] = p
+            continue
+        keep = seen[k]
+        # the 「ちょっとした行動」 tab gives way to the older tabs
+        if keep.startswith("small/") and not p.startswith("small/"):
+            drop[keep] = p
+            seen[k] = p
+        else:
+            drop[p] = keep
+    if not drop:
+        return
+    def up(ref):  # the nearest parent that stays
+        while ref and ref.split(":", 1)[1] in drop:
+            ref = self.advs[ref.split(":", 1)[1]].get("parent")
+        return ref
+    for p in drop:
+        parent = up(self.advs[p].get("parent"))
+        for q, b in self.advs.items():
+            if b.get("parent") == f"{NS}:{p}":
+                if parent:
+                    b["parent"] = parent
+                else:
+                    b.pop("parent", None)
+    for p in drop:
+        del self.advs[p]
+    self.vanilla_paths -= set(drop)
+    self.dropped = drop
+
+
+Gen.dedupe = dedupe
 
 
 # ---------------- "do something N times" ----------------
