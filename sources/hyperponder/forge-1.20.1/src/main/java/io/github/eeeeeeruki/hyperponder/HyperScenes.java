@@ -38,6 +38,12 @@ public class HyperScenes {
         });
     }
 
+    private static ElementLink<EntityElement> boss(SceneBuilder scene, SceneBuildingUtil util, int x, int y, int z, ResourceLocation egg) {
+        ElementLink<EntityElement> link = scene.world().createItemEntity(util.vector().centerOf(x, y, z), Vec3.ZERO, stack(egg));
+        scene.world().modifyEntity(link, e -> e.setNoGravity(true));
+        return link;
+    }
+
     private static void poof(SceneBuilder scene, SceneBuildingUtil util, int x, int z) {
         scene.effects().emitParticles(util.vector().centerOf(x, 1, z),
             scene.effects().simpleParticleEmitter(ParticleTypes.POOF, Vec3.ZERO), 12, 2);
@@ -200,6 +206,121 @@ public class HyperScenes {
         scene.overlay().showText(80).text("Right-click the player inside the GUI to open your own VRX.").independent(30).attachKeyFrame();
         scene.idle(90);
         scene.overlay().showText(80).text("The contents can also be set from JEI or EMI when they are installed.").independent(30);
+        scene.idle(90);
+    }
+
+    public static void fumetsu_summon(SceneBuilder scene, SceneBuildingUtil util) {
+        ResourceLocation item = new ResourceLocation("hyperdaimc", "god_sigil");
+        scene.title("fumetsu_summon", "Summoning the Fumetsu Wizard");
+
+        scene.configureBasePlate(0, 0, 5);
+        scene.showBasePlate();
+        scene.idle(5);
+        scene.world().showSection(util.select().position(2, 1, 2), Direction.DOWN);
+        scene.idle(5);
+        scene.world().showSection(util.select().fromTo(1, 2, 2, 3, 2, 2), Direction.DOWN);
+        scene.idle(10);
+        scene.overlay().showOutlineWithText(util.select().position(2, 1, 2).add(util.select().fromTo(1, 2, 2, 3, 2, 2)), 80).colored(PonderPalette.BLUE).text("Build a T shape out of four Bone Souls, like a Wither.").placeNearTarget().attachKeyFrame();
+        scene.idle(90);
+        scene.world().showSection(util.select().position(2, 3, 2), Direction.DOWN);
+        scene.idle(5);
+        scene.world().showSection(util.select().position(1, 3, 2), Direction.DOWN);
+        scene.idle(5);
+        scene.world().showSection(util.select().position(3, 3, 2), Direction.DOWN);
+        scene.idle(10);
+        scene.overlay().showOutlineWithText(util.select().fromTo(1, 3, 2, 3, 3, 2), 90).colored(PonderPalette.GREEN).text("Put the Right, centre and Left Fumetsu Skulls on top. The left and right ones may also be swapped.").placeNearTarget().attachKeyFrame();
+        scene.idle(100);
+        Vec3 skullTop = util.vector().topOf(2, 3, 2);
+        scene.overlay().showControls(skullTop, Pointing.DOWN, 70).rightClick().whileSneaking().withItem(stack(item));
+        scene.overlay().showText(80).text("Sneak and right-click the shape with the God Sigil.").pointAt(skullTop).placeNearTarget().attachKeyFrame();
+        scene.idle(90);
+        for (int x = 1; x <= 3; x++) {
+            scene.world().destroyBlock(new BlockPos(x, 3, 2));
+            scene.world().destroyBlock(new BlockPos(x, 2, 2));
+        }
+        scene.world().destroyBlock(new BlockPos(2, 1, 2));
+        scene.idle(15);
+        ResourceLocation eggId = new ResourceLocation("hyperdaimc", "fumetsu");
+        boss(scene, util, 2, 2, 2, eggId);
+        scene.effects().emitParticles(util.vector().centerOf(2, 2, 2), scene.effects().simpleParticleEmitter(ParticleTypes.END_ROD, new Vec3(0, 0.05, 0)), 20, 4);
+        scene.overlay().showText(80).text("The blocks vanish and the Fumetsu Wizard appears. The God Sigil is not used up.").pointAt(util.vector().centerOf(2, 2, 2)).placeNearTarget().colored(PonderPalette.RED).attachKeyFrame();
+        scene.idle(90);
+        scene.overlay().showText(80).text("This works only while summoning is enabled in the config. The spawn egg also calls it.").independent(30);
+        scene.idle(90);
+    }
+
+    public static void fumetsu_defeat(SceneBuilder scene, SceneBuildingUtil util) {
+        ResourceLocation item = new ResourceLocation("hyperdaimc", "novel");
+        scene.title("fumetsu_defeat", "Defeating the Fumetsu Wizard");
+
+        scene.configureBasePlate(0, 0, 5);
+        scene.showBasePlate();
+        scene.idle(5);
+        scene.world().showSection(util.select().layersFrom(1), Direction.DOWN);
+        scene.idle(10);
+        ResourceLocation eggId = new ResourceLocation("hyperdaimc", "fumetsu");
+        ElementLink<EntityElement> boss = boss(scene, util, 2, 2, 2, eggId);
+        Vec3 bossPos = util.vector().centerOf(2, 2, 2);
+        scene.overlay().showControls(bossPos.add(1.5, 0, 0), Pointing.LEFT, 70).leftClick().withItem(stack(item));
+        scene.overlay().showText(80).text("Attack it with the Novel Calibur. That is the way to defeat the Fumetsu Wizard.").pointAt(bossPos).placeNearTarget().colored(PonderPalette.GREEN).attachKeyFrame();
+        scene.idle(90);
+        scene.world().modifyEntity(boss, e -> e.discard());
+        scene.effects().emitParticles(bossPos, scene.effects().simpleParticleEmitter(ParticleTypes.POOF, Vec3.ZERO), 20, 3);
+        scene.idle(40);
+        scene.overlay().showText(90).text("There is another way out. If it is enabled in the config, the Wizard vanishes whenever a player logs in, logs out, changes dimension, dies or respawns.").independent(30).attachKeyFrame();
+        scene.idle(100);
+        scene.overlay().showText(80).text("When it vanishes that way, it leaves 8 to 12 Bug Stars behind.").independent(30).attachKeyFrame();
+        scene.idle(90);
+    }
+
+    public static void fumetsu_rage(SceneBuilder scene, SceneBuildingUtil util) {
+        ResourceLocation item = new ResourceLocation("hyperdaimc", "fumetsu");
+        scene.title("fumetsu_rage", "The Fumetsu Wizard's Rage");
+
+        scene.configureBasePlate(0, 0, 5);
+        scene.showBasePlate();
+        scene.idle(5);
+        scene.world().showSection(util.select().layersFrom(1), Direction.DOWN);
+        scene.idle(10);
+        ResourceLocation eggId = new ResourceLocation("hyperdaimc", "fumetsu");
+        boss(scene, util, 2, 2, 2, eggId);
+        Vec3 bossPos = util.vector().centerOf(2, 2, 2);
+        scene.overlay().showText(70).text("While calm, it just drifts around in the air.").pointAt(bossPos).placeNearTarget().attachKeyFrame();
+        scene.idle(80);
+        scene.effects().emitParticles(bossPos, scene.effects().simpleParticleEmitter(ParticleTypes.ANGRY_VILLAGER, Vec3.ZERO), 8, 4);
+        scene.overlay().showText(80).text("When it is hurt, or its health drops at all, it gets angry. It never calms down again.").pointAt(bossPos).placeNearTarget().colored(PonderPalette.RED).attachKeyFrame();
+        scene.idle(90);
+        scene.overlay().showText(80).text("Angry, it targets every living entity around it at random. Players come first.").pointAt(bossPos).placeNearTarget().colored(PonderPalette.RED).attachKeyFrame();
+        scene.idle(90);
+        scene.effects().emitParticles(bossPos, scene.effects().simpleParticleEmitter(ParticleTypes.SOUL_FIRE_FLAME, new Vec3(0.12, 0, 0)), 10, 8);
+        scene.overlay().showText(80).text("It fires skulls in three colours, and sometimes a huge skull.").pointAt(bossPos).placeNearTarget().attachKeyFrame();
+        scene.idle(90);
+        scene.effects().emitParticles(bossPos, scene.effects().simpleParticleEmitter(ParticleTypes.EXPLOSION, Vec3.ZERO), 3, 6);
+        scene.overlay().showText(80).text("Every few seconds it charges at its target and bursts as a Fumetsu Storm.").pointAt(bossPos).placeNearTarget().colored(PonderPalette.BLUE).attachKeyFrame();
+        scene.idle(90);
+        scene.overlay().showText(80).text("Very rarely it also uses a special annihilating attack.").independent(30);
+        scene.idle(90);
+    }
+
+    public static void fumetsu_immortal(SceneBuilder scene, SceneBuildingUtil util) {
+        ResourceLocation item = new ResourceLocation("hyperdaimc", "fumetsu");
+        scene.title("fumetsu_immortal", "The Fumetsu Wizard's Immortality");
+
+        scene.configureBasePlate(0, 0, 5);
+        scene.showBasePlate();
+        scene.idle(5);
+        scene.world().showSection(util.select().layersFrom(1), Direction.DOWN);
+        scene.idle(10);
+        ResourceLocation eggId = new ResourceLocation("hyperdaimc", "fumetsu");
+        boss(scene, util, 2, 2, 2, eggId);
+        Vec3 bossPos = util.vector().centerOf(2, 2, 2);
+        scene.overlay().showText(80).text("Its health never stays lowered. It is put back at once, and it also heals every second.").pointAt(bossPos).placeNearTarget().colored(PonderPalette.GREEN).attachKeyFrame();
+        scene.idle(90);
+        scene.overlay().showText(80).text("The death process itself is switched off, so ordinary damage and commands cannot kill it.").pointAt(bossPos).placeNearTarget().colored(PonderPalette.RED).attachKeyFrame();
+        scene.idle(90);
+        scene.overlay().showText(80).text("It also resists things that try to remove the entity, just like a Muteki player.").pointAt(bossPos).placeNearTarget().colored(PonderPalette.BLUE).attachKeyFrame();
+        scene.idle(90);
+        scene.overlay().showText(80).text("The Novel Calibur is the exception. Only it gets past this immortality.").independent(30).attachKeyFrame();
         scene.idle(90);
     }
 

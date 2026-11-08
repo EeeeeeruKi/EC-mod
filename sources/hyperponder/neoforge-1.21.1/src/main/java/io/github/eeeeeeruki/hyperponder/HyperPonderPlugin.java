@@ -13,11 +13,15 @@ public class HyperPonderPlugin implements PonderPlugin {
 
     @Override
     public void registerScenes(PonderSceneRegistrationHelper<ResourceLocation> helper) {
-        helper.addStoryBoard(ResourceLocation.fromNamespaceAndPath("hyperdaimc", "muteki"), "muteki", HyperScenes::muteki);
-        helper.addStoryBoard(ResourceLocation.fromNamespaceAndPath("hyperdaimc", "novel"), "novel", HyperScenes::novel);
-        helper.addStoryBoard(ResourceLocation.fromNamespaceAndPath("hyperdaimc", "chronicle"), "chronicle", HyperScenes::chronicle);
-        helper.addStoryBoard(ResourceLocation.fromNamespaceAndPath("hyperdaimc", "paradox"), "paradox", HyperScenes::paradox);
-        helper.addStoryBoard(ResourceLocation.fromNamespaceAndPath("hyperdaimc", "vrx"), "vrx", HyperScenes::vrx);
+        helper.forComponents(ResourceLocation.fromNamespaceAndPath("hyperdaimc", "muteki")).addStoryBoard("muteki", HyperScenes::muteki);
+        helper.forComponents(ResourceLocation.fromNamespaceAndPath("hyperdaimc", "novel")).addStoryBoard("novel", HyperScenes::novel);
+        helper.forComponents(ResourceLocation.fromNamespaceAndPath("hyperdaimc", "chronicle")).addStoryBoard("chronicle", HyperScenes::chronicle);
+        helper.forComponents(ResourceLocation.fromNamespaceAndPath("hyperdaimc", "paradox")).addStoryBoard("paradox", HyperScenes::paradox);
+        helper.forComponents(ResourceLocation.fromNamespaceAndPath("hyperdaimc", "vrx")).addStoryBoard("vrx", HyperScenes::vrx);
+        helper.forComponents(ResourceLocation.fromNamespaceAndPath("hyperdaimc", "god_sigil"), ResourceLocation.fromNamespaceAndPath("hyperdaimc", "soul"), ResourceLocation.fromNamespaceAndPath("hyperdaimc", "fumetsu_skull"), ResourceLocation.fromNamespaceAndPath("hyperdaimc", "fumetsu")).addStoryBoard("fumetsu_summon", HyperScenes::fumetsu_summon);
+        helper.forComponents(ResourceLocation.fromNamespaceAndPath("hyperdaimc", "fumetsu"), ResourceLocation.fromNamespaceAndPath("hyperdaimc", "novel")).addStoryBoard("fumetsu_arena", HyperScenes::fumetsu_defeat);
+        helper.forComponents(ResourceLocation.fromNamespaceAndPath("hyperdaimc", "fumetsu")).addStoryBoard("fumetsu_arena", HyperScenes::fumetsu_rage);
+        helper.forComponents(ResourceLocation.fromNamespaceAndPath("hyperdaimc", "fumetsu")).addStoryBoard("fumetsu_arena", HyperScenes::fumetsu_immortal);
 
     }
 }
