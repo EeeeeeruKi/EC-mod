@@ -247,8 +247,28 @@
     },
     "hijiki": {
       "name": "ひじき豆modV2",
-      "summary": "ひじき豆とひじブロックを追加するMOD。v1.0.2 から「弱いよ」と「弱いよブロック」、v1.0.5 から「iri」と「iriブロック」も入っています。",
+      "summary": "ひじき豆とひじブロックを追加するMOD。v1.0.2 から「弱いよ」と「弱いよブロック」、v1.0.5 から「iri」と「iriブロック」、v1.1.0 から「ひじウィザー」も入っています。",
       "versions": [
+        {
+          "version": "1.1.0-neoforge",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/hijiki/1.21.1-neoforge/hijiki-neoforge-1.21.1-1.1.0-neoforge.jar",
+          "fileName": "hijiki-neoforge-1.21.1-1.1.0-neoforge.jar",
+          "sha256": "01419daf369a5e3962aa675f54f009e81b995626a033e7eaa0242599104ca8e3",
+          "changelog": "「ひじウィザー」とそのスポーンエッグを追加しました。今は見た目だけで、動いたり攻撃したりはしません。",
+          "released": "2026-11-08"
+        },
+        {
+          "version": "1.1.0-forge",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/hijiki/1.20.1-forge/hijiki-forge-1.20.1-1.1.0-forge.jar",
+          "fileName": "hijiki-forge-1.20.1-1.1.0-forge.jar",
+          "sha256": "cecf8f2804c7b1f3052d7abcae52d765c79b6ca49df5fe6625bb791b1524fbe7",
+          "changelog": "「ひじウィザー」とそのスポーンエッグを追加しました。今は見た目だけで、動いたり攻撃したりはしません。",
+          "released": "2026-11-08"
+        },
         {
           "version": "1.0.9-neoforge",
           "mc": "1.21.1",
