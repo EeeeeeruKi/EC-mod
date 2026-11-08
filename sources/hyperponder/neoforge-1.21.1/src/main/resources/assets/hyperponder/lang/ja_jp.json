@@ -37,9 +37,10 @@
   "hyperponder.ponder.fumetsu_summon.text_4": "ブロックが消えて、フメツウィザーが現れます。神のしるしは減りません。",
   "hyperponder.ponder.fumetsu_summon.text_5": "コンフィグで召喚を有効にしているときだけ使えます。スポーンエッグでも呼び出せます。",
   "hyperponder.ponder.fumetsu_defeat.header": "フメツウィザーの倒し方",
-  "hyperponder.ponder.fumetsu_defeat.text_1": "ノベルカリバーで攻撃します。これがフメツウィザーを倒す方法です。",
-  "hyperponder.ponder.fumetsu_defeat.text_2": "もう一つ逃れる方法があります。コンフィグで有効なら、プレイヤーのログイン・ログアウト・ディメンション移動・死亡・リスポーンのたびにフメツウィザーは消えます。",
-  "hyperponder.ponder.fumetsu_defeat.text_3": "その方法で消えたときは、バグスターを8〜12個落とします。",
+  "hyperponder.ponder.fumetsu_defeat.text_1": "フメツウィザーはノベルカリバーの攻撃も受けません。普通の攻撃でも倒せません。",
+  "hyperponder.ponder.fumetsu_defeat.text_2": "基本的な倒し方は、再読み込みです。プレイヤーがログイン・ログアウト・ディメンション移動・死亡・リスポーンをすると、フメツウィザーは消えます。",
+  "hyperponder.ponder.fumetsu_defeat.text_3": "コンフィグで再読み込みによる消滅を有効にしているときの動作です。初期設定では有効です。",
+  "hyperponder.ponder.fumetsu_defeat.text_4": "この方法で消えたときは、バグスターを8〜12個落とします。",
   "hyperponder.ponder.fumetsu_rage.header": "フメツウィザーが怒った時の挙動",
   "hyperponder.ponder.fumetsu_rage.text_1": "怒っていないあいだは、空中をふわふわと漂っています。",
   "hyperponder.ponder.fumetsu_rage.text_2": "攻撃を受けたり体力が減ったりすると怒ります。一度怒ると、もう元には戻りません。",
@@ -51,5 +52,5 @@
   "hyperponder.ponder.fumetsu_immortal.text_1": "体力が減っても、すぐに元の値へ戻されます。さらに1秒ごとに回復します。",
   "hyperponder.ponder.fumetsu_immortal.text_2": "死ぬ処理そのものが無効になっていて、普通のダメージやコマンドでは倒せません。",
   "hyperponder.ponder.fumetsu_immortal.text_3": "ムテキなプレイヤーと同じように、エンティティを消そうとする処理にも耐えます。",
-  "hyperponder.ponder.fumetsu_immortal.text_4": "例外はノベルカリバーだけです。この不死性を破れるのは、ノベルカリバーだけです。"
+  "hyperponder.ponder.fumetsu_immortal.text_4": "ノベルカリバーの攻撃も受けません。消せるのは、再読み込みだけです。"
 }

@@ -250,7 +250,7 @@ public class HyperScenes {
     }
 
     public static void fumetsu_defeat(SceneBuilder scene, SceneBuildingUtil util) {
-        ResourceLocation item = new ResourceLocation("hyperdaimc", "novel");
+        ResourceLocation item = new ResourceLocation("hyperdaimc", "fumetsu");
         scene.title("fumetsu_defeat", "Defeating the Fumetsu Wizard");
 
         scene.configureBasePlate(0, 0, 5);
@@ -261,15 +261,17 @@ public class HyperScenes {
         ResourceLocation eggId = new ResourceLocation("hyperdaimc", "fumetsu");
         ElementLink<EntityElement> boss = boss(scene, util, 2, 2, 2, eggId);
         Vec3 bossPos = util.vector().centerOf(2, 2, 2);
-        scene.overlay().showControls(bossPos.add(1.5, 0, 0), Pointing.LEFT, 70).leftClick().withItem(stack(item));
-        scene.overlay().showText(80).text("Attack it with the Novel Calibur. That is the way to defeat the Fumetsu Wizard.").pointAt(bossPos).placeNearTarget().colored(PonderPalette.GREEN).attachKeyFrame();
+        scene.overlay().showControls(bossPos.add(1.5, 0, 0), Pointing.LEFT, 70).leftClick().withItem(stack(new ResourceLocation("hyperdaimc", "novel")));
+        scene.overlay().showText(80).text("The Fumetsu Wizard does not take the Novel Calibur's attacks, and ordinary attacks cannot kill it either.").pointAt(bossPos).placeNearTarget().colored(PonderPalette.RED).attachKeyFrame();
         scene.idle(90);
+        scene.overlay().showText(90).text("The basic way to defeat it is to reload it. When a player logs in, logs out, changes dimension, dies or respawns, the Wizard vanishes.").independent(30).colored(PonderPalette.GREEN).attachKeyFrame();
+        scene.idle(100);
         scene.world().modifyEntity(boss, e -> e.discard());
         scene.effects().emitParticles(bossPos, scene.effects().simpleParticleEmitter(ParticleTypes.POOF, Vec3.ZERO), 20, 3);
         scene.idle(40);
-        scene.overlay().showText(90).text("There is another way out. If it is enabled in the config, the Wizard vanishes whenever a player logs in, logs out, changes dimension, dies or respawns.").independent(30).attachKeyFrame();
-        scene.idle(100);
-        scene.overlay().showText(80).text("When it vanishes that way, it leaves 8 to 12 Bug Stars behind.").independent(30).attachKeyFrame();
+        scene.overlay().showText(80).text("This works while logging out is enabled in the config, which is the default.").independent(30).attachKeyFrame();
+        scene.idle(90);
+        scene.overlay().showText(80).text("When it vanishes this way, it leaves 8 to 12 Bug Stars behind.").independent(30).attachKeyFrame();
         scene.idle(90);
     }
 
@@ -320,7 +322,7 @@ public class HyperScenes {
         scene.idle(90);
         scene.overlay().showText(80).text("It also resists things that try to remove the entity, just like a Muteki player.").pointAt(bossPos).placeNearTarget().colored(PonderPalette.BLUE).attachKeyFrame();
         scene.idle(90);
-        scene.overlay().showText(80).text("The Novel Calibur is the exception. Only it gets past this immortality.").independent(30).attachKeyFrame();
+        scene.overlay().showText(80).text("Even the Novel Calibur does not work on it. Only reloading it makes it vanish.").independent(30).attachKeyFrame();
         scene.idle(90);
     }
 

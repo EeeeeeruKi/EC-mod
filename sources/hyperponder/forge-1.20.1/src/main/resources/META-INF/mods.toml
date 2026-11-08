@@ -4,7 +4,7 @@ license="MIT"
 
 [[mods]]
 modId="hyperponder"
-version="1.1.0"
+version="1.1.1"
 displayName="Hyperlink Ponder"
 authors="EeeeeeruKi"
 description='''Adds Ponder scenes explaining the hyper items of Hyperlink (Muteki Star, Novel Calibur, Chronicle Clock, Pickdox, V.R.X.).'''

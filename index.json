@@ -1218,6 +1218,26 @@
       "summary": "Hyperlink / Hyperlink-E のハイパーアイテムとフメツウィザーの使い方を、Ponder の思案画面で見られるようにするMODです。アイテムを持ってWキー長押しで開きます。",
       "versions": [
         {
+          "version": "1.1.1",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/hyperponder/1.21.1-neoforge/HyperlinkPonder-1.21.1-neoforge-1.1.1.jar",
+          "fileName": "HyperlinkPonder-1.21.1-neoforge-1.1.1.jar",
+          "sha256": "27463a1040976c1b0c32480360eb875773bc85523d934d8fa9cb49fd8c0f854c",
+          "changelog": "フメツウィザーの倒し方の説明を直しました。ノベルカリバーの攻撃は受けず、基本的な倒し方は再読み込み（ログイン・ログアウト・ディメンション移動・死亡・リスポーン）になります。",
+          "released": "2026-11-08"
+        },
+        {
+          "version": "1.1.1",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/hyperponder/1.20.1-forge/HyperlinkPonder-1.20.1-forge-1.1.1.jar",
+          "fileName": "HyperlinkPonder-1.20.1-forge-1.1.1.jar",
+          "sha256": "98842ec6b1b49cfd525dcd92fcbee86e05804d29c8ef161f594c2a24a66c872c",
+          "changelog": "フメツウィザーの倒し方の説明を直しました。ノベルカリバーの攻撃は受けず、基本的な倒し方は再読み込み（ログイン・ログアウト・ディメンション移動・死亡・リスポーン）になります。",
+          "released": "2026-11-08"
+        },
+        {
           "version": "1.1.0",
           "mc": "1.21.1",
           "loader": "neoforge",

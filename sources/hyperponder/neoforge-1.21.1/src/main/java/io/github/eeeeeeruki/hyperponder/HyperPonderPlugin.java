@@ -19,7 +19,7 @@ public class HyperPonderPlugin implements PonderPlugin {
         helper.forComponents(ResourceLocation.fromNamespaceAndPath("hyperdaimc", "paradox")).addStoryBoard("paradox", HyperScenes::paradox);
         helper.forComponents(ResourceLocation.fromNamespaceAndPath("hyperdaimc", "vrx")).addStoryBoard("vrx", HyperScenes::vrx);
         helper.forComponents(ResourceLocation.fromNamespaceAndPath("hyperdaimc", "god_sigil"), ResourceLocation.fromNamespaceAndPath("hyperdaimc", "soul"), ResourceLocation.fromNamespaceAndPath("hyperdaimc", "fumetsu_skull"), ResourceLocation.fromNamespaceAndPath("hyperdaimc", "fumetsu")).addStoryBoard("fumetsu_summon", HyperScenes::fumetsu_summon);
-        helper.forComponents(ResourceLocation.fromNamespaceAndPath("hyperdaimc", "fumetsu"), ResourceLocation.fromNamespaceAndPath("hyperdaimc", "novel")).addStoryBoard("fumetsu_arena", HyperScenes::fumetsu_defeat);
+        helper.forComponents(ResourceLocation.fromNamespaceAndPath("hyperdaimc", "fumetsu")).addStoryBoard("fumetsu_arena", HyperScenes::fumetsu_defeat);
         helper.forComponents(ResourceLocation.fromNamespaceAndPath("hyperdaimc", "fumetsu")).addStoryBoard("fumetsu_arena", HyperScenes::fumetsu_rage);
         helper.forComponents(ResourceLocation.fromNamespaceAndPath("hyperdaimc", "fumetsu")).addStoryBoard("fumetsu_arena", HyperScenes::fumetsu_immortal);
 

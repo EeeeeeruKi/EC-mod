@@ -37,9 +37,10 @@
   "hyperponder.ponder.fumetsu_summon.text_4": "The blocks vanish and the Fumetsu Wizard appears. The God Sigil is not used up.",
   "hyperponder.ponder.fumetsu_summon.text_5": "This works only while summoning is enabled in the config. The spawn egg also calls it.",
   "hyperponder.ponder.fumetsu_defeat.header": "Defeating the Fumetsu Wizard",
-  "hyperponder.ponder.fumetsu_defeat.text_1": "Attack it with the Novel Calibur. That is the way to defeat the Fumetsu Wizard.",
-  "hyperponder.ponder.fumetsu_defeat.text_2": "There is another way out. If it is enabled in the config, the Wizard vanishes whenever a player logs in, logs out, changes dimension, dies or respawns.",
-  "hyperponder.ponder.fumetsu_defeat.text_3": "When it vanishes that way, it leaves 8 to 12 Bug Stars behind.",
+  "hyperponder.ponder.fumetsu_defeat.text_1": "The Fumetsu Wizard does not take the Novel Calibur's attacks, and ordinary attacks cannot kill it either.",
+  "hyperponder.ponder.fumetsu_defeat.text_2": "The basic way to defeat it is to reload it. When a player logs in, logs out, changes dimension, dies or respawns, the Wizard vanishes.",
+  "hyperponder.ponder.fumetsu_defeat.text_3": "This works while logging out is enabled in the config, which is the default.",
+  "hyperponder.ponder.fumetsu_defeat.text_4": "When it vanishes this way, it leaves 8 to 12 Bug Stars behind.",
   "hyperponder.ponder.fumetsu_rage.header": "The Fumetsu Wizard's Rage",
   "hyperponder.ponder.fumetsu_rage.text_1": "While calm, it just drifts around in the air.",
   "hyperponder.ponder.fumetsu_rage.text_2": "When it is hurt, or its health drops at all, it gets angry. It never calms down again.",
@@ -51,5 +52,5 @@
   "hyperponder.ponder.fumetsu_immortal.text_1": "Its health never stays lowered. It is put back at once, and it also heals every second.",
   "hyperponder.ponder.fumetsu_immortal.text_2": "The death process itself is switched off, so ordinary damage and commands cannot kill it.",
   "hyperponder.ponder.fumetsu_immortal.text_3": "It also resists things that try to remove the entity, just like a Muteki player.",
-  "hyperponder.ponder.fumetsu_immortal.text_4": "The Novel Calibur is the exception. Only it gets past this immortality."
+  "hyperponder.ponder.fumetsu_immortal.text_4": "Even the Novel Calibur does not work on it. Only reloading it makes it vanish."
 }
