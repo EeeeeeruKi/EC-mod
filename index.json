@@ -1052,6 +1052,36 @@
       "summary": "画面右上のトースト（進捗・レシピ解除などの通知）をコンパクトにするMOD。たくさん出たときは1件ずつ1行にまとめ、同時に表示できる数も 5 から 20 に増えます。",
       "versions": [
         {
+          "version": "1.2.0",
+          "mc": "1.21.1",
+          "loader": "fabric",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/compacttoasts/1.21.1-fabric/compacttoasts-fabric-1.21.1-1.2.0.jar",
+          "fileName": "compacttoasts-fabric-1.21.1-1.2.0.jar",
+          "sha256": "d4ba87dbc7550ded0e4b041c48580911f47d5497303990e3cd8c0a1b249bb9a8",
+          "changelog": "「見出しの表示」の設定を追加しました（有効・進捗以外・無効。初期設定は進捗以外）。コンパクト表示のとき、バニラと同じように、はじめの2秒は「クエスト完了！」などの見出しを出してから名前に切り替えます。",
+          "released": "2026-11-08"
+        },
+        {
+          "version": "1.2.0",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/compacttoasts/1.21.1-neoforge/compacttoasts-neoforge-1.21.1-1.2.0.jar",
+          "fileName": "compacttoasts-neoforge-1.21.1-1.2.0.jar",
+          "sha256": "3e3d052956215cd916474c7b1250bf37b4f0d641f150c9d343f4d40c28ff1ac9",
+          "changelog": "「見出しの表示」の設定を追加しました（有効・進捗以外・無効。初期設定は進捗以外）。コンパクト表示のとき、バニラと同じように、はじめの2秒は「クエスト完了！」などの見出しを出してから名前に切り替えます。",
+          "released": "2026-11-08"
+        },
+        {
+          "version": "1.2.0",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/compacttoasts/1.20.1-forge/compacttoasts-forge-1.20.1-1.2.0.jar",
+          "fileName": "compacttoasts-forge-1.20.1-1.2.0.jar",
+          "sha256": "adffabdd938d7759d14a4121e6f4ddc4fa60c9fe386dc274d26b78a27a6f6e42",
+          "changelog": "「見出しの表示」の設定を追加しました（有効・進捗以外・無効。初期設定は進捗以外）。コンパクト表示のとき、バニラと同じように、はじめの2秒は「クエスト完了！」などの見出しを出してから名前に切り替えます。",
+          "released": "2026-11-08"
+        },
+        {
           "version": "1.1.0",
           "mc": "1.21.1",
           "loader": "fabric",
