@@ -1,0 +1,38 @@
+modLoader = "javafml"
+loaderVersion = "[1,)"
+license = "MIT"
+
+[[mods]]
+modId = "hyperponder"
+version = "1.0.0"
+displayName = "Hyperlink Ponder"
+authors = "EeeeeeruKi"
+description = '''Adds Ponder scenes explaining the hyper items of Hyperlink (Muteki Star, Novel Calibur, Chronicle Clock, Pickdox, V.R.X.).'''
+
+[[dependencies.hyperponder]]
+modId = "neoforge"
+type = "required"
+versionRange = "[21.0.0,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.hyperponder]]
+modId = "minecraft"
+type = "required"
+versionRange = "[1.21,1.22)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.hyperponder]]
+modId = "ponder"
+type = "required"
+versionRange = "[1.0.0,)"
+ordering = "AFTER"
+side = "CLIENT"
+
+[[dependencies.hyperponder]]
+modId = "hyperdaimc"
+type = "required"
+versionRange = "[0,)"
+ordering = "AFTER"
+side = "CLIENT"

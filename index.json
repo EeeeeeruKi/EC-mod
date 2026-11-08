@@ -1212,6 +1212,32 @@
           "released": "2026-11-03"
         }
       ]
+    },
+    "hyperponder": {
+      "name": "Hyperlink Ponder",
+      "summary": "Hyperlink / Hyperlink-E のハイパーアイテムの使い方を、Ponder の思案画面で見られるようにするMODです。アイテムを持ってWキー長押しで開きます。",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/hyperponder/1.21.1-neoforge/HyperlinkPonder-1.21.1-neoforge-1.0.0.jar",
+          "fileName": "HyperlinkPonder-1.21.1-neoforge-1.0.0.jar",
+          "sha256": "969eb3766befdb74ab5bac21405a50725d34e5c8a206ffd4625a490a88b33227",
+          "changelog": "初版です。Hyperlink のハイパーアイテム5種（ムテキスター・ノベルカリバー・クロニクロック・ピックドクス・V.R.X.）の説明を、Ponder の思案画面で見られます。",
+          "released": "2026-11-08"
+        },
+        {
+          "version": "1.0.0",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/hyperponder/1.20.1-forge/HyperlinkPonder-1.20.1-forge-1.0.0.jar",
+          "fileName": "HyperlinkPonder-1.20.1-forge-1.0.0.jar",
+          "sha256": "9a8a06d8603b688d44e26519a7ad43fe7d2a2485ef15b41b1c05a88fdeb451da",
+          "changelog": "初版です。Hyperlink のハイパーアイテム5種（ムテキスター・ノベルカリバー・クロニクロック・ピックドクス・V.R.X.）の説明を、Ponder の思案画面で見られます。",
+          "released": "2026-11-08"
+        }
+      ]
     }
   }
 }
