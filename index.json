@@ -656,6 +656,56 @@
       "summary": "進捗を1700個以上追加するMOD。アイテム集め・モブ討伐・探検・やり込み・ネタ系の進捗がどっさり入っていて、達成すると経験値がもらえます。v1.4.0 から、人気のMOD100個（Create・Mekanism・AE2・黄昏の森など）の進捗も追加されます。データパック版もあります。",
       "versions": [
         {
+          "version": "1.8.5",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/tonsofadv/1.20.1-forge/tonsofadv-forge-1.20.1-1.8.5.jar",
+          "fileName": "tonsofadv-forge-1.20.1-1.8.5.jar",
+          "sha256": "ce39bdb2d7f1572893e9d4d8ecc618bd1f389cce2bcb1b5a17ce3b1d1cee81db",
+          "changelog": "ふつうの進捗もチャットに流すようにしました。Minecraft 本体に同じ条件の進捗があるものは、本体のほうを残して消しました。いくつかの進捗の名前を変えました。",
+          "released": "2026-11-08"
+        },
+        {
+          "version": "1.8.5",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/tonsofadv/1.21.1-neoforge/tonsofadv-neoforge-1.21.1-1.8.5.jar",
+          "fileName": "tonsofadv-neoforge-1.21.1-1.8.5.jar",
+          "sha256": "60d7a71cfeede0917f58823e330c8aac7072877c48a00e4945530386e7ee285d",
+          "changelog": "ふつうの進捗もチャットに流すようにしました。Minecraft 本体に同じ条件の進捗があるものは、本体のほうを残して消しました。いくつかの進捗の名前を変えました。",
+          "released": "2026-11-08"
+        },
+        {
+          "version": "1.8.5",
+          "mc": "1.21.1",
+          "loader": "fabric",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/tonsofadv/1.21.1-fabric/tonsofadv-fabric-1.21.1-1.8.5.jar",
+          "fileName": "tonsofadv-fabric-1.21.1-1.8.5.jar",
+          "sha256": "4b1ce5d008e8dc450d5a6cb2d605d94a167896a37af84b68e0fd16448f2b5a63",
+          "changelog": "ふつうの進捗もチャットに流すようにしました。Minecraft 本体に同じ条件の進捗があるものは、本体のほうを残して消しました。いくつかの進捗の名前を変えました。",
+          "released": "2026-11-08"
+        },
+        {
+          "version": "1.8.5",
+          "mc": "26.2",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/tonsofadv/26.2-neoforge/tonsofadv-neoforge-26.2-1.8.5.jar",
+          "fileName": "tonsofadv-neoforge-26.2-1.8.5.jar",
+          "sha256": "7fd951184b2245126bfc285e89cccbd1bcad7c064682e40c7ec189682ac069a5",
+          "changelog": "ふつうの進捗もチャットに流すようにしました。Minecraft 本体に同じ条件の進捗があるものは、本体のほうを残して消しました。いくつかの進捗の名前を変えました。",
+          "released": "2026-11-08"
+        },
+        {
+          "version": "1.8.5",
+          "mc": "26.2",
+          "loader": "fabric",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/tonsofadv/26.2-fabric/tonsofadv-fabric-26.2-1.8.5.jar",
+          "fileName": "tonsofadv-fabric-26.2-1.8.5.jar",
+          "sha256": "244b7e39b80e320becc9136040c3ae6d1b905fbd86b476fca3103f4bd6133da3",
+          "changelog": "ふつうの進捗もチャットに流すようにしました。Minecraft 本体に同じ条件の進捗があるものは、本体のほうを残して消しました。いくつかの進捗の名前を変えました。",
+          "released": "2026-11-08"
+        },
+        {
           "version": "1.8.4",
           "mc": "1.20.1",
           "loader": "forge",
