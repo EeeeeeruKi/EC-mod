@@ -1,0 +1,9 @@
+{
+  "size": 1,
+  "order": 1,
+  "icon": "minecraft:item/empty_armor_slot_helmet",
+  "add_cosmetic": false,
+  "render_toggle": true,
+  "use_native_gui": true,
+  "validators": ["layeredarmor:head"]
+}

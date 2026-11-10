@@ -1,0 +1,10 @@
+{
+  "curios.identifier.layered_head": "Layered Helmet",
+  "curios.identifier.layered_chest": "Layered Chestplate",
+  "curios.identifier.layered_legs": "Layered Leggings",
+  "curios.identifier.layered_feet": "Layered Boots",
+  "curios.modifiers.layered_head": "When worn as a layered helmet:",
+  "curios.modifiers.layered_chest": "When worn as a layered chestplate:",
+  "curios.modifiers.layered_legs": "When worn as layered leggings:",
+  "curios.modifiers.layered_feet": "When worn as layered boots:"
+}

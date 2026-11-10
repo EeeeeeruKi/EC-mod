@@ -1278,6 +1278,22 @@
           "released": "2026-11-08"
         }
       ]
+    },
+    "layeredarmor": {
+      "name": "Layered Armor（重ね着防具）",
+      "summary": "Curios API に「重ね着（頭・胴・脚・足）」の4つのスロットを追加し、バニラの防具欄と同じように防具を装備できるようにするMODです。バニラ欄の防具と重ね着の防具の両方の効果が乗ります。",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/layeredarmor/1.20.1-forge/layeredarmor-forge-1.20.1-1.0.0.jar",
+          "fileName": "layeredarmor-forge-1.20.1-1.0.0.jar",
+          "sha256": "9cde145bd902ff24eaeb9a05918855359a8b50e6b61988d1ccb864bd04e287e4",
+          "changelog": "最初の版です。Curios に重ね着（頭・胴・脚・足）のスロットを追加しました。Cold Sweat・Apotheosis・Mekanism・Create Stuff 'N Additions・Advanced AE・Cosmetic Armor Reworked・Corpse に対応しています。",
+          "released": "2026-11-10"
+        }
+      ]
     }
   }
 }
