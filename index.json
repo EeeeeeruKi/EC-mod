@@ -1284,6 +1284,16 @@
       "summary": "Curios API に「重ね着（頭・胴・脚・足）」の4つのスロットを追加し、バニラの防具欄と同じように防具を装備できるようにするMODです。バニラ欄の防具と重ね着の防具の両方の効果が乗ります。",
       "versions": [
         {
+          "version": "1.0.1",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/layeredarmor/1.20.1-forge/layeredarmor-forge-1.20.1-1.0.1.jar",
+          "fileName": "layeredarmor-forge-1.20.1-1.0.1.jar",
+          "sha256": "1893b8af3e93953466760b905d0debd8f83f393dade1da1ff1a8bcacdba15dd9",
+          "changelog": "Advanced AE の量子アーマーを重ね着スロットで装備しているときに、設定画面（ホットキー）を開けない不具合を修正しました。",
+          "released": "2026-11-11"
+        },
+        {
           "version": "1.0.0",
           "mc": "1.20.1",
           "loader": "forge",

@@ -12,12 +12,25 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /** 防具の耐久値の減り：バニラの防具欄に防具が無い部位だけ、重ね着の防具が削れる */
 @Mixin(Inventory.class)
 public abstract class InventoryMixin {
     @Shadow @Final public Player player;
     @Shadow @Final public NonNullList<ItemStack> armor;
+
+    /** 仮想番号（100〜）で重ね着の装備を取れるようにする（AdvancedAEの量子アーマー設定画面などが使う） */
+    @Inject(method = "getItem", at = @At("HEAD"), cancellable = true)
+    private void layeredarmor$getItem(int index, CallbackInfoReturnable<ItemStack> cir) {
+        if (index < Layers.VIRTUAL_BASE) return;
+        try {
+            ItemStack stack = Layers.virtualStack(this.player, index);
+            if (stack != null) cir.setReturnValue(stack);
+        } catch (Throwable t) {
+            dev.eeeeeeruki.layeredarmor.LayeredArmor.LOGGER.debug("[LayeredArmor] getItem failed", t);
+        }
+    }
 
     @Inject(method = "hurtArmor", at = @At("HEAD"))
     private void layeredarmor$hurtArmor(DamageSource source, float amount, int[] slots, CallbackInfo ci) {

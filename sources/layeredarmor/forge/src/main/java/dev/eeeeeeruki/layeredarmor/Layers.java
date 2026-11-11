@@ -74,6 +74,19 @@ public final class Layers {
     // ------------------------------------------------------------------
 
     /** 重ね着スロットの1マス分 */
+    /** 重ね着スロットの装備を「インベントリの仮想番号」で扱うときの先頭番号（AE2系のメニューが番号で装備を探すため） */
+    public static final int VIRTUAL_BASE = 100;
+
+    /** 仮想番号（VIRTUAL_BASE以上）に対応する重ね着の装備。範囲外はnull */
+    public static ItemStack virtualStack(Player player, int index) {
+        if (index < VIRTUAL_BASE) return null;
+        List<Entry> all = allEntries(player);
+        int n = index - VIRTUAL_BASE;
+        if (n >= all.size()) return ItemStack.EMPTY;
+        Entry e = all.get(n);
+        return e.handler().getStackInSlot(e.index());
+    }
+
     public record Entry(EquipmentSlot slot, SlotContext context, IDynamicStackHandler handler, int index, ItemStack stack) {}
 
     private static ICuriosItemHandler inventory(LivingEntity entity) {

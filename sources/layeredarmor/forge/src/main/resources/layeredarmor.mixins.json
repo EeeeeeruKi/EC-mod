@@ -21,6 +21,7 @@
     "compat.AdvancedAEPlayerEventsMixin",
     "compat.AdvancedAELivingEntityEventsMixin",
     "compat.AdvancedAEUpgradeCardsMixin",
+    "compat.AdvancedAEArmorHotkeyActionMixin",
     "compat.CreateSAExoskeletonHitPrProcedureMixin",
     "compat.CreateSAFlyingOnKeyPressedProcedureMixin",
     "compat.CreateSAFlyingOnKeyReleasedProcedureMixin",
