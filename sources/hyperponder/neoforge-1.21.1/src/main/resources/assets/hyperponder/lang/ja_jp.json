@@ -46,7 +46,7 @@
   "hyperponder.ponder.fumetsu_rage.text_2": "攻撃を受けたり体力が減ったりすると怒ります。一度怒ると、もう元には戻りません。",
   "hyperponder.ponder.fumetsu_rage.text_3": "怒ると、周囲の生き物を手当たり次第に狙います。プレイヤーが最優先です。",
   "hyperponder.ponder.fumetsu_rage.text_4": "3種類の色のガイコツを放ち、ときどき巨大なガイコツも撃ってきます。",
-  "hyperponder.ponder.fumetsu_rage.text_5": "数秒おきに、狙った相手へ突っ込んで「フメツストーム」で炸裂します。",
+  "hyperponder.ponder.fumetsu_rage.text_5": "数秒おきに、狙った相手から距離を取って3つの大きなガイコツを一斉に放ちます。これが炸裂して「フメツストーム」になります。",
   "hyperponder.ponder.fumetsu_rage.text_6": "ごくまれに、特別な大技（殲滅攻撃）も使ってきます。",
   "hyperponder.ponder.fumetsu_immortal.header": "フメツウィザーの不死性",
   "hyperponder.ponder.fumetsu_immortal.text_1": "体力が減っても、すぐに元の値へ戻されます。さらに1秒ごとに回復します。",

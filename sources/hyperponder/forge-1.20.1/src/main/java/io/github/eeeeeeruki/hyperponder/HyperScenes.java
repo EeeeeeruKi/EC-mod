@@ -298,7 +298,7 @@ public class HyperScenes {
         scene.overlay().showText(80).text("It fires skulls in three colours, and sometimes a huge skull.").pointAt(bossPos).placeNearTarget().attachKeyFrame();
         scene.idle(90);
         scene.effects().emitParticles(bossPos, scene.effects().simpleParticleEmitter(ParticleTypes.EXPLOSION, Vec3.ZERO), 3, 6);
-        scene.overlay().showText(80).text("Every few seconds it charges at its target and bursts as a Fumetsu Storm.").pointAt(bossPos).placeNearTarget().colored(PonderPalette.BLUE).attachKeyFrame();
+        scene.overlay().showText(80).text("Every few seconds it keeps its distance from its target and fires three big skulls at once, which burst as a Fumetsu Storm.").pointAt(bossPos).placeNearTarget().colored(PonderPalette.BLUE).attachKeyFrame();
         scene.idle(90);
         scene.overlay().showText(80).text("Very rarely it also uses a special annihilating attack.").independent(30);
         scene.idle(90);
