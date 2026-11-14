@@ -26,6 +26,6 @@ public abstract class HumanoidArmorLayerMixin {
 
     @ModifyVariable(method = "renderArmorPiece", at = @At("STORE"), ordinal = 0, require = 0)
     private ItemStack layeredarmor$swap(ItemStack stack) {
-        return ClientLayers.display(ClientLayers.renderEntity, ClientLayers.renderSlot, stack);
+        return ClientLayers.displayArmor(ClientLayers.renderEntity, ClientLayers.renderSlot, stack);
     }
 }

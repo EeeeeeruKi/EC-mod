@@ -7,7 +7,9 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.EventPriority;
@@ -74,6 +76,41 @@ public final class ClientLayers {
         } catch (Throwable ignored) {
         }
         return current;
+    }
+
+    /**
+     * 防具レイヤー用。バニラの胴欄がエリトラなどの「防具ではないもの」なら、胴の重ね着の防具も表示する
+     * （エリトラは防具として描かれないので、重ね着の胴防具が隠れてしまわないように）。
+     */
+    public static ItemStack displayArmor(LivingEntity entity, EquipmentSlot slot, ItemStack current) {
+        if (slot == EquipmentSlot.CHEST && current != null && !current.isEmpty() && !(current.getItem() instanceof ArmorItem)
+                && entity instanceof Player player) {
+            try {
+                ItemStack layered = Layers.visible(player, slot);
+                if (!layered.isEmpty()) return layered;
+            } catch (Throwable ignored) {
+            }
+        }
+        return display(entity, slot, current);
+    }
+
+    /**
+     * エリトラレイヤー用。バニラの胴欄がエリトラならそれを、そうでなければ胴の重ね着スロットのエリトラを表示する
+     * （胴の欄に胴防具を着けたまま、重ね着スロットでエリトラを使う場合でも翼が見えるように）。
+     */
+    public static ItemStack displayElytra(LivingEntity entity, ItemStack current) {
+        if (current != null && !current.isEmpty() && entity instanceof Player player) {
+            try {
+                if (current.is(Items.ELYTRA) || current.canElytraFly(player)) return current;
+                for (Layers.Entry e : Layers.entries(player, EquipmentSlot.CHEST)) {
+                    ItemStack s = e.stack();
+                    if (e.context().visible() && (s.is(Items.ELYTRA) || s.canElytraFly(player))) return s;
+                }
+            } catch (Throwable ignored) {
+            }
+            return current;
+        }
+        return display(entity, EquipmentSlot.CHEST, current);
     }
 
     public static ItemStack displayBySlot(LivingEntity entity, EquipmentSlot slot) {

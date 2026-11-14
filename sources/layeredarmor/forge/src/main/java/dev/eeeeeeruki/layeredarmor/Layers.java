@@ -73,18 +73,32 @@ public final class Layers {
     // 中身の取得
     // ------------------------------------------------------------------
 
-    /** 重ね着スロットの1マス分 */
-    /** 重ね着スロットの装備を「インベントリの仮想番号」で扱うときの先頭番号（AE2系のメニューが番号で装備を探すため） */
+    /**
+     * 重ね着スロットの装備を「インベントリの仮想番号」で扱うときの先頭番号（AE2系のメニューが番号で装備を探すため）。
+     * 番号は「部位（足→脚→胴→頭）×8 ＋ スロット内の位置」で決める。ほかのマスが空いたり埋まったりしても番号が変わらない。
+     */
     public static final int VIRTUAL_BASE = 100;
+    private static final int VIRTUAL_PER_SLOT = 8;
 
-    /** 仮想番号（VIRTUAL_BASE以上）に対応する重ね着の装備。範囲外はnull */
+    public static int virtualIndex(Entry e) {
+        int pos = 0;
+        for (int i = 0; i < ARMOR_SLOTS.length; i++) if (ARMOR_SLOTS[i] == e.slot()) pos = i;
+        return VIRTUAL_BASE + pos * VIRTUAL_PER_SLOT + Math.min(e.index(), VIRTUAL_PER_SLOT - 1);
+    }
+
+    /** 仮想番号（VIRTUAL_BASE以上）に対応する重ね着の装備。VIRTUAL_BASE未満はnull、何も無ければEMPTY */
     public static ItemStack virtualStack(Player player, int index) {
         if (index < VIRTUAL_BASE) return null;
-        List<Entry> all = allEntries(player);
         int n = index - VIRTUAL_BASE;
-        if (n >= all.size()) return ItemStack.EMPTY;
-        Entry e = all.get(n);
-        return e.handler().getStackInSlot(e.index());
+        int pos = n / VIRTUAL_PER_SLOT;
+        int i = n % VIRTUAL_PER_SLOT;
+        if (pos >= ARMOR_SLOTS.length) return ItemStack.EMPTY;
+        ICuriosItemHandler inv = inventory(player);
+        if (inv == null) return ItemStack.EMPTY;
+        Optional<ICurioStacksHandler> opt = inv.getStacksHandler(SLOT_IDS.get(ARMOR_SLOTS[pos]));
+        if (opt.isEmpty()) return ItemStack.EMPTY;
+        IDynamicStackHandler stacks = opt.get().getStacks();
+        return i < stacks.getSlots() ? stacks.getStackInSlot(i) : ItemStack.EMPTY;
     }
 
     public record Entry(EquipmentSlot slot, SlotContext context, IDynamicStackHandler handler, int index, ItemStack stack) {}

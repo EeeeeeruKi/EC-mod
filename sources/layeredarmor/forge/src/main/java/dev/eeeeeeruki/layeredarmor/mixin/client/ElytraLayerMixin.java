@@ -26,6 +26,6 @@ public abstract class ElytraLayerMixin {
     @ModifyVariable(method = "render(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/world/entity/LivingEntity;FFFFFF)V",
             at = @At("STORE"), ordinal = 0, require = 0)
     private ItemStack layeredarmor$swap(ItemStack stack) {
-        return ClientLayers.display(ClientLayers.renderEntity, EquipmentSlot.CHEST, stack);
+        return ClientLayers.displayElytra(ClientLayers.renderEntity, stack);
     }
 }

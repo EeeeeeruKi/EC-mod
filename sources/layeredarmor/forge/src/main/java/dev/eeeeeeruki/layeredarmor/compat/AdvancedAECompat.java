@@ -50,8 +50,12 @@ public final class AdvancedAECompat {
             for (int i = 0; i < layered.size(); i++) {
                 Layers.Entry e = layered.get(i);
                 ItemStack stack = e.handler().getStackInSlot(e.index());
-                if (locatable.test(stack) && (boolean) openMethod.invoke(opener, player, Layers.VIRTUAL_BASE + i, stack)) return true;
+                if (locatable.test(stack) && (boolean) openMethod.invoke(opener, player, Layers.virtualIndex(e), stack)) return true;
             }
+            return false;
+        } catch (java.lang.reflect.InvocationTargetException t) {
+            // 設定画面を開く処理の中で起きた一時的なエラー。次回また試せるように、対応は止めない
+            LayeredArmor.LOGGER.warn("[LayeredArmor] AdvancedAEの設定画面を開く処理でエラーが出ました", t.getCause());
             return false;
         } catch (Throwable t) {
             failed = true;
