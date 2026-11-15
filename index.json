@@ -1384,6 +1384,22 @@
           "released": "2026-11-10"
         }
       ]
+    },
+    "ponderererer": {
+      "name": "Ponderererer",
+      "summary": "Ponder（思案画面）に、レーザー・稲妻・爆発・ゲージ・機械の画面・プレイヤーなどの描画を追加するライブラリMODです。思案画面を作るMODから使います。",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/ponderererer/1.21.1-neoforge/ponderererer-neoforge-1.21.1-1.0.0.jar",
+          "fileName": "ponderererer-neoforge-1.21.1-1.0.0.jar",
+          "sha256": "7158d0336b5abaf2b28ab5fd25202a65368e945a0ba84662b31bf5a052831a6e",
+          "changelog": "最初の版です。レーザー・稲妻・爆発・ゲージ・機械の画面・プレイヤー・画面の色・音の描画を追加しました。",
+          "released": "2026-11-16"
+        }
+      ]
     }
   }
 }
