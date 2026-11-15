@@ -1,5 +1,6 @@
 package com.eeeeeeruki.claudeupdater.client;
 
+import com.eeeeeeruki.claudeupdater.core.ModSites;
 import com.eeeeeeruki.claudeupdater.core.UpdateCandidate;
 import com.eeeeeeruki.claudeupdater.core.UpdaterCore;
 import net.minecraft.Util;
@@ -14,6 +15,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Shown after a download when the new jars need other mods that are not there: the ones in the library can be
@@ -40,6 +42,10 @@ public class DependencyScreen extends Screen {
     private int page;
     private final Map<Button, UpdateCandidate> rows = new LinkedHashMap<>();
     private Button mainButton;
+    /** CurseForge or Modrinth when the game was surely started from that launcher, otherwise OTHER. */
+    private final ModSites.Launcher site;
+    /** Per missing mod ID: whether it is on the launcher's site, filled in by a background lookup. */
+    private final Map<String, ModSites.Result> notes = new ConcurrentHashMap<>();
 
     public DependencyScreen(Screen parent, UpdaterCore.MissingDeps deps) {
         super(Component.literal("必要なMOD"));
@@ -47,6 +53,22 @@ public class DependencyScreen extends Screen {
         this.deps = deps;
         for (UpdateCandidate c : deps.library) rowsData.add(new Row(c, null));
         for (UpdaterCore.MissingDeps.External x : deps.external) rowsData.add(new Row(null, x));
+        site = ModSites.launcher(UpdaterCore.env().gameDir());
+        if (site.site != null && !deps.external.isEmpty()) {
+            Thread t = new Thread(() -> {
+                for (UpdaterCore.MissingDeps.External x : deps.external) {
+                    notes.put(x.id(), ModSites.lookup(site, x.id(), x.name(),
+                            UpdaterCore.env().mcVersion(), UpdaterCore.env().loader()));
+                }
+            }, "ClaudeUpdater-SiteLookup");
+            t.setDaemon(true);
+            t.start();
+        }
+    }
+
+    /** Rows get room for a sentence underneath when the launcher's site is being checked. */
+    private int rowH() {
+        return site.site != null && !deps.external.isEmpty() ? 34 : ROW_H;
     }
 
     @Override
@@ -61,7 +83,7 @@ public class DependencyScreen extends Screen {
         if (page >= pages) page = pages - 1;
         for (int i = page * perPage; i < Math.min(rowsData.size(), (page + 1) * perPage); i++) {
             Row r = rowsData.get(i);
-            int y = TOP + (i - page * perPage) * ROW_H;
+            int y = TOP + (i - page * perPage) * rowH();
             if (r.library() != null) {
                 UpdateCandidate c = r.library();
                 Button b = Button.builder(libraryLabel(c), btn -> {
@@ -88,14 +110,18 @@ public class DependencyScreen extends Screen {
                         .bounds(x + ROW_W - SMALL * 2 - 2, y, SMALL, 20)
                         .tooltip(Tooltip.create(Component.literal("「" + ext.name() + "」をクリップボードにコピーします")))
                         .build());
-                addRenderableWidget(Button.builder(Component.literal("開く"), b -> openLink(ext.url()))
+                addRenderableWidget(Button.builder(Component.literal("開く"), b -> {
+                            ModSites.Result n = notes.get(ext.id());
+                            openLink(n != null ? n.url() : ext.url());
+                        })
                         .bounds(x + ROW_W - SMALL, y, SMALL, 20)
-                        .tooltip(Tooltip.create(Component.literal("Modrinth で「" + ext.name() + "」を探すページを開きます")))
+                        .tooltip(Tooltip.create(Component.literal((site.site != null ? site.site : "Modrinth")
+                                + " で「" + ext.name() + "」のページを開きます")))
                         .build());
             }
         }
         if (pages > 1) {
-            int py = TOP + perPage * ROW_H + 2;
+            int py = TOP + perPage * rowH() + 2;
             Button prev = addRenderableWidget(Button.builder(Component.literal("◀"), b -> { page--; rebuildWidgets(); })
                     .bounds(x, py, 20, 20).build());
             Button nextPage = addRenderableWidget(Button.builder(Component.literal("▶"), b -> { page++; rebuildWidgets(); })
@@ -125,7 +151,7 @@ public class DependencyScreen extends Screen {
 
     private int perPage() {
         int bottom = height - 28 - 6;
-        return Math.max(1, (bottom - TOP - ROW_H) / ROW_H);
+        return Math.max(1, (bottom - TOP - ROW_H) / rowH());
     }
 
     private boolean anySelected() {
@@ -218,7 +244,18 @@ public class DependencyScreen extends Screen {
         int perPage = perPage();
         int pages = Math.max(1, (rowsData.size() + perPage - 1) / perPage);
         if (pages > 1) {
-            g.drawCenteredString(font, (page + 1) + " / " + pages, width / 2, TOP + perPage * ROW_H + 8, 0xAAAAAA);
+            g.drawCenteredString(font, (page + 1) + " / " + pages, width / 2, TOP + perPage * rowH() + 8, 0xAAAAAA);
+        }
+        // under each mod that is not in the library: is it on the launcher's own site?
+        if (site.site != null) {
+            for (int i = page * perPage; i < Math.min(rowsData.size(), (page + 1) * perPage); i++) {
+                Row r = rowsData.get(i);
+                if (r.external() == null) continue;
+                int y = TOP + (i - page * perPage) * rowH() + 23;
+                ModSites.Result n = notes.get(r.external().id());
+                String text = n != null ? n.sentence() : "§7" + site.site + " にあるか調べています…";
+                g.drawCenteredString(font, text, width / 2, y, 0xFFFFFF);
+            }
         }
     }
 

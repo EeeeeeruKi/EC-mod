@@ -6,6 +6,36 @@
       "summary": "ゲームの起動時に、このライブラリのMODの新しい版があるか確認し、選んだMODを自動で入れ替えるMOD。jarを毎回ダウンロードして置き換える手間がなくなります。",
       "versions": [
         {
+          "version": "1.4.1",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/claudeupdater/1.20.1-forge/claudeupdater-1.4.1-forge-1.20.1.jar",
+          "fileName": "claudeupdater-1.4.1-forge-1.20.1.jar",
+          "sha256": "2adeca405510ff602de90853bf847b9802621cef56eb15155957ee4179b69975",
+          "changelog": "CurseForge アプリか Modrinth App で起動しているときは、必要なMODの画面で、ライブラリにないMODがそのサイトにあるかどうかを一文で教えるようにしました（「開く」でそのサイトのページが開きます）。",
+          "released": "2026-11-16"
+        },
+        {
+          "version": "1.4.1",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/claudeupdater/1.21.1-neoforge/claudeupdater-1.4.1-neoforge-1.21.1.jar",
+          "fileName": "claudeupdater-1.4.1-neoforge-1.21.1.jar",
+          "sha256": "3a8e2f27bca2c08d43d8ed759df02750009a36ddf7ccfd5e8c2cc5a363078282",
+          "changelog": "CurseForge アプリか Modrinth App で起動しているときは、必要なMODの画面で、ライブラリにないMODがそのサイトにあるかどうかを一文で教えるようにしました（「開く」でそのサイトのページが開きます）。",
+          "released": "2026-11-16"
+        },
+        {
+          "version": "1.4.1",
+          "mc": "1.21.1",
+          "loader": "fabric",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/claudeupdater/1.21.1-fabric/claudeupdater-1.4.1-fabric-1.21.1.jar",
+          "fileName": "claudeupdater-1.4.1-fabric-1.21.1.jar",
+          "sha256": "1f9215fefc5fa1ff6f4a3d097fbf27e5d83164f2e24a4325249425dedaa70011",
+          "changelog": "CurseForge アプリか Modrinth App で起動しているときは、必要なMODの画面で、ライブラリにないMODがそのサイトにあるかどうかを一文で教えるようにしました（「開く」でそのサイトのページが開きます）。",
+          "released": "2026-11-16"
+        },
+        {
           "version": "1.4.0",
           "mc": "1.20.1",
           "loader": "forge",

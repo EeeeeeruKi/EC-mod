@@ -24,7 +24,8 @@ public final class UpdaterCore {
     private UpdaterCore() {
     }
 
-    public static final String USER_AGENT = "ClaudeUpdater/" + UpdaterCore.class.getPackage().getImplementationVersion();
+    public static final String USER_AGENT = "ClaudeUpdater/" + java.util.Objects.requireNonNullElse(
+            UpdaterCore.class.getPackage().getImplementationVersion(), "dev");
 
     private static Env env;
     private static UpdaterConfig config;
