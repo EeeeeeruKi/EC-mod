@@ -39,7 +39,10 @@ public class ClaudeUpdater implements ModInitializer {
                 .orElse(null);
         Env env = new Env(game, mods, MC_VERSION, LOADER, self);
         Set<String> loaded = new HashSet<>();
-        for (ModContainer c : fl.getAllMods()) loaded.add(c.getMetadata().getId());
+        for (ModContainer c : fl.getAllMods()) {
+            loaded.add(c.getMetadata().getId());
+            loaded.addAll(c.getMetadata().getProvides()); // e.g. Fabric API also answers to "fabric"
+        }
         UpdaterCore.start(env, installedMods(fl, mods), loaded, fl.getEnvironmentType() == EnvType.SERVER);
     }
 

@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
 /** Checks the index, downloads new jars and schedules the swap for when the game exits. */
@@ -30,6 +31,9 @@ public final class UpdaterCore {
     private static HttpClient http;
 
     private static volatile boolean checked;
+    /** The index from the latest check, reused to look up required mods after a download. */
+    private static volatile ModIndex lastIndex;
+    private static volatile boolean dedicated;
     private static volatile List<UpdateCandidate> found = List.of();
     private static volatile String checkError;
 
@@ -46,8 +50,34 @@ public final class UpdaterCore {
         return checked;
     }
 
+    /** The startup result, minus the mods that were downloaded since (so nothing is offered twice). */
     public static List<UpdateCandidate> found() {
-        return found;
+        // called every frame for the title-screen icon, so only the in-memory set is checked here
+        List<UpdateCandidate> list = found;
+        if (list.isEmpty() || downloaded.isEmpty()) return list;
+        List<UpdateCandidate> out = new ArrayList<>();
+        for (UpdateCandidate c : list) {
+            if (!downloaded.contains(c.id)) out.add(c);
+        }
+        return out;
+    }
+
+    /**
+     * Mods downloaded in this session, by ID. They stay installed at the old version until the game restarts,
+     * so the index still looks newer: without this they would be offered (and downloaded) again.
+     */
+    private static final Set<String> downloaded = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
+    /** Downloaded this session, or waiting in pending.txt for the game to exit. */
+    private static Set<String> alreadyHandled() {
+        Set<String> s = new HashSet<>(downloaded);
+        for (Apply.Op op : Apply.read(env.pendingFile())) s.add(op.id());
+        return s;
+    }
+
+    /** How many mods were downloaded (this session or earlier) and wait for the game to restart. */
+    public static int waitingCount() {
+        return alreadyHandled().size();
     }
 
     public static String checkError() {
@@ -72,6 +102,7 @@ public final class UpdaterCore {
      */
     public static void start(Env e, List<InstalledMod> installed, Set<String> loadedIds, boolean dedicatedServer) {
         env = e;
+        dedicated = dedicatedServer;
         installedMods = List.copyOf(installed);
         UpdaterCore.loadedIds = Set.copyOf(loadedIds);
         config = UpdaterConfig.load(e.configFile());
@@ -88,7 +119,7 @@ public final class UpdaterCore {
         }
         Thread t = new Thread(() -> {
             try {
-                found = check(installed, dedicatedServer); // the startup screen leaves out hidden mods
+                found = check(installed, false); // hidden mods are left out at startup (screen and server alike)
                 if (found.isEmpty()) {
                     Log.info("すべてのMODが最新です（確認したMOD: " + installed.size() + "個）");
                 } else {
@@ -99,6 +130,9 @@ public final class UpdaterCore {
                 if (dedicatedServer && config.serverAutoUpdate && !found.isEmpty()) {
                     downloadAll(found);
                     Log.info("ダウンロードした更新は、サーバーを停止したあとに入れ替わります。");
+                    MissingDeps m = missingDeps(found);
+                    for (UpdateCandidate c : m.library) Log.warn(c.neededBy + " には " + c.name + " が必要です（MODライブラリにあります）");
+                    for (MissingDeps.External x : m.external) Log.warn(x.neededBy() + " には " + x.name() + "（" + x.id() + "）が必要です");
                 }
             } catch (Exception ex) {
                 checkError = ex.getMessage() == null ? ex.toString() : ex.getMessage();
@@ -123,8 +157,7 @@ public final class UpdaterCore {
     }
 
     public static List<UpdateCandidate> findInstallable(ModIndex index) {
-        Set<String> pending = new HashSet<>();
-        for (Apply.Op op : Apply.read(env.pendingFile())) pending.add(op.id());
+        Set<String> pending = alreadyHandled();
         List<UpdateCandidate> out = new ArrayList<>();
         for (var e : index.mods.entrySet()) {
             String id = e.getKey();
@@ -137,6 +170,8 @@ public final class UpdaterCore {
                 if (best == null || Versions.compare(r.version, best.version) > 0) best = r;
             }
             if (best == null) continue;
+            // already put in the mods folder (e.g. by this screen earlier, before a restart loads it)
+            if (best.fileName != null && Files.exists(env.modsDir().resolve(best.fileName))) continue;
             String name = entry.name != null && !entry.name.isBlank() ? entry.name : id;
             out.add(new UpdateCandidate(id, name, entry.summary, best));
         }
@@ -155,13 +190,13 @@ public final class UpdaterCore {
         if (res.statusCode() != 200) throw new IOException("index.json の取得に失敗しました (HTTP " + res.statusCode() + ")");
         ModIndex index = UpdaterConfig.parseIndex(res.body());
         if (index == null || index.mods == null) throw new IOException("index.json の形式が正しくありません");
+        lastIndex = index;
         return index;
     }
 
     /** Pure matching step, separate so it can be tested without the network. */
     public static List<UpdateCandidate> findUpdates(ModIndex index, List<InstalledMod> installed, boolean includeHidden) {
-        Set<String> alreadyPending = new HashSet<>();
-        for (Apply.Op op : Apply.read(env.pendingFile())) alreadyPending.add(op.id());
+        Set<String> alreadyPending = alreadyHandled();
 
         List<UpdateCandidate> out = new ArrayList<>();
         for (InstalledMod mod : installed) {
@@ -193,6 +228,10 @@ public final class UpdaterCore {
     public static void downloadAll(List<UpdateCandidate> list) {
         for (UpdateCandidate c : list) {
             if (!c.selected) continue;
+            if (c.state == UpdateCandidate.State.DONE || downloaded.contains(c.id)) {
+                c.state = UpdateCandidate.State.DONE; // got it already (from another screen): do not fetch again
+                continue;
+            }
             download(c);
         }
         scheduleSwap();
@@ -244,6 +283,8 @@ public final class UpdaterCore {
                 Apply.put(env.pendingFile(), new Apply.Op(c.installed.id(),
                         c.installed.jar().toAbsolutePath(), staged.toAbsolutePath(), target.toAbsolutePath()));
             }
+            downloaded.add(c.id);
+            c.file = c.isNewInstall() ? target : staged;
             c.state = UpdateCandidate.State.DONE;
             Log.info("ダウンロードしました: " + c.name + " " + c.release.version);
         } catch (Exception e) {
@@ -257,6 +298,75 @@ public final class UpdaterCore {
                 }
             }
         }
+    }
+
+    // ---------------------------------------------------------------------------------------------
+    // required mods
+
+    /** Required mods that the downloaded ones need but that are not there. */
+    public static final class MissingDeps {
+        public record External(String id, String name, String neededBy, String url) {
+        }
+
+        /** In the library for this Minecraft version and loader: can be downloaded right away (selected). */
+        public final List<UpdateCandidate> library = new ArrayList<>();
+        /** Not in the library: the player has to get these themselves. */
+        public final List<External> external = new ArrayList<>();
+
+        public boolean isEmpty() {
+            return library.isEmpty() && external.isEmpty();
+        }
+    }
+
+    /**
+     * Reads the required mods of every successfully downloaded jar in the list and returns the ones that are
+     * neither loaded, nor downloaded, nor part of the same batch.
+     */
+    public static MissingDeps missingDeps(List<UpdateCandidate> list) {
+        MissingDeps out = new MissingDeps();
+        Set<String> have = new HashSet<>(loadedIds);
+        have.addAll(alreadyHandled());
+        Map<String, List<String>> need = new java.util.LinkedHashMap<>();
+        for (UpdateCandidate c : list) {
+            if (c.state != UpdateCandidate.State.DONE || c.file == null || !Files.isRegularFile(c.file)) continue;
+            Deps.Info info = Deps.read(c.file, !dedicated);
+            have.addAll(info.provides);
+            for (String id : info.requires) need.computeIfAbsent(id, k -> new ArrayList<>()).add(c.name);
+        }
+        need.keySet().removeAll(have);
+        if (need.isEmpty()) return out;
+
+        ModIndex index = lastIndex;
+        if (index == null) {
+            try {
+                index = fetchIndex();
+            } catch (Exception e) {
+                Log.warn("必要なMODをライブラリで探せませんでした: " + e);
+            }
+        }
+        for (Map.Entry<String, List<String>> e : need.entrySet()) {
+            String id = e.getKey();
+            String by = String.join("・", e.getValue());
+            ModIndex.ModEntry entry = index == null ? null : index.mods.get(id);
+            ModIndex.Release best = null;
+            if (entry != null && entry.versions != null && !Boolean.FALSE.equals(entry.installable)) {
+                for (ModIndex.Release r : entry.versions) {
+                    if (!usable(r)) continue;
+                    if (best == null || Versions.compare(r.version, best.version) > 0) best = r;
+                }
+            }
+            if (best != null) {
+                String name = entry.name != null && !entry.name.isBlank() ? entry.name : id;
+                UpdateCandidate c = new UpdateCandidate(id, name, entry.summary, best);
+                c.selected = true;
+                c.neededBy = by;
+                out.library.add(c);
+            } else {
+                out.external.add(new MissingDeps.External(id, Deps.displayName(id), by,
+                        Deps.searchUrl(id, env.mcVersion(), env.loader())));
+            }
+        }
+        return out;
     }
 
     /** The startup screen will not show these mods again, whatever version comes out. */

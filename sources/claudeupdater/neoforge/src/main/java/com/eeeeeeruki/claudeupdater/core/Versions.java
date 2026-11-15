@@ -13,8 +13,8 @@ public final class Versions {
         List<String> y = split(b);
         int n = Math.max(x.size(), y.size());
         for (int i = 0; i < n; i++) {
-            if (i >= x.size()) return tail(y.get(i)) ? 1 : -1;
-            if (i >= y.size()) return tail(x.get(i)) ? -1 : 1;
+            if (i >= x.size()) return -rest(y, i);
+            if (i >= y.size()) return rest(x, i);
             String p = x.get(i);
             String q = y.get(i);
             boolean pn = isNum(p);
@@ -34,9 +34,17 @@ public final class Versions {
         return 0;
     }
 
-    /** When one version runs out of parts: a trailing word ("beta") makes the longer one older. */
-    private static boolean tail(String extra) {
-        return !isNum(extra);
+    /**
+     * When one version runs out of parts, compares what is left of the longer one: zeros do not count
+     * (1.0 == 1.0.0), another number makes it newer (1.0.1 > 1.0), a word makes it older (1.0-beta < 1.0).
+     */
+    private static int rest(List<String> longer, int from) {
+        for (int i = from; i < longer.size(); i++) {
+            String s = longer.get(i);
+            if (!isNum(s)) return -1;
+            if (compareNum(s, "0") != 0) return 1;
+        }
+        return 0;
     }
 
     private static List<String> split(String v) {

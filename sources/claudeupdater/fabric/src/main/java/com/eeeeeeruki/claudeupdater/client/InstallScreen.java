@@ -120,6 +120,7 @@ public class InstallScreen extends Screen {
         rebuildWidgets();
         Thread t = new Thread(() -> {
             UpdaterCore.downloadAll(list);
+            deps = UpdaterCore.missingDeps(list);
             mode = Mode.FINISHED;
             needRebuild = true;
         }, "ClaudeUpdater-Install");
@@ -153,12 +154,21 @@ public class InstallScreen extends Screen {
         return Component.literal(sb.toString());
     }
 
+    /** Required mods the downloaded jars need; shown once on top of the finished list. */
+    private volatile UpdaterCore.MissingDeps deps;
+    private boolean depsShown;
+
     @Override
     public void tick() {
         super.tick();
         if (needRebuild) {
             needRebuild = false;
             rebuildWidgets();
+            return;
+        }
+        if (mode == Mode.FINISHED && !depsShown && deps != null && !deps.isEmpty()) {
+            depsShown = true;
+            minecraft.setScreen(new DependencyScreen(this, deps));
             return;
         }
         if (mode == Mode.DOWNLOADING || mode == Mode.FINISHED) {

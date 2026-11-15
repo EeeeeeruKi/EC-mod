@@ -16,6 +16,10 @@ public class UpdateCandidate {
     public volatile boolean selected;
     public volatile State state = State.WAITING;
     public volatile String error;
+    /** The downloaded jar (staged or in the mods folder), set once the download is done. */
+    public volatile java.nio.file.Path file;
+    /** For a required mod offered by the dependency screen: which downloaded mods need it. */
+    public volatile String neededBy;
 
     /** An update for an installed mod (selected by default). */
     public UpdateCandidate(InstalledMod installed, String name, ModIndex.Release release) {

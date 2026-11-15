@@ -26,6 +26,7 @@ public class UpdateScreen extends Screen {
     private volatile List<UpdateCandidate> list;
     private volatile Mode mode;
     private volatile String error;
+    private volatile int waiting;
     private int page;
     private final Map<Button, UpdateCandidate> rows = new LinkedHashMap<>();
     private Button mainButton;
@@ -53,6 +54,7 @@ public class UpdateScreen extends Screen {
                 error = e.getMessage() == null ? e.toString() : e.getMessage();
                 list = new ArrayList<>();
             }
+            waiting = UpdaterCore.waitingCount();
             mode = list.isEmpty() ? Mode.NOTHING : Mode.LIST;
             needRebuild = true;
         }, "ClaudeUpdater-Recheck");
@@ -153,6 +155,7 @@ public class UpdateScreen extends Screen {
         rebuildWidgets();
         Thread t = new Thread(() -> {
             UpdaterCore.downloadAll(list);
+            deps = UpdaterCore.missingDeps(list);
             mode = Mode.FINISHED;
             needRebuild = true;
         }, "ClaudeUpdater-Download");
@@ -199,12 +202,21 @@ public class UpdateScreen extends Screen {
         return Component.literal(sb.toString());
     }
 
+    /** Required mods the downloaded jars need; shown once on top of the finished list. */
+    private volatile UpdaterCore.MissingDeps deps;
+    private boolean depsShown;
+
     @Override
     public void tick() {
         super.tick();
         if (needRebuild) {
             needRebuild = false;
             rebuildWidgets();
+            return;
+        }
+        if (mode == Mode.FINISHED && !depsShown && deps != null && !deps.isEmpty()) {
+            depsShown = true;
+            minecraft.setScreen(new DependencyScreen(this, deps));
             return;
         }
         if (mode == Mode.DOWNLOADING || mode == Mode.FINISHED) {
@@ -227,7 +239,14 @@ public class UpdateScreen extends Screen {
                 l1 = "新しい版があるか確認しています…";
                 break;
             case NOTHING:
-                l1 = error != null ? "§c確認できませんでした: " + error : "すべてのMODが最新です。";
+                if (error != null) {
+                    l1 = "§c確認できませんでした: " + error;
+                } else if (waiting > 0) {
+                    l1 = "ほかに新しい版はありません。";
+                    l2 = "ダウンロード済みのMOD（" + waiting + "個）は、ゲームを終了すると新しい版に入れ替わります。";
+                } else {
+                    l1 = "すべてのMODが最新です。";
+                }
                 break;
             case LIST:
                 l1 = "新しい版が見つかりました。更新するMODを選んでください。";
