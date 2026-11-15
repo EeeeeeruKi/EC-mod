@@ -1400,6 +1400,22 @@
           "released": "2026-11-16"
         }
       ]
+    },
+    "moremekaponder": {
+      "name": "More MekaPonder",
+      "summary": "Mekanism の機械・ケーブル・アイテム・道具・防具の使い方を、思案画面（Ponder）で解説するMODです。公式アドオン（Generators・Additions・Tools）にも対応しています。",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/moremekaponder/1.21.1-neoforge/moremekaponder-neoforge-1.21.1-1.0.0.jar",
+          "fileName": "moremekaponder-neoforge-1.21.1-1.0.0.jar",
+          "sha256": "384c9db2d792ea11e5b9c5b3da73e6af88bb9a9df5089e73933ef0ffc7916173",
+          "changelog": "最初の版です。Mekanism と公式アドオンの思案画面を134種類追加しました。",
+          "released": "2026-11-16"
+        }
+      ]
     }
   }
 }
