@@ -8,6 +8,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.slf4j.Logger;
@@ -21,6 +22,7 @@ public class LayeredArmor {
 
     public LayeredArmor() {
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::commonSetup);
+        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::loadComplete);
         DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> dev.eeeeeeruki.layeredarmor.client.ClientLayers::init);
     }
 
@@ -31,6 +33,10 @@ public class LayeredArmor {
                     result -> Layers.SLOT_IDS.get(slot).equals(result.slotContext().identifier())
                             && Layers.canLayer(result.stack(), slot));
         }
+    }
+
+    /** 他のMODの初期化がすべて終わってから、防具を重ね着スロットに対応させる（先にItemStackを大量に作って他MODの初期化を邪魔しないため） */
+    private void loadComplete(FMLLoadCompleteEvent event) {
         event.enqueueWork(() -> {
             int count = 0;
             for (Item item : ForgeRegistries.ITEMS) {

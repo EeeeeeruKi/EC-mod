@@ -36,6 +36,7 @@ public final class LayeredArmorList extends NonNullList<ItemStack> {
             int v = vanilla.size();
             if (index < v) return vanilla.get(index);
             Layers.Entry e = extra.get(index - v);
+            if (e.index() >= e.handler().getSlots()) return ItemStack.EMPTY;
             return e.handler().getStackInSlot(e.index());
         }
 
@@ -44,6 +45,7 @@ public final class LayeredArmorList extends NonNullList<ItemStack> {
             int v = vanilla.size();
             if (index < v) return vanilla.set(index, element);
             Layers.Entry e = extra.get(index - v);
+            if (e.index() >= e.handler().getSlots()) return ItemStack.EMPTY;
             ItemStack old = e.handler().getStackInSlot(e.index());
             e.handler().setStackInSlot(e.index(), element);
             return old;

@@ -47,10 +47,15 @@ public final class ArmorLayerCurio implements ICurioItem {
         EquipmentSlot slot = slot(ctx);
         if (slot == null) return ICurioItem.super.getAttributeModifiers(ctx, uuid, stack);
         Multimap<Attribute, AttributeModifier> out = LinkedHashMultimap.create();
-        // 防御力・防具強度・ノックバック耐性のほか、Apotheosisなど他MODが付けた修飾子もここに入ってくる
-        for (Map.Entry<Attribute, AttributeModifier> e : stack.getAttributeModifiers(slot).entries()) {
-            AttributeModifier m = e.getValue();
-            out.put(e.getKey(), new AttributeModifier(remap(m.getId(), uuid), m.getName(), m.getAmount(), m.getOperation()));
+        try {
+            // 防御力・防具強度・ノックバック耐性のほか、Apotheosisなど他MODが付けた修飾子もここに入ってくる
+            for (Map.Entry<Attribute, AttributeModifier> e : stack.getAttributeModifiers(slot).entries()) {
+                AttributeModifier m = e.getValue();
+                out.put(e.getKey(), new AttributeModifier(remap(m.getId(), uuid), m.getName(), m.getAmount(), m.getOperation()));
+            }
+        } catch (Throwable t) {
+            // 他MODのアイテムが例外を出しても、Curios側（ゲーム全体）を巻き込まない
+            LayeredArmor.LOGGER.debug("[LayeredArmor] attribute modifiers failed for {}", stack, t);
         }
         return out;
     }
@@ -77,7 +82,11 @@ public final class ArmorLayerCurio implements ICurioItem {
     public boolean canEquip(SlotContext ctx, ItemStack stack) {
         EquipmentSlot slot = slot(ctx);
         if (slot == null) return ICurioItem.super.canEquip(ctx, stack);
-        return Layers.canLayer(stack, slot);
+        try {
+            return Layers.canLayer(stack, slot);
+        } catch (Throwable t) {
+            return false;
+        }
     }
 
     @Override
@@ -96,9 +105,12 @@ public final class ArmorLayerCurio implements ICurioItem {
 
     @Override
     public ICurio.SoundInfo getEquipSound(SlotContext ctx, ItemStack stack) {
-        if (stack.getItem() instanceof Equipable eq) {
-            SoundEvent sound = eq.getEquipSound();
-            if (sound != null) return new ICurio.SoundInfo(sound, 1.0F, 1.0F);
+        try {
+            if (stack.getItem() instanceof Equipable eq) {
+                SoundEvent sound = eq.getEquipSound();
+                if (sound != null) return new ICurio.SoundInfo(sound, 1.0F, 1.0F);
+            }
+        } catch (Throwable ignored) {
         }
         return ICurioItem.super.getEquipSound(ctx, stack);
     }
@@ -112,20 +124,32 @@ public final class ArmorLayerCurio implements ICurioItem {
     @Override
     public boolean makesPiglinsNeutral(SlotContext ctx, ItemStack stack) {
         if (slot(ctx) == null) return ICurioItem.super.makesPiglinsNeutral(ctx, stack);
-        LivingEntity e = ctx.entity();
-        return e != null && stack.makesPiglinsNeutral(e);
+        try {
+            LivingEntity e = ctx.entity();
+            return e != null && stack.makesPiglinsNeutral(e);
+        } catch (Throwable t) {
+            return false;
+        }
     }
 
     @Override
     public boolean canWalkOnPowderedSnow(SlotContext ctx, ItemStack stack) {
         if (slot(ctx) == null) return ICurioItem.super.canWalkOnPowderedSnow(ctx, stack);
-        LivingEntity e = ctx.entity();
-        return e != null && stack.canWalkOnPowderedSnow(e);
+        try {
+            LivingEntity e = ctx.entity();
+            return e != null && stack.canWalkOnPowderedSnow(e);
+        } catch (Throwable t) {
+            return false;
+        }
     }
 
     @Override
     public boolean isEnderMask(SlotContext ctx, EnderMan enderMan, ItemStack stack) {
         if (slot(ctx) == null) return ICurioItem.super.isEnderMask(ctx, enderMan, stack);
-        return ctx.entity() instanceof Player p && stack.isEnderMask(p, enderMan);
+        try {
+            return ctx.entity() instanceof Player p && stack.isEnderMask(p, enderMan);
+        } catch (Throwable t) {
+            return false;
+        }
     }
 }

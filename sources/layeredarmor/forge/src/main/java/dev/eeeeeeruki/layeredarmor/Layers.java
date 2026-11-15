@@ -93,12 +93,16 @@ public final class Layers {
         int pos = n / VIRTUAL_PER_SLOT;
         int i = n % VIRTUAL_PER_SLOT;
         if (pos >= ARMOR_SLOTS.length) return ItemStack.EMPTY;
-        ICuriosItemHandler inv = inventory(player);
-        if (inv == null) return ItemStack.EMPTY;
-        Optional<ICurioStacksHandler> opt = inv.getStacksHandler(SLOT_IDS.get(ARMOR_SLOTS[pos]));
-        if (opt.isEmpty()) return ItemStack.EMPTY;
-        IDynamicStackHandler stacks = opt.get().getStacks();
-        return i < stacks.getSlots() ? stacks.getStackInSlot(i) : ItemStack.EMPTY;
+        try {
+            ICuriosItemHandler inv = inventory(player);
+            if (inv == null) return ItemStack.EMPTY;
+            Optional<ICurioStacksHandler> opt = inv.getStacksHandler(SLOT_IDS.get(ARMOR_SLOTS[pos]));
+            if (opt.isEmpty()) return ItemStack.EMPTY;
+            IDynamicStackHandler stacks = opt.get().getStacks();
+            return i < stacks.getSlots() ? stacks.getStackInSlot(i) : ItemStack.EMPTY;
+        } catch (Throwable t) {
+            return ItemStack.EMPTY;
+        }
     }
 
     public record Entry(EquipmentSlot slot, SlotContext context, IDynamicStackHandler handler, int index, ItemStack stack) {}
@@ -114,20 +118,29 @@ public final class Layers {
 
     /** その部位の重ね着スロットにある防具（空は含まない） */
     public static List<Entry> entries(LivingEntity entity, EquipmentSlot slot) {
-        ICuriosItemHandler inv = inventory(entity);
-        if (inv == null) return List.of();
-        List<Entry> out = new ArrayList<>(1);
-        collect(inv, entity, slot, out);
-        return out;
+        try {
+            ICuriosItemHandler inv = inventory(entity);
+            if (inv == null) return List.of();
+            List<Entry> out = new ArrayList<>(1);
+            collect(inv, entity, slot, out);
+            return out;
+        } catch (Throwable t) {
+            // Curios側の状態がおかしいときでも、ゲームを落とさず「重ね着なし」として扱う
+            return List.of();
+        }
     }
 
     /** 全部位の重ね着スロットにある防具（足→脚→胴→頭の順、空は含まない） */
     public static List<Entry> allEntries(LivingEntity entity) {
-        ICuriosItemHandler inv = inventory(entity);
-        if (inv == null) return List.of();
-        List<Entry> out = new ArrayList<>(4);
-        for (EquipmentSlot slot : ARMOR_SLOTS) collect(inv, entity, slot, out);
-        return out;
+        try {
+            ICuriosItemHandler inv = inventory(entity);
+            if (inv == null) return List.of();
+            List<Entry> out = new ArrayList<>(4);
+            for (EquipmentSlot slot : ARMOR_SLOTS) collect(inv, entity, slot, out);
+            return out;
+        } catch (Throwable t) {
+            return List.of();
+        }
     }
 
     private static void collect(ICuriosItemHandler inv, LivingEntity entity, EquipmentSlot slot, List<Entry> out) {
