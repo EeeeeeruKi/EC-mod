@@ -1406,6 +1406,16 @@
       "summary": "Mekanism の機械・ケーブル・アイテム・道具・防具の使い方を、思案画面（Ponder）で解説するMODです。公式アドオン（Generators・Additions・Tools）にも対応しています。",
       "versions": [
         {
+          "version": "1.0.2",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/moremekaponder/1.21.1-neoforge/moremekaponder-neoforge-1.21.1-1.0.2.jar",
+          "fileName": "moremekaponder-neoforge-1.21.1-1.0.2.jar",
+          "sha256": "56f824b59b270900c1bfb840226553201a80630bc6844d9dc521341e1781fd22",
+          "changelog": "思案画面の中でブロックが設置されない不具合を直しました。",
+          "released": "2026-11-16"
+        },
+        {
           "version": "1.0.1",
           "mc": "1.21.1",
           "loader": "neoforge",

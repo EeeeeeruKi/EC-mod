@@ -70,7 +70,7 @@ final class SceneRunner {
         scene.configureBasePlate(0, 0, 7);
         scene.showBasePlate();
         scene.idle(10);
-        scene.world().showSection(util.select().fromTo(0, 1, 0, 6, 5, 6), Direction.DOWN);
+        scene.world().showSection(util.select().fromTo(0, 1, 0, 6, 3, 6), Direction.DOWN);
         if (data.get("main").isJsonNull()) {
             ItemStack hero = stack(data.get("item").getAsString(), 1);
             if (!hero.isEmpty()) scene.world().createItemEntity(new Vec3(1.5, 1.6, 1.5), Vec3.ZERO, hero);
