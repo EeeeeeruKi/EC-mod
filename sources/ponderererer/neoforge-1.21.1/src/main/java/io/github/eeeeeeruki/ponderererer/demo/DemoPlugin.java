@@ -21,12 +21,24 @@ public final class DemoPlugin implements PonderPlugin {
         try {
             enabled = FxConfig.DEMO_SCENES.get();
         } catch (IllegalStateException notLoaded) {
-            enabled = false;
+            enabled = readFromFile();
         }
+        if (!enabled) enabled = readFromFile();
         if (!enabled) return;
         helper.forComponents(BuiltInRegistries.ITEM.getKey(Items.LIGHTNING_ROD))
                 .addStoryBoard("demo", DemoScenes::beamsAndArcs)
                 .addStoryBoard("demo", DemoScenes::gaugesAndPanels)
                 .addStoryBoard("demo", DemoScenes::players);
+    }
+
+    /** The scenes are registered before NeoForge loads client configs, so look at the file itself. */
+    private static boolean readFromFile() {
+        try {
+            java.nio.file.Path file = net.neoforged.fml.loading.FMLPaths.CONFIGDIR.get().resolve(Ponderererer.MOD_ID + "-client.toml");
+            if (!java.nio.file.Files.exists(file)) return false;
+            return java.util.regex.Pattern.compile("(?m)^\\s*demoScenes\\s*=\\s*true").matcher(java.nio.file.Files.readString(file)).find();
+        } catch (Exception e) {
+            return false;
+        }
     }
 }
