@@ -118,7 +118,7 @@ public class UpdateScreen extends Screen {
                         .tooltip(Tooltip.create(Component.literal(
                                 "ここにあるMODの更新は、起動時に二度と表示しません。\n"
                                 + "あとから新しく入れたMODに更新があるときは、そのMODだけが表示されます。\n"
-                                + "§7タイトル画面で Ctrl+U を押すか、更新ボタン（矢印のアイコン）から、いつでも確認できます。")))
+                                + "§7Ctrl+U（ワールドの中でも使えます）を押すか、タイトル画面・ポーズ画面の更新ボタン（矢印のアイコン）から、いつでも確認できます。")))
                         .build());
             } else if (list.stream().anyMatch(UpdaterCore::isHidden)) {
                 addRenderableWidget(Button.builder(Component.literal("起動時にまた表示する"), b -> unhideAll())
@@ -128,7 +128,7 @@ public class UpdateScreen extends Screen {
             }
         } else if (mode == Mode.FINISHED) {
             boolean any = list.stream().anyMatch(c -> c.state == UpdateCandidate.State.DONE);
-            if (any) {
+            if (any && minecraft.level == null) {
                 addRenderableWidget(Button.builder(Component.literal("ゲームを終了して入れ替える"), b -> minecraft.stop())
                         .bounds(width / 2 - 155, by, 150, 20).build());
                 addRenderableWidget(Button.builder(Component.literal("あとで（終了時に入れ替え）"), b -> onClose())
@@ -257,6 +257,7 @@ public class UpdateScreen extends Screen {
                 break;
             default:
                 boolean ok = list.stream().anyMatch(c -> c.state == UpdateCandidate.State.DONE);
+                if (ok && minecraft.level != null) l2 = "ワールドから出て、ゲームを終了すると入れ替わります。";
                 l1 = ok ? "ダウンロードが終わりました。ゲームを終了すると新しい版に入れ替わります。"
                         : "ダウンロードできませんでした。カーソルを合わせると理由が表示されます。";
                 break;

@@ -14,6 +14,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.resources.ResourceLocation;
 import org.lwjgl.glfw.GLFW;
@@ -39,17 +40,27 @@ public class ClaudeUpdaterClient implements ClientModInitializer {
         KeyBindingHelper.registerKeyBinding(SECRET);
         ClientHooks.secretHeld = ClaudeUpdaterClient::secretHeld;
         UpdateIconButton.ICON = ResourceLocation.fromNamespaceAndPath(ClaudeUpdater.MODID, "textures/gui/update.png");
+        UpdateIconButton.ADD_ICON = ResourceLocation.fromNamespaceAndPath(ClaudeUpdater.MODID, "textures/gui/add.png");
 
         ScreenEvents.AFTER_INIT.register((client, screen, w, h) -> {
             if (screen instanceof TitleScreen) {
                 List<AbstractWidget> buttons = Screens.getButtons(screen);
                 List<GuiEventListener> widgets = new ArrayList<>(buttons);
                 UpdateIconButton.addTo(screen, widgets, l -> buttons.add((AbstractWidget) l));
+            } else if (screen instanceof PauseScreen) {
+                List<AbstractWidget> buttons = Screens.getButtons(screen);
+                List<GuiEventListener> widgets = new ArrayList<>(buttons);
+                UpdateIconButton.addToPause(screen, widgets, l -> buttons.add((AbstractWidget) l));
             }
             ScreenKeyboardEvents.allowKeyPress(screen).register((s, key, scancode, modifiers) ->
                     !ClientHooks.onMenuKey(s, key, scancode, UPDATE));
         });
-        ClientTickEvents.END_CLIENT_TICK.register(mc -> ClientHooks.onClientTick());
+        ClientTickEvents.END_CLIENT_TICK.register(mc -> {
+            ClientHooks.onClientTick();
+            while (UPDATE.consumeClick()) {
+                if (Screen.hasControlDown()) ClientHooks.openFromGame(); // Ctrl+U while playing
+            }
+        });
     }
 
     /** Screens swallow key events, so the key's own state is not updated on the title screen: read GLFW. */

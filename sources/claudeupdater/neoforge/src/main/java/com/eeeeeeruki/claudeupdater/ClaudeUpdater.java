@@ -10,6 +10,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.logging.LogUtils;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.api.distmarker.Dist;
@@ -77,8 +78,8 @@ public class ClaudeUpdater {
         /** Hold this while opening the update menu to get the install screen. Shown as ??? in Controls. */
         static final KeyMapping SECRET = new KeyMapping("???", KeyConflictContext.GUI, KeyModifier.CONTROL,
                 InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_LEFT_SHIFT, "key.categories.misc");
-        /** Opens the update check from any menu. Ctrl+U by default; with the ??? key held it opens the install screen. */
-        static final KeyMapping UPDATE = new KeyMapping("MODの更新を確認", KeyConflictContext.GUI, KeyModifier.CONTROL,
+        /** Opens the update check from any menu or while playing. Ctrl+U by default; with the ??? key held it opens the install screen. */
+        static final KeyMapping UPDATE = new KeyMapping("MODの更新を確認", KeyConflictContext.UNIVERSAL, KeyModifier.CONTROL,
                 InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_U, "key.categories.misc");
 
         static void init(IEventBus modBus, ModContainer container) {
@@ -91,12 +92,18 @@ public class ClaudeUpdater {
             });
             ClientHooks.secretHeld = Client::secretHeld;
             UpdateIconButton.ICON = ResourceLocation.fromNamespaceAndPath(MODID, "textures/gui/update.png");
+            UpdateIconButton.ADD_ICON = ResourceLocation.fromNamespaceAndPath(MODID, "textures/gui/add.png");
             NeoForge.EVENT_BUS.addListener((ScreenEvent.Init.Post e) -> {
                 if (e.getScreen() instanceof TitleScreen) {
                     UpdateIconButton.addTo(e.getScreen(), e.getListenersList(), e::addListener);
+                } else if (e.getScreen() instanceof PauseScreen) {
+                    UpdateIconButton.addToPause(e.getScreen(), e.getListenersList(), e::addListener);
                 }
             });
-            NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post e) -> ClientHooks.onClientTick());
+            NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post e) -> {
+                ClientHooks.onClientTick();
+                while (UPDATE.consumeClick()) ClientHooks.openFromGame();
+            });
             container.registerExtensionPoint(IConfigScreenFactory.class,
                     (IConfigScreenFactory) (c, parent) -> ClientHooks.openMenu(parent));
         }

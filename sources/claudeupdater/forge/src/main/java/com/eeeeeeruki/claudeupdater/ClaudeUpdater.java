@@ -11,6 +11,7 @@ import com.mojang.logging.LogUtils;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.client.ConfigScreenHandler;
@@ -83,8 +84,8 @@ public class ClaudeUpdater {
         /** Hold this while opening the update menu to get the install screen. Shown as ??? in Controls. */
         static final KeyMapping SECRET = new KeyMapping("???", KeyConflictContext.GUI, KeyModifier.CONTROL,
                 InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_LEFT_SHIFT, "key.categories.misc");
-        /** Opens the update check from any menu. Ctrl+U by default; with the ??? key held it opens the install screen. */
-        static final KeyMapping UPDATE = new KeyMapping("MODの更新を確認", KeyConflictContext.GUI, KeyModifier.CONTROL,
+        /** Opens the update check from any menu or while playing. Ctrl+U by default; with the ??? key held it opens the install screen. */
+        static final KeyMapping UPDATE = new KeyMapping("MODの更新を確認", KeyConflictContext.UNIVERSAL, KeyModifier.CONTROL,
                 InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_U, "key.categories.misc");
 
         static void init() {
@@ -98,13 +99,18 @@ public class ClaudeUpdater {
             });
             ClientHooks.secretHeld = Client::secretHeld;
             UpdateIconButton.ICON = new ResourceLocation(MODID, "textures/gui/update.png");
+            UpdateIconButton.ADD_ICON = new ResourceLocation(MODID, "textures/gui/add.png");
             MinecraftForge.EVENT_BUS.addListener((ScreenEvent.Init.Post e) -> {
                 if (e.getScreen() instanceof TitleScreen) {
                     UpdateIconButton.addTo(e.getScreen(), e.getListenersList(), e::addListener);
+                } else if (e.getScreen() instanceof PauseScreen) {
+                    UpdateIconButton.addToPause(e.getScreen(), e.getListenersList(), e::addListener);
                 }
             });
             MinecraftForge.EVENT_BUS.addListener((TickEvent.ClientTickEvent e) -> {
-                if (e.phase == TickEvent.Phase.END) ClientHooks.onClientTick();
+                if (e.phase != TickEvent.Phase.END) return;
+                ClientHooks.onClientTick();
+                while (UPDATE.consumeClick()) ClientHooks.openFromGame();
             });
             ModLoadingContext.get().registerExtensionPoint(ConfigScreenHandler.ConfigScreenFactory.class,
                     () -> new ConfigScreenHandler.ConfigScreenFactory((mc, parent) -> ClientHooks.openMenu(parent)));

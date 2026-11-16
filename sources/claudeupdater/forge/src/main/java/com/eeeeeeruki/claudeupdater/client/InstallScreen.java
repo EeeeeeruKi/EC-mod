@@ -94,7 +94,7 @@ public class InstallScreen extends Screen {
                     .bounds(width / 2 + 5, by, 150, 20).build());
         } else if (mode == Mode.FINISHED) {
             boolean any = list.stream().anyMatch(c -> c.state == UpdateCandidate.State.DONE);
-            if (any) {
+            if (any && minecraft.level == null) {
                 addRenderableWidget(Button.builder(Component.literal("ゲームを終了する"), b -> minecraft.stop())
                         .bounds(width / 2 - 155, by, 150, 20).build());
                 addRenderableWidget(Button.builder(Component.literal("あとで"), b -> onClose())

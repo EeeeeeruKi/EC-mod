@@ -15,15 +15,25 @@ import net.minecraft.resources.ResourceLocation;
 import java.util.List;
 import java.util.function.Consumer;
 
-/** 20x20 icon-only button on the title screen that opens the update check. */
+/**
+ * 20x20 icon-only buttons: the update check (arrows) and, just above it, the install screen (plus).
+ * Shown on the title screen and on the pause menu.
+ */
 public class UpdateIconButton extends Button {
     /** Set by the loader entry point (ResourceLocation is built differently on each version). */
     public static ResourceLocation ICON;
+    public static ResourceLocation ADD_ICON;
 
-    public UpdateIconButton(int x, int y, Screen parent) {
-        super(x, y, 20, 20, Component.literal("MODの更新"),
-                b -> Minecraft.getInstance().setScreen(ClientHooks.openMenu(parent)), DEFAULT_NARRATION);
-        setTooltip(Tooltip.create(Component.literal("MODの更新を確認します")));
+    private final boolean install;
+
+    private UpdateIconButton(int x, int y, Screen parent, boolean install) {
+        super(x, y, 20, 20, Component.literal(install ? "MODを追加" : "MODの更新"),
+                b -> Minecraft.getInstance().setScreen(install ? new InstallScreen(parent) : ClientHooks.openMenu(parent)),
+                DEFAULT_NARRATION);
+        this.install = install;
+        setTooltip(Tooltip.create(Component.literal(install
+                ? "まだ入っていないMODを、MODライブラリから追加します"
+                : "MODの更新を確認します")));
     }
 
     @Override
@@ -34,23 +44,23 @@ public class UpdateIconButton extends Button {
         setMessage(label);
 
         RenderSystem.enableBlend();
-        g.blit(ICON, getX() + 2, getY() + 2, 0, 0, 16, 16, 16, 16);
+        g.blit(install ? ADD_ICON : ICON, getX() + 2, getY() + 2, 0, 0, 16, 16, 16, 16);
         RenderSystem.disableBlend();
 
         // green dot when the startup check found updates
-        if (!UpdaterCore.found().isEmpty()) {
+        if (!install && !UpdaterCore.found().isEmpty()) {
             g.fill(getX() + 14, getY() + 2, getX() + 18, getY() + 6, 0xFF1E7A3A);
             g.fill(getX() + 15, getY() + 3, getX() + 17, getY() + 5, 0xFF55FF55);
         }
     }
 
     /**
-     * Adds the button to the title screen: just left of the language button when it can be found,
-     * otherwise in the top-left corner.
+     * Title screen: the update button just left of the language button when it can be found (otherwise in the
+     * top-left corner), and the install button right above it.
      */
     public static void addTo(Screen screen, List<GuiEventListener> widgets, Consumer<GuiEventListener> add) {
         int x = 4;
-        int y = 4;
+        int y = 28;
         AbstractWidget lang = null;
         for (GuiEventListener l : widgets) {
             if (l instanceof AbstractWidget w && w.getWidth() == 20 && w.getHeight() == 20
@@ -59,10 +69,30 @@ public class UpdateIconButton extends Button {
                 lang = w; // the small square button left of the main column (language)
             }
         }
-        if (lang != null && lang.getX() - 24 >= 0) {
+        if (lang != null && lang.getX() - 24 >= 0 && lang.getY() - 24 >= 0) {
             x = lang.getX() - 24;
             y = lang.getY();
         }
-        add.accept(new UpdateIconButton(x, y, screen));
+        add.accept(new UpdateIconButton(x, y - 24, screen, true));
+        add.accept(new UpdateIconButton(x, y, screen, false));
+    }
+
+    /**
+     * Pause menu: left of the top button ("Back to Game"), install on top and update below it.
+     * Nothing is added when the menu has no buttons (F3+Esc).
+     */
+    public static void addToPause(Screen screen, List<GuiEventListener> widgets, Consumer<GuiEventListener> add) {
+        AbstractWidget top = null;
+        for (GuiEventListener l : widgets) {
+            if (l instanceof AbstractWidget w && w.getWidth() >= 98 && w.visible
+                    && (top == null || w.getY() < top.getY())) {
+                top = w;
+            }
+        }
+        if (top == null) return;
+        int x = top.getX() - 24;
+        if (x < 0) x = 4;
+        add.accept(new UpdateIconButton(x, top.getY(), screen, true));
+        add.accept(new UpdateIconButton(x, top.getY() + 24, screen, false));
     }
 }

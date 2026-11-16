@@ -6,6 +6,36 @@
       "summary": "ゲームの起動時に、このライブラリのMODの新しい版があるか確認し、選んだMODを自動で入れ替えるMOD。jarを毎回ダウンロードして置き換える手間がなくなります。",
       "versions": [
         {
+          "version": "1.5.0",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/claudeupdater/1.20.1-forge/claudeupdater-1.5.0-forge-1.20.1.jar",
+          "fileName": "claudeupdater-1.5.0-forge-1.20.1.jar",
+          "sha256": "d508557f605cd944f6f542cf4004d75130b448606a8d1923c9f4c7f23b73f8e4",
+          "changelog": "タイトル画面の更新ボタンの上に「MODを追加」ボタンを付けました。ワールドの中でも Ctrl+U で更新の確認画面を開けるようになり、ポーズ画面にも更新ボタンと「MODを追加」ボタンが出るようになりました。",
+          "released": "2026-11-16"
+        },
+        {
+          "version": "1.5.0",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/claudeupdater/1.21.1-neoforge/claudeupdater-1.5.0-neoforge-1.21.1.jar",
+          "fileName": "claudeupdater-1.5.0-neoforge-1.21.1.jar",
+          "sha256": "e1cb016cc792636a303e0095a476c1743ff22d8cfdde42f9c7b772fce5c564b1",
+          "changelog": "タイトル画面の更新ボタンの上に「MODを追加」ボタンを付けました。ワールドの中でも Ctrl+U で更新の確認画面を開けるようになり、ポーズ画面にも更新ボタンと「MODを追加」ボタンが出るようになりました。",
+          "released": "2026-11-16"
+        },
+        {
+          "version": "1.5.0",
+          "mc": "1.21.1",
+          "loader": "fabric",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/claudeupdater/1.21.1-fabric/claudeupdater-1.5.0-fabric-1.21.1.jar",
+          "fileName": "claudeupdater-1.5.0-fabric-1.21.1.jar",
+          "sha256": "82f3dcd486e6b9a0a6b7dc13558783d5244827926c61bdba1da5ba925c2e3c56",
+          "changelog": "タイトル画面の更新ボタンの上に「MODを追加」ボタンを付けました。ワールドの中でも Ctrl+U で更新の確認画面を開けるようになり、ポーズ画面にも更新ボタンと「MODを追加」ボタンが出るようになりました。",
+          "released": "2026-11-16"
+        },
+        {
           "version": "1.4.1",
           "mc": "1.20.1",
           "loader": "forge",

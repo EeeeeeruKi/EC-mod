@@ -30,12 +30,19 @@ public final class ClientHooks {
      */
     public static boolean onMenuKey(Screen screen, int keyCode, int scanCode, KeyMapping updateKey) {
         Minecraft mc = Minecraft.getInstance();
-        if (screen == null || mc.level != null) return false; // menus only, never in-game
-        if (screen instanceof UpdateScreen || screen instanceof InstallScreen) return false;
+        if (screen == null) return false; // in-game presses go through openFromGame
+        if (screen instanceof UpdateScreen || screen instanceof InstallScreen || screen instanceof DependencyScreen) return false;
         if (screen.getFocused() instanceof EditBox) return false; // typing in a text field
         if (!updateKey.isActiveAndMatches(InputConstants.getKey(keyCode, scanCode))) return false;
         mc.setScreen(openMenu(screen));
         return true;
+    }
+
+    /** The shortcut pressed while playing (no screen open): opens the menu over the world. */
+    public static void openFromGame() {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.screen != null || mc.level == null) return;
+        mc.setScreen(openMenu(null));
     }
 
     /** The update menu, or the hidden install screen when the ??? key is held. */
