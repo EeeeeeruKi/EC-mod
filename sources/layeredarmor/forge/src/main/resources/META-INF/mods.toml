@@ -29,6 +29,6 @@ Cold Sweat / Apotheosis / Mekanism / Create Stuff 'N Additions / Advanced AE / C
 [[dependencies.${mod_id}]]
     modId="curios"
     mandatory=true
-    versionRange="[5.7,)"
+    versionRange="[5.8,)"
     ordering="AFTER"
     side="BOTH"
