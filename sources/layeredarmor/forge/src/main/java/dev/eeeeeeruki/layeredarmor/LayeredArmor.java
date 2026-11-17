@@ -30,17 +30,20 @@ public class LayeredArmor {
 
     private void commonSetup(FMLCommonSetupEvent event) {
         // スロットに入れられるかの判定（バニラの防具欄と同じ部位かどうか）
-        for (EquipmentSlot slot : Layers.ARMOR_SLOTS) {
-            CuriosApi.registerCurioPredicate(new ResourceLocation(MODID, Layers.shortName(slot)),
-                    result -> {
-                        try {
-                            return Layers.SLOT_IDS.get(slot).equals(result.slotContext().identifier())
-                                    && Layers.canLayer(result.stack(), slot);
-                        } catch (Throwable t) {
-                            return false;
-                        }
-                    });
-        }
+        // Curios の登録先は普通の HashMap なので、他MODと同時に書き込まないようメインスレッドで登録する
+        event.enqueueWork(() -> {
+            for (EquipmentSlot slot : Layers.ARMOR_SLOTS) {
+                CuriosApi.registerCurioPredicate(new ResourceLocation(MODID, Layers.shortName(slot)),
+                        result -> {
+                            try {
+                                return Layers.SLOT_IDS.get(slot).equals(result.slotContext().identifier())
+                                        && Layers.canLayer(result.stack(), slot);
+                            } catch (Throwable t) {
+                                return false;
+                            }
+                        });
+            }
+        });
     }
 
     /** 他のMODの初期化がすべて終わってから、防具を重ね着スロットに対応させる（先にItemStackを大量に作って他MODの初期化を邪魔しないため） */
