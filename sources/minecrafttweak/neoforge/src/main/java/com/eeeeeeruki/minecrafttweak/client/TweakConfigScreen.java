@@ -19,7 +19,7 @@ import java.util.List;
 
 /**
  * 分類タブ付きの設定画面（MOD一覧の「設定」から開く）。
- * 下の欄に設定コード（例: 1-t,1a-0）を貼って「インポート」を押すと、まとめて変更できる。
+ * 下の欄に設定コード（例: 1-t,1a-0,v1-12,s3-f）を貼って「インポート」を押すと、まとめて変更できる。
  * 「コピー」で今の設定コードをクリップボードに写す。
  */
 public class TweakConfigScreen extends Screen {
@@ -129,21 +129,26 @@ public class TweakConfigScreen extends Screen {
         int boxWidth = Math.min(280, width - 150);
         int boxLeft = (width - boxWidth - 128) / 2;
         textBox = new EditBox(font, boxLeft, height - 62, boxWidth, 20, Component.translatable("minecrafttweak.config.text"));
-        textBox.setMaxLength(2000);
-        textBox.setValue(pendingText != null ? pendingText : TextSettings.currentText());
+        textBox.setMaxLength(8000);
+        textBox.setValue(pendingText != null ? pendingText : TextSettings.currentText(true));
         pendingText = null;
         addRenderableWidget(textBox);
         addRenderableWidget(Button.builder(Component.translatable("minecrafttweak.config.import"), b -> applyText())
                 .bounds(boxLeft + boxWidth + 4, height - 62, 64, 20).build());
         addRenderableWidget(Button.builder(Component.translatable("minecrafttweak.config.copy"), b -> {
             if (minecraft != null) {
-                minecraft.keyboardHandler.setClipboard(TextSettings.currentText());
+                minecraft.keyboardHandler.setClipboard(TextSettings.currentText(true));
                 resultMessage = Component.translatable("minecrafttweak.config.copied").withStyle(ChatFormatting.GREEN);
             }
         }).bounds(boxLeft + boxWidth + 70, height - 62, 58, 20).build());
 
+        addRenderableWidget(Button.builder(Component.translatable("minecrafttweak.config.codes"), b -> {
+            if (minecraft != null) {
+                minecraft.setScreen(new CodeListScreen(this));
+            }
+        }).bounds(width / 2 - 154, height - 26, 150, 20).build());
         addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, b -> onClose())
-                .bounds(width / 2 - 100, height - 26, 200, 20).build());
+                .bounds(width / 2 + 4, height - 26, 150, 20).build());
     }
 
     private void keepTextAndRebuild() {
@@ -152,7 +157,7 @@ public class TweakConfigScreen extends Screen {
     }
 
     private void applyText() {
-        TextSettings.Result result = TextSettings.apply(textBox.getValue());
+        TextSettings.Result result = TextSettings.apply(textBox.getValue(), true);
         if (!result.errors().isEmpty()) {
             resultMessage = result.errors().get(0).copy().withStyle(ChatFormatting.RED);
         } else {

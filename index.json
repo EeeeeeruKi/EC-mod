@@ -1512,6 +1512,26 @@
       "summary": "Quark を前提MODにして、Quark にない小さな改善をたくさん詰め込んでいくためのMODです。機能は最初はすべてオフで、ひとつずつオンにできます。",
       "versions": [
         {
+          "version": "1.4.0",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/minecrafttweak/1.21.1-neoforge/minecrafttweak-neoforge-1.21.1-1.4.0.jar",
+          "fileName": "minecrafttweak-neoforge-1.21.1-1.4.0.jar",
+          "sha256": "4e3b46c69d23cd3c44267cd7d8f1f78c2b2090b564171bee50a7c3976a08d6f8",
+          "changelog": "設定コードで、バニラ（v）、Sodium / Embeddium（s）、Sodium Extra / Embeddium Extra（se）の設定も変えられるようにしました（例: v1-12,v10-f,s2-1）。「コピー」では今使える設定がまとめてコードになります。設定画面に、項目番号と今の値を見られる「ID一覧」を付けました。",
+          "released": "2026-11-18"
+        },
+        {
+          "version": "1.4.0",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/minecrafttweak/1.20.1-forge/minecrafttweak-forge-1.20.1-1.4.0.jar",
+          "fileName": "minecrafttweak-forge-1.20.1-1.4.0.jar",
+          "sha256": "f8683fd98ce3c5a9243f4233560f9d010b4e824ee669cc3cfdc2266fd0a995c0",
+          "changelog": "設定コードで、バニラ（v）、Sodium / Embeddium（s）、Sodium Extra / Embeddium Extra（se）の設定も変えられるようにしました（例: v1-12,v10-f,s2-1）。「コピー」では今使える設定がまとめてコードになります。設定画面に、項目番号と今の値を見られる「ID一覧」を付けました。",
+          "released": "2026-11-18"
+        },
+        {
           "version": "1.3.0",
           "mc": "1.21.1",
           "loader": "neoforge",
