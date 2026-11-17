@@ -1,0 +1,14 @@
+{
+  "minecrafttweak.config.title": "minEcraft twEEk Settings",
+  "minecrafttweak.config.on": "ON",
+  "minecrafttweak.config.off": "OFF",
+  "minecrafttweak.config.empty": "No features in this category yet.",
+  "minecrafttweak.category.tweaks": "Tweaks",
+  "minecrafttweak.category.building": "Building",
+  "minecrafttweak.category.tools": "Tools",
+  "minecrafttweak.category.management": "Management",
+  "minecrafttweak.category.world": "World",
+  "minecrafttweak.category.client": "Client",
+  "minecrafttweak.feature.armor_stand_arms": "Armor Stands with Arms",
+  "minecrafttweak.feature.armor_stand_arms.desc": "Newly placed armor stands have arms."
+}

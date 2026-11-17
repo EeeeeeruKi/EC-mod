@@ -1,0 +1,14 @@
+{
+  "minecrafttweak.config.title": "minEcraft twEEk の設定",
+  "minecrafttweak.config.on": "オン",
+  "minecrafttweak.config.off": "オフ",
+  "minecrafttweak.config.empty": "この分類にはまだ機能がありません。",
+  "minecrafttweak.category.tweaks": "調整",
+  "minecrafttweak.category.building": "建築",
+  "minecrafttweak.category.tools": "道具",
+  "minecrafttweak.category.management": "整理",
+  "minecrafttweak.category.world": "ワールド",
+  "minecrafttweak.category.client": "見た目・操作",
+  "minecrafttweak.feature.armor_stand_arms": "腕付きの防具立て",
+  "minecrafttweak.feature.armor_stand_arms.desc": "新しく置いた防具立てに、最初から腕が付くようになります。"
+}
