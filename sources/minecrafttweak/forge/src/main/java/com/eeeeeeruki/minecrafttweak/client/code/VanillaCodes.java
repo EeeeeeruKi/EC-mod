@@ -1,6 +1,7 @@
 package com.eeeeeeruki.minecrafttweak.client.code;
 
 import com.eeeeeeruki.minecrafttweak.core.CodeEntry;
+import com.eeeeeeruki.minecrafttweak.core.CodeValues;
 import com.eeeeeeruki.minecrafttweak.core.CodeProvider;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.OptionInstance;
@@ -8,6 +9,8 @@ import net.minecraft.client.Options;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundSource;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -121,6 +124,36 @@ public final class VanillaCodes implements CodeProvider {
         Minecraft.getInstance().options.save();
     }
 
+    /** OptionInstance の初期値のフィールド（型が T で final のもの）。名前に頼らずに探す。 */
+    private static Field initialValueField;
+    private static boolean searchedInitial;
+
+    private static Object initialValue(OptionInstance<?> option) {
+        if (!searchedInitial) {
+            searchedInitial = true;
+            for (Field f : OptionInstance.class.getDeclaredFields()) {
+                int mod = f.getModifiers();
+                if (!Modifier.isStatic(mod) && Modifier.isFinal(mod) && f.getType() == Object.class) {
+                    try {
+                        f.setAccessible(true);
+                        initialValueField = f;
+                    } catch (Throwable ignored) {
+                        // 見つからなければ初期値は分からないことにする
+                    }
+                    break;
+                }
+            }
+        }
+        if (initialValueField == null) {
+            return null;
+        }
+        try {
+            return initialValueField.get(option);
+        } catch (Throwable t) {
+            return null;
+        }
+    }
+
     private record Entry(String key, Function<Options, OptionInstance<?>> getter) implements CodeEntry {
         private OptionInstance<?> option() {
             return getter.apply(Minecraft.getInstance().options);
@@ -144,6 +177,12 @@ public final class VanillaCodes implements CodeProvider {
         @Override
         public Component apply(String raw) {
             return applyTo(option(), raw);
+        }
+
+        @Override
+        public String defaultTextValue() {
+            Object initial = initialValue(option());
+            return initial == null ? null : CodeValues.format(initial);
         }
 
         @SuppressWarnings("unchecked")

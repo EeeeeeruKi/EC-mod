@@ -20,7 +20,7 @@ import java.util.List;
 /**
  * 分類タブ付きの設定画面（MOD一覧の「設定」から開く）。
  * 下の欄に設定コード（例: 1-t,1a-0,v1-12,s3-f）を貼って「インポート」を押すと、まとめて変更できる。
- * 「コピー」で今の設定コードをクリップボードに写す。
+ * 「MODのコード」「描画のコード」で、初期値と違う設定だけをコードにしてクリップボードに写す。
  */
 public class TweakConfigScreen extends Screen {
     private static final int ROW_HEIGHT = 22;
@@ -78,7 +78,7 @@ public class TweakConfigScreen extends Screen {
             all.add(new Row(feature, null, rowLeft, 0, rowWidth));
         }
 
-        int listBottom = height - 100;
+        int listBottom = height - 124;
         int perPage = Math.max(1, (listBottom - LIST_TOP) / ROW_HEIGHT);
         pageCount = Math.max(1, (all.size() + perPage - 1) / perPage);
         page = Math.max(0, Math.min(page, pageCount - 1));
@@ -113,34 +113,55 @@ public class TweakConfigScreen extends Screen {
             Button prev = Button.builder(Component.literal("<"), b -> {
                 page--;
                 keepTextAndRebuild();
-            }).bounds(width / 2 - 60, height - 96, 20, 20).build();
+            }).bounds(width / 2 - 60, height - 122, 20, 20).build();
             prev.active = page > 0;
             addRenderableWidget(prev);
 
             Button next = Button.builder(Component.literal(">"), b -> {
                 page++;
                 keepTextAndRebuild();
-            }).bounds(width / 2 + 40, height - 96, 20, 20).build();
+            }).bounds(width / 2 + 40, height - 122, 20, 20).build();
             next.active = page < pageCount - 1;
             addRenderableWidget(next);
         }
 
         // 設定コード欄
-        int boxWidth = Math.min(280, width - 150);
-        int boxLeft = (width - boxWidth - 128) / 2;
-        textBox = new EditBox(font, boxLeft, height - 62, boxWidth, 20, Component.translatable("minecrafttweak.config.text"));
-        textBox.setMaxLength(8000);
-        textBox.setValue(pendingText != null ? pendingText : TextSettings.currentText(true));
+        int boxWidth = Math.min(250, width - 90);
+        int boxLeft = (width - boxWidth - 68) / 2;
+        textBox = new EditBox(font, boxLeft, height - 86, boxWidth, 20, Component.translatable("minecrafttweak.config.text"));
+        textBox.setMaxLength(32000);
+        textBox.setHint(Component.translatable("minecrafttweak.config.text_hint").withStyle(ChatFormatting.DARK_GRAY));
+        textBox.setValue(pendingText != null ? pendingText : "");
         pendingText = null;
         addRenderableWidget(textBox);
         addRenderableWidget(Button.builder(Component.translatable("minecrafttweak.config.import"), b -> applyText())
-                .bounds(boxLeft + boxWidth + 4, height - 62, 64, 20).build());
-        addRenderableWidget(Button.builder(Component.translatable("minecrafttweak.config.copy"), b -> {
-            if (minecraft != null) {
-                minecraft.keyboardHandler.setClipboard(TextSettings.currentText(true));
-                resultMessage = Component.translatable("minecrafttweak.config.copied").withStyle(ChatFormatting.GREEN);
-            }
-        }).bounds(boxLeft + boxWidth + 70, height - 62, 58, 20).build());
+                .bounds(boxLeft + boxWidth + 4, height - 86, 64, 20)
+                .tooltip(Tooltip.create(Component.translatable("minecrafttweak.config.import.tooltip")))
+                .build());
+
+        // コピーと切り替え
+        int w = Math.min(78, (width - 20) / 4);
+        int left = width / 2 - w * 2;
+        addRenderableWidget(Button.builder(Component.translatable("minecrafttweak.config.copy_mod"), b -> copy(TextSettings.Group.MOD))
+                .bounds(left, height - 50, w - 2, 20)
+                .tooltip(Tooltip.create(Component.translatable("minecrafttweak.config.copy_mod.tooltip")))
+                .build());
+        addRenderableWidget(Button.builder(Component.translatable("minecrafttweak.config.copy_client"), b -> copy(TextSettings.Group.CLIENT))
+                .bounds(left + w, height - 50, w - 2, 20)
+                .tooltip(Tooltip.create(Component.translatable("minecrafttweak.config.copy_client.tooltip")))
+                .build());
+        addRenderableWidget(Button.builder(toggleText("minecrafttweak.config.compress", compress), b -> {
+                    compress = !compress;
+                    b.setMessage(toggleText("minecrafttweak.config.compress", compress));
+                }).bounds(left + w * 2, height - 50, w - 2, 20)
+                .tooltip(Tooltip.create(Component.translatable("minecrafttweak.config.compress.tooltip")))
+                .build());
+        addRenderableWidget(Button.builder(toggleText("minecrafttweak.config.reset_first", resetFirst), b -> {
+                    resetFirst = !resetFirst;
+                    b.setMessage(toggleText("minecrafttweak.config.reset_first", resetFirst));
+                }).bounds(left + w * 3, height - 50, w - 2, 20)
+                .tooltip(Tooltip.create(Component.translatable("minecrafttweak.config.reset_first.tooltip")))
+                .build());
 
         addRenderableWidget(Button.builder(Component.translatable("minecrafttweak.config.codes"), b -> {
             if (minecraft != null) {
@@ -151,20 +172,55 @@ public class TweakConfigScreen extends Screen {
                 .bounds(width / 2 + 4, height - 26, 150, 20).build());
     }
 
+    /** 圧縮するか / インポートの前に初期値に戻すか（ゲームを閉じるまで覚えておく）。 */
+    private static boolean compress = false;
+    private static boolean resetFirst = false;
+
+    private static Component toggleText(String key, boolean value) {
+        return Component.translatable(key).append(": ").append(TextSettings.onOff(value));
+    }
+
+    private void copy(TextSettings.Group group) {
+        if (minecraft == null) {
+            return;
+        }
+        String code = TextSettings.currentText(group, true);
+        if (code.isEmpty()) {
+            resultMessage = Component.translatable("minecrafttweak.config.copied_empty").withStyle(ChatFormatting.YELLOW);
+            return;
+        }
+        boolean shorterRaw = false;
+        if (compress) {
+            String packed = com.eeeeeeruki.minecrafttweak.core.CodeCompression.encode(code);
+            if (packed.length() < code.length()) {
+                code = packed;
+            } else {
+                shorterRaw = true; // 短いコードは圧縮すると逆に長くなるので、そのまま
+            }
+        }
+        minecraft.keyboardHandler.setClipboard(code);
+        resultMessage = Component.translatable(group == TextSettings.Group.MOD
+                        ? "minecrafttweak.config.copied_mod" : "minecrafttweak.config.copied_client", code.length())
+                .withStyle(ChatFormatting.GREEN);
+        if (shorterRaw) {
+            resultMessage = resultMessage.copy().append(Component.translatable("minecrafttweak.config.copied_raw"));
+        }
+    }
+
     private void keepTextAndRebuild() {
-        pendingText = null;
+        pendingText = textBox != null ? textBox.getValue() : null;
         rebuildWidgets();
     }
 
     private void applyText() {
-        TextSettings.Result result = TextSettings.apply(textBox.getValue(), true);
+        TextSettings.Result result = TextSettings.apply(textBox.getValue(), true, resetFirst);
         if (!result.errors().isEmpty()) {
             resultMessage = result.errors().get(0).copy().withStyle(ChatFormatting.RED);
         } else {
             resultMessage = Component.translatable("minecrafttweak.config.applied", result.changed())
                     .withStyle(ChatFormatting.GREEN);
         }
-        // 成功したときは今の設定で入力欄を作り直す。エラーのときは入力をそのまま残す。
+        // 成功したときは入力欄を空にする。エラーのときは入力をそのまま残す。
         pendingText = result.errors().isEmpty() ? null : textBox.getValue();
         String keep = pendingText;
         rebuildWidgets();
@@ -206,11 +262,11 @@ public class TweakConfigScreen extends Screen {
                     width / 2, LIST_TOP + 10, 0xAAAAAA);
         }
         if (pageCount > 1) {
-            graphics.drawCenteredString(font, (page + 1) + " / " + pageCount, width / 2, height - 90, 0xFFFFFF);
+            graphics.drawCenteredString(font, (page + 1) + " / " + pageCount, width / 2, height - 116, 0xFFFFFF);
         }
         graphics.drawCenteredString(font, Component.translatable("minecrafttweak.config.text_help"),
-                width / 2, height - 74, 0xAAAAAA);
-        graphics.drawCenteredString(font, resultMessage, width / 2, height - 38, 0xFFFFFF);
+                width / 2, height - 98, 0xAAAAAA);
+        graphics.drawCenteredString(font, resultMessage, width / 2, height - 62, 0xFFFFFF);
     }
 
     @Override

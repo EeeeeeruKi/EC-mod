@@ -109,6 +109,15 @@ public final class FeatureOption {
         return String.valueOf(v);
     }
 
+    /** 初期値（設定コードの形）。 */
+    public String defaultTextValue() {
+        Object d = value.getDefault();
+        if (d instanceof Boolean b) {
+            return b ? "t" : "f";
+        }
+        return String.valueOf(d);
+    }
+
     /** 画面やチャットに出すときの値。 */
     public Component displayValue() {
         if (loaded() && value.get() instanceof Boolean b) {

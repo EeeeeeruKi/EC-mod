@@ -2,6 +2,7 @@ package com.eeeeeeruki.minecrafttweak.client.code;
 
 import com.eeeeeeruki.minecrafttweak.MinecraftTweak;
 import com.eeeeeeruki.minecrafttweak.core.CodeEntry;
+import com.eeeeeeruki.minecrafttweak.core.CodeValues;
 import com.eeeeeeruki.minecrafttweak.core.CodeProvider;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
@@ -25,6 +26,8 @@ public class ReflectCodes implements CodeProvider {
     private final boolean reloadChunks;
     private Method getter;
     private boolean searched;
+    private Object defaults;
+    private boolean searchedDefaults;
 
     public ReflectCodes(String prefix, String nameKey, boolean reloadChunks, String[][] holders) {
         this.prefix = prefix;
@@ -67,6 +70,36 @@ public class ReflectCodes implements CodeProvider {
         } catch (Throwable t) {
             return null;
         }
+    }
+
+    /** 初期値だけが入った設定（defaults() か、引数なしで作ったもの）。 */
+    private Object defaults() {
+        if (!searchedDefaults) {
+            Object options = options();
+            if (options == null) {
+                return null;
+            }
+            searchedDefaults = true;
+            Class<?> c = options.getClass();
+            try {
+                Method m = c.getMethod("defaults");
+                if (Modifier.isStatic(m.getModifiers())) {
+                    defaults = m.invoke(null);
+                }
+            } catch (Throwable ignored) {
+                // defaults() が無い
+            }
+            if (defaults == null) {
+                try {
+                    var ctor = c.getDeclaredConstructor();
+                    ctor.setAccessible(true);
+                    defaults = ctor.newInstance();
+                } catch (Throwable ignored) {
+                    // 作れなければ初期値は分からないことにする
+                }
+            }
+        }
+        return defaults;
     }
 
     @Override
@@ -139,7 +172,10 @@ public class ReflectCodes implements CodeProvider {
         }
 
         private Target target() {
-            Object root = options();
+            return targetIn(options());
+        }
+
+        private Target targetIn(Object root) {
             if (root == null) {
                 return null;
             }
@@ -183,6 +219,19 @@ public class ReflectCodes implements CodeProvider {
         @Override
         public String textValue() {
             Target t = target();
+            if (t == null) {
+                return null;
+            }
+            try {
+                return CodeValues.format(t.get());
+            } catch (IllegalAccessException e) {
+                return null;
+            }
+        }
+
+        @Override
+        public String defaultTextValue() {
+            Target t = targetIn(defaults());
             if (t == null) {
                 return null;
             }

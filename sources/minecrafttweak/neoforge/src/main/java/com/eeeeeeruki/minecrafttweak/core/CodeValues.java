@@ -1,6 +1,5 @@
-package com.eeeeeeruki.minecrafttweak.client.code;
+package com.eeeeeeruki.minecrafttweak.core;
 
-import com.eeeeeeruki.minecrafttweak.core.TextSettings;
 import net.minecraft.util.OptionEnum;
 
 import java.math.BigDecimal;

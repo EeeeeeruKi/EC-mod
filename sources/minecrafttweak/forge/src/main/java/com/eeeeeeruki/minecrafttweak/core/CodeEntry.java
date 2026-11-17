@@ -18,4 +18,9 @@ public interface CodeEntry {
 
     /** 文字列から値を入れる。うまくいけば null、だめならエラーの文を返す。 */
     Component apply(String raw);
+
+    /** 初期値を設定コードの形で（分からなければ null）。 */
+    default String defaultTextValue() {
+        return null;
+    }
 }

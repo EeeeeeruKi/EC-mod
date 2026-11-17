@@ -15,7 +15,10 @@ public interface CodeProvider {
     /** そのMODが入っているか。 */
     boolean available();
 
-    /** クライアントの設定か（サーバーのコマンドからは変えない）。 */
+    /**
+     * クライアントの設定か（サーバーのコマンドからは変えない）。
+     * true なら「描画のコード」、false なら「MODのコード」に入る。
+     */
     boolean clientOnly();
 
     List<CodeEntry> entries();

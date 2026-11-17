@@ -3,6 +3,8 @@ package com.eeeeeeruki.minecrafttweak;
 import com.eeeeeeruki.minecrafttweak.core.Feature;
 import com.eeeeeeruki.minecrafttweak.core.Features;
 import com.eeeeeeruki.minecrafttweak.core.TweakConfig;
+import com.eeeeeeruki.minecrafttweak.core.TextSettings;
+import com.eeeeeeruki.minecrafttweak.compat.QuarkCodes;
 import com.mojang.logging.LogUtils;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -34,6 +36,7 @@ public class MinecraftTweak {
             feature.register(modBus);
         }
 
+        TextSettings.registerProvider(new QuarkCodes());
         MinecraftForge.EVENT_BUS.addListener((RegisterCommandsEvent e) -> TweakCommand.register(e.getDispatcher()));
 
         if (FMLEnvironment.dist == Dist.CLIENT) {

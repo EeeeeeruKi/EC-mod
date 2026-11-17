@@ -18,7 +18,12 @@ import java.util.regex.Pattern;
  * 「項目番号-値」を「,」でつなぐ。例: "1-t,1a-2,v1-12,s3-f"
  * - N … このMODの N番の機能のオン/オフ（t / f）
  * - N＋英字 … N番の機能の詳細設定（a が1つ目、b が2つ目…）
- * - 頭文字＋N … バニラ（v）や Sodium（s）、Sodium Extra（se）などの設定
+ * - 頭文字＋N … Quark（q）、バニラ（v）、Sodium（s）、Sodium Extra（se）などの設定
+ *
+ * コードは2つに分かれる。
+ * - MODのコード … このMODの機能と Quark（サーバーでも使える設定）
+ * - 描画のコード … バニラ・Sodium・Sodium Extra（クライアントの設定）
+ * 「MT1.」で始まるものは圧縮コード。中身は普通のコード。
  */
 public final class TextSettings {
     private static final List<CodeProvider> PROVIDERS = new ArrayList<>();
@@ -49,37 +54,59 @@ public final class TextSettings {
         };
     }
 
-    /** このMODの機能だけの設定コード。 */
+    public enum Group { MOD, CLIENT }
+
+    /** このMODの機能と Quark の、全部入りの設定コード。 */
     public static String currentText() {
-        return currentText(false);
+        return currentText(Group.MOD, false);
     }
 
-    /** 今の設定を設定コードにする（エクスポート）。includeClient ならバニラや他MODの設定も入れる。 */
-    public static String currentText(boolean includeClient) {
+    /**
+     * 今の設定を設定コードにする（エクスポート）。
+     * diffOnly なら、初期値と違う項目だけを入れる。
+     */
+    public static String currentText(Group group, boolean diffOnly) {
         StringBuilder sb = new StringBuilder();
-        for (Feature feature : Features.all()) {
-            append(sb, String.valueOf(feature.number()), feature.isEnabled() ? "t" : "f");
-            for (FeatureOption option : feature.options()) {
-                append(sb, option.number(), option.textValue());
+        if (group == Group.MOD) {
+            for (Feature feature : Features.all()) {
+                if (!diffOnly || feature.isEnabled()) {
+                    append(sb, String.valueOf(feature.number()), feature.isEnabled() ? "t" : "f");
+                }
+                for (FeatureOption option : feature.options()) {
+                    String v = option.textValue();
+                    if (!diffOnly || !v.equals(option.defaultTextValue())) {
+                        append(sb, option.number(), v);
+                    }
+                }
             }
         }
-        if (includeClient) {
-            for (CodeProvider provider : PROVIDERS) {
+        for (CodeProvider provider : PROVIDERS) {
+            if (provider.clientOnly() != (group == Group.CLIENT)) {
+                continue;
+            }
+            try {
                 if (!provider.available()) {
                     continue;
                 }
                 for (CodeEntry entry : provider.entries()) {
                     try {
-                        if (entry.available()) {
-                            String v = entry.textValue();
-                            if (v != null) {
-                                append(sb, entry.key(), v);
-                            }
+                        if (!entry.available()) {
+                            continue;
                         }
+                        String v = entry.textValue();
+                        if (v == null) {
+                            continue;
+                        }
+                        if (diffOnly && v.equals(entry.defaultTextValue())) {
+                            continue;
+                        }
+                        append(sb, entry.key(), v);
                     } catch (Throwable ignored) {
                         // 読めない項目は飛ばす
                     }
                 }
+            } catch (Throwable ignored) {
+                // 読めないMODは飛ばす
             }
         }
         return sb.toString();
@@ -97,19 +124,51 @@ public final class TextSettings {
 
     /** サーバーのコマンド用（クライアントの設定は変えない）。 */
     public static Result apply(String input) {
-        return apply(input, false);
+        return apply(input, false, false);
     }
 
-    public static Result apply(String input, boolean allowClient) {
+    /** 圧縮コードを戻して、いくつかのコードを1つにつなぐ。 */
+    private static String expand(String input, List<Component> errors) {
+        StringBuilder sb = new StringBuilder();
+        for (String token : input.trim().split("\\s+")) {
+            if (token.isEmpty()) {
+                continue;
+            }
+            String part = token;
+            if (CodeCompression.isCompressed(token)) {
+                part = CodeCompression.decode(token);
+                if (part == null) {
+                    errors.add(Component.translatable("minecrafttweak.code.error.compressed"));
+                    continue;
+                }
+            }
+            if (sb.length() > 0) {
+                sb.append(',');
+            }
+            sb.append(part);
+        }
+        return sb.toString();
+    }
+
+    /**
+     * 設定コードを入れる（インポート）。
+     * resetFirst なら、コードに入っている側（MOD / 描画）の設定を先に全部初期値に戻す。
+     */
+    public static Result apply(String input, boolean allowClient, boolean resetFirst) {
         List<Component> messages = new ArrayList<>();
         List<Component> errors = new ArrayList<>();
-        String text = Normalizer.normalize(input, Normalizer.Form.NFKC)
+        String text = Normalizer.normalize(expand(input, errors), Normalizer.Form.NFKC)
                 .replace('、', ',').replace(';', ',').replaceAll("\\s+", "");
-        if (text.isEmpty()) {
-            errors.add(Component.translatable("minecrafttweak.text.error.empty"));
+        if (text.replace(",", "").isEmpty()) {
+            if (errors.isEmpty()) {
+                errors.add(Component.translatable("minecrafttweak.text.error.empty"));
+            }
             return new Result(0, messages, errors);
         }
         Set<CodeProvider> touched = new LinkedHashSet<>();
+        if (resetFirst) {
+            resetGroups(text, allowClient, touched);
+        }
         int changed = 0;
         for (String entry : text.split(",")) {
             if (entry.isEmpty()) {
@@ -136,6 +195,67 @@ public final class TextSettings {
             }
         }
         return new Result(changed, messages, errors);
+    }
+
+    private static void resetGroups(String text, boolean allowClient, Set<CodeProvider> touched) {
+        boolean mod = false;
+        boolean client = false;
+        for (String entry : text.split(",")) {
+            int dash = entry.indexOf('-');
+            if (dash <= 0) {
+                continue;
+            }
+            Matcher m = KEY.matcher(entry.substring(0, dash).toLowerCase(Locale.ROOT));
+            if (!m.matches()) {
+                continue;
+            }
+            String prefix = m.group(1);
+            if (prefix.isEmpty()) {
+                mod = true;
+                continue;
+            }
+            for (CodeProvider provider : PROVIDERS) {
+                if (provider.prefix().equals(prefix)) {
+                    if (provider.clientOnly()) {
+                        client = true;
+                    } else {
+                        mod = true;
+                    }
+                }
+            }
+        }
+        if (mod && TweakConfig.SPEC.isLoaded()) {
+            for (Feature feature : Features.all()) {
+                feature.setEnabled(false);
+                for (FeatureOption option : feature.options()) {
+                    option.reset();
+                }
+            }
+        }
+        for (CodeProvider provider : PROVIDERS) {
+            boolean target = provider.clientOnly() ? client && allowClient : mod;
+            if (!target) {
+                continue;
+            }
+            try {
+                if (!provider.available()) {
+                    continue;
+                }
+                for (CodeEntry entry : provider.entries()) {
+                    try {
+                        String def = entry.defaultTextValue();
+                        if (def != null && entry.available() && !def.equals(entry.textValue())) {
+                            entry.apply(def);
+                            touched.add(provider);
+                        }
+                    } catch (Throwable ignored) {
+                        // 戻せない項目は飛ばす
+                    }
+                }
+            } catch (Throwable ignored) {
+                // 読めないMODは飛ばす
+            }
+        }
     }
 
     private static Component applyOne(String key, String raw, List<Component> messages,
