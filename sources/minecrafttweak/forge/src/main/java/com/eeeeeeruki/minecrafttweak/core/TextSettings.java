@@ -9,10 +9,10 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * テキストでまとめて設定を変える仕組み。
- * 「番号 値 番号 値 …」と並べる。例: "1 t 2 f 1.1 20"
- * - 番号 N … N番の機能のオン/オフ（t / f）
- * - 番号 N.M … N番の機能の M番目の追加設定（数値、または t / f）
+ * 設定コード（インポート/エクスポート）。
+ * 「項目番号-値」を「,」でつなぐ。例: "1-t,1.1-0,2-f"
+ * - 項目番号 N … N番の機能のオン/オフ（t / f）
+ * - 項目番号 N.M … N番の機能の M番目の追加設定（数値、または t / f）
  */
 public final class TextSettings {
     private TextSettings() {
@@ -32,16 +32,16 @@ public final class TextSettings {
         };
     }
 
-    /** 今の設定を、そのまま入力し直せる形の文字列にする。 */
+    /** 今の設定を設定コードにする（エクスポート）。 */
     public static String currentText() {
         StringBuilder sb = new StringBuilder();
         for (Feature feature : Features.all()) {
             if (sb.length() > 0) {
-                sb.append(' ');
+                sb.append(',');
             }
-            sb.append(feature.number()).append(' ').append(feature.isEnabled() ? 't' : 'f');
+            sb.append(feature.number()).append('-').append(feature.isEnabled() ? 't' : 'f');
             for (FeatureOption option : feature.options()) {
-                sb.append(' ').append(option.number()).append(' ').append(option.textValue());
+                sb.append(',').append(option.number()).append('-').append(option.textValue());
             }
         }
         return sb.toString();
@@ -53,21 +53,23 @@ public final class TextSettings {
     public static Result apply(String input) {
         List<Component> messages = new ArrayList<>();
         List<Component> errors = new ArrayList<>();
-        String text = Normalizer.normalize(input, Normalizer.Form.NFKC).replace('=', ' ').replace(',', ' ').trim();
+        String text = Normalizer.normalize(input, Normalizer.Form.NFKC)
+                .replace('、', ',').replace(';', ',').replaceAll("\\s+", "");
         if (text.isEmpty()) {
             errors.add(Component.translatable("minecrafttweak.text.error.empty"));
             return new Result(0, messages, errors);
         }
-        String[] tokens = text.split("\\s+");
         int changed = 0;
-        for (int i = 0; i < tokens.length; i += 2) {
-            String key = tokens[i];
-            if (i + 1 >= tokens.length) {
-                errors.add(Component.translatable("minecrafttweak.text.error.no_value", key));
-                break;
+        for (String entry : text.split(",")) {
+            if (entry.isEmpty()) {
+                continue;
             }
-            String raw = tokens[i + 1];
-            Component error = applyOne(key, raw, messages);
+            int dash = entry.indexOf('-');
+            if (dash <= 0 || dash == entry.length() - 1) {
+                errors.add(Component.translatable("minecrafttweak.text.error.format", entry));
+                continue;
+            }
+            Component error = applyOne(entry.substring(0, dash), entry.substring(dash + 1), messages);
             if (error != null) {
                 errors.add(error);
             } else {

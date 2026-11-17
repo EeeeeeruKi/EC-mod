@@ -19,7 +19,8 @@ import java.util.List;
 
 /**
  * 分類タブ付きの設定画面（MOD一覧の「設定」から開く）。
- * 下の入力欄に「番号 値 番号 値 …」と書いて「適用」を押すと、まとめて変更できる。
+ * 下の欄に設定コード（例: 1-t,1.1-0）を貼って「インポート」を押すと、まとめて変更できる。
+ * 「コピー」で今の設定コードをクリップボードに写す。
  */
 public class TweakConfigScreen extends Screen {
     private static final int ROW_HEIGHT = 22;
@@ -118,16 +119,22 @@ public class TweakConfigScreen extends Screen {
             addRenderableWidget(next);
         }
 
-        // テキスト入力欄
-        int boxWidth = Math.min(300, width - 90);
-        int boxLeft = (width - boxWidth - 54) / 2;
+        // 設定コード欄
+        int boxWidth = Math.min(280, width - 150);
+        int boxLeft = (width - boxWidth - 128) / 2;
         textBox = new EditBox(font, boxLeft, height - 62, boxWidth, 20, Component.translatable("minecrafttweak.config.text"));
         textBox.setMaxLength(2000);
         textBox.setValue(pendingText != null ? pendingText : TextSettings.currentText());
         pendingText = null;
         addRenderableWidget(textBox);
-        addRenderableWidget(Button.builder(Component.translatable("minecrafttweak.config.apply"), b -> applyText())
-                .bounds(boxLeft + boxWidth + 4, height - 62, 50, 20).build());
+        addRenderableWidget(Button.builder(Component.translatable("minecrafttweak.config.import"), b -> applyText())
+                .bounds(boxLeft + boxWidth + 4, height - 62, 64, 20).build());
+        addRenderableWidget(Button.builder(Component.translatable("minecrafttweak.config.copy"), b -> {
+            if (minecraft != null) {
+                minecraft.keyboardHandler.setClipboard(TextSettings.currentText());
+                resultMessage = Component.translatable("minecrafttweak.config.copied").withStyle(ChatFormatting.GREEN);
+            }
+        }).bounds(boxLeft + boxWidth + 70, height - 62, 58, 20).build());
 
         addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, b -> onClose())
                 .bounds(width / 2 - 100, height - 26, 200, 20).build());

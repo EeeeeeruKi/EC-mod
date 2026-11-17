@@ -9,7 +9,7 @@ displayName="${mod_name}"
 authors="EeeeeeruKi"
 description='''
 Quark を前提にして、Quark にない小さな改善をたくさん詰め込むためのMODです。
-機能は最初はすべてオフです。MOD一覧の「設定」、またはテキスト（例: 1 t 1.1 0）でオン/オフできます。
+機能は最初はすべてオフです。MOD一覧の「設定」、または設定コード（例: 1-t,1.1-0）のインポートで変更できます。
 '''
 
 [[dependencies.${mod_id}]]
