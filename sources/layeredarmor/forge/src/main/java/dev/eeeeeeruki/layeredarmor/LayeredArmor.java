@@ -3,7 +3,9 @@ package dev.eeeeeeruki.layeredarmor;
 import com.mojang.logging.LogUtils;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.common.Mod;
@@ -30,8 +32,14 @@ public class LayeredArmor {
         // スロットに入れられるかの判定（バニラの防具欄と同じ部位かどうか）
         for (EquipmentSlot slot : Layers.ARMOR_SLOTS) {
             CuriosApi.registerCurioPredicate(new ResourceLocation(MODID, Layers.shortName(slot)),
-                    result -> Layers.SLOT_IDS.get(slot).equals(result.slotContext().identifier())
-                            && Layers.canLayer(result.stack(), slot));
+                    result -> {
+                        try {
+                            return Layers.SLOT_IDS.get(slot).equals(result.slotContext().identifier())
+                                    && Layers.canLayer(result.stack(), slot);
+                        } catch (Throwable t) {
+                            return false;
+                        }
+                    });
         }
     }
 
@@ -39,19 +47,32 @@ public class LayeredArmor {
     private void loadComplete(FMLLoadCompleteEvent event) {
         event.enqueueWork(() -> {
             int count = 0;
+            int skipped = 0;
             for (Item item : ForgeRegistries.ITEMS) {
                 if (item instanceof ICurioItem) continue; // 自前でCurios対応しているアイテムはそのまま
                 EquipmentSlot slot;
                 try {
-                    slot = Layers.defaultArmorSlot(item);
+                    ItemStack probe = new ItemStack(item);
+                    slot = LivingEntity.getEquipmentSlotForItem(probe);
+                    if (!slot.isArmor()) continue;
+                    // すでにCuriosとして登録されている（他MODが registerCurio したか、capability を付けている）アイテムは触らない。
+                    // 二重に登録すると "Duplicate Capability Key" などで落ちたり、他MODの設定を上書きしてしまうため。
+                    if (CuriosApi.getCurio(probe).isPresent()) {
+                        skipped++;
+                        continue;
+                    }
                 } catch (Throwable t) {
                     continue;
                 }
-                if (slot == null) continue;
-                CuriosApi.registerCurio(item, ArmorLayerCurio.INSTANCE);
-                Layers.LAYERABLE.add(item);
-                count++;
+                try {
+                    CuriosApi.registerCurio(item, ArmorLayerCurio.INSTANCE);
+                    Layers.LAYERABLE.add(item);
+                    count++;
+                } catch (Throwable t) {
+                    LOGGER.warn("[LayeredArmor] {} を重ね着スロットに対応させられませんでした", item, t);
+                }
             }
+            if (skipped > 0) LOGGER.info("[LayeredArmor] すでに Curios 対応済みの防具 {} 個は、そのままにしました", skipped);
             LOGGER.info("[LayeredArmor] {} 個の防具を重ね着スロットに対応させました", count);
         });
     }
