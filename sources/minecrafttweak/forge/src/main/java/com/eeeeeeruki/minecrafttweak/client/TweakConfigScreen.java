@@ -19,7 +19,7 @@ import java.util.List;
 
 /**
  * 分類タブ付きの設定画面（MOD一覧の「設定」から開く）。
- * 下の欄に設定コード（例: 1-t,1.1-0）を貼って「インポート」を押すと、まとめて変更できる。
+ * 下の欄に設定コード（例: 1-t,1a-0）を貼って「インポート」を押すと、まとめて変更できる。
  * 「コピー」で今の設定コードをクリップボードに写す。
  */
 public class TweakConfigScreen extends Screen {
@@ -76,9 +76,6 @@ public class TweakConfigScreen extends Screen {
         int rowLeft = (width - rowWidth) / 2;
         for (Feature feature : Features.inCategory(category)) {
             all.add(new Row(feature, null, rowLeft, 0, rowWidth));
-            for (FeatureOption option : feature.options()) {
-                all.add(new Row(feature, option, rowLeft + 14, 0, rowWidth - 14));
-            }
         }
 
         int listBottom = height - 100;
@@ -100,6 +97,15 @@ public class TweakConfigScreen extends Screen {
                         }).bounds(row.x() + row.width() - 60, y, 60, 20)
                         .tooltip(Tooltip.create(Component.translatable(feature.descriptionKey())))
                         .build());
+                if (!feature.options().isEmpty()) {
+                    addRenderableWidget(Button.builder(Component.translatable("minecrafttweak.config.details"), b -> {
+                                if (minecraft != null) {
+                                    minecraft.setScreen(new FeatureDetailScreen(this, feature));
+                                }
+                            }).bounds(row.x() + row.width() - 124, y, 62, 20)
+                            .tooltip(Tooltip.create(Component.translatable("minecrafttweak.config.details.tooltip")))
+                            .build());
+                }
             }
         }
 

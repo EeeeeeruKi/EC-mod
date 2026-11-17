@@ -5,7 +5,7 @@
   "minecrafttweak.config.empty": "No features in this category yet.",
   "minecrafttweak.config.text": "Settings code",
   "minecrafttweak.config.applied": "Imported %s setting(s).",
-  "minecrafttweak.config.text_help": "Settings code (join \"id-value\" with commas, e.g. 1-t,1.1-0)",
+  "minecrafttweak.config.text_help": "Settings code (join \"id-value\" with commas, e.g. 1-t,1a-2)",
   "minecrafttweak.category.tweaks": "Tweaks",
   "minecrafttweak.category.building": "Building",
   "minecrafttweak.category.tools": "Tools",
@@ -31,5 +31,14 @@
   "minecrafttweak.config.copy": "Copy",
   "minecrafttweak.config.copied": "Copied the current settings code to the clipboard.",
   "minecrafttweak.text.error.format": "\"%s\" is not in the \"id-value\" form.",
-  "minecrafttweak.command.click_copy": "Click to copy."
+  "minecrafttweak.command.click_copy": "Click to copy.",
+  "minecrafttweak.config.details": "Details",
+  "minecrafttweak.config.details.tooltip": "Open the detailed settings of this feature.",
+  "minecrafttweak.config.details.title": "%s - Details",
+  "minecrafttweak.config.details.enabled": "Use this feature",
+  "minecrafttweak.config.details.range": "Allowed: %s",
+  "minecrafttweak.config.details.reset": "Reset to Defaults",
+  "minecrafttweak.config.details.reset_done": "Reset the detailed settings.",
+  "minecrafttweak.config.details.saved": "Saved.",
+  "minecrafttweak.feature.xp_pickup.delay.desc": "Ticks to wait after picking up an orb before the next one can be picked up."
 }

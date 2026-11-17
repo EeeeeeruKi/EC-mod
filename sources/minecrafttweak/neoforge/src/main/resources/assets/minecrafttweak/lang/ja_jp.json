@@ -5,7 +5,7 @@
   "minecrafttweak.config.empty": "この分類にはまだ機能がありません。",
   "minecrafttweak.config.text": "設定コード",
   "minecrafttweak.config.applied": "%s 件の設定をインポートしました。",
-  "minecrafttweak.config.text_help": "設定コード（項目番号-値 を「,」でつなぐ。例: 1-t,1.1-0）",
+  "minecrafttweak.config.text_help": "設定コード（項目番号-値 を「,」でつなぐ。例: 1-t,1a-2）",
   "minecrafttweak.category.tweaks": "調整",
   "minecrafttweak.category.building": "建築",
   "minecrafttweak.category.tools": "道具",
@@ -31,5 +31,14 @@
   "minecrafttweak.config.copy": "コピー",
   "minecrafttweak.config.copied": "今の設定コードをクリップボードにコピーしました。",
   "minecrafttweak.text.error.format": "「%s」は「項目番号-値」の形になっていません。",
-  "minecrafttweak.command.click_copy": "クリックでコピーします。"
+  "minecrafttweak.command.click_copy": "クリックでコピーします。",
+  "minecrafttweak.config.details": "詳細",
+  "minecrafttweak.config.details.tooltip": "この機能の詳細設定を開きます。",
+  "minecrafttweak.config.details.title": "%s の詳細設定",
+  "minecrafttweak.config.details.enabled": "この機能を使う",
+  "minecrafttweak.config.details.range": "入れられる値: %s",
+  "minecrafttweak.config.details.reset": "初期値に戻す",
+  "minecrafttweak.config.details.reset_done": "詳細設定を初期値に戻しました。",
+  "minecrafttweak.config.details.saved": "保存しました。",
+  "minecrafttweak.feature.xp_pickup.delay.desc": "経験値オーブを1つ吸い込んでから、次を吸い込めるようになるまでのティック数です。"
 }

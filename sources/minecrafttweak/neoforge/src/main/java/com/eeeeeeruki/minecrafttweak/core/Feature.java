@@ -15,9 +15,9 @@ import java.util.List;
  * - イベントは register() で登録する。処理の最初で isEnabled() を確認すれば、
  *   設定でオフにした瞬間から止まる。
  * - 機能ごとの追加設定は addOptions() の中で intOption / doubleOption / boolOption を使って作る。
- *   作った順に「機能番号.1」「機能番号.2」…の番号が付き、テキストで変更できる。
+ *   作った順に「機能番号a」「機能番号b」…の番号が付き、詳細設定画面と設定コードで変更できる。
  * - 名前と説明は lang の minecrafttweak.feature.&lt;id&gt; と .desc、
- *   追加設定の名前は minecrafttweak.feature.&lt;id&gt;.&lt;設定id&gt; に書く。
+ *   詳細設定の名前は minecrafttweak.feature.&lt;id&gt;.&lt;設定id&gt;、説明は .desc に書く。
  * - クライアント専用のクラスを使う処理は、別クラスに分けて Dist を確認してから呼ぶ。
  */
 public abstract class Feature {

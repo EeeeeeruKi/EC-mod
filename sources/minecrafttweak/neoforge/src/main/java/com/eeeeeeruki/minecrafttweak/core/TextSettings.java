@@ -10,9 +10,9 @@ import java.util.Locale;
 
 /**
  * 設定コード（インポート/エクスポート）。
- * 「項目番号-値」を「,」でつなぐ。例: "1-t,1.1-0,2-f"
+ * 「項目番号-値」を「,」でつなぐ。例: "1-t,1a-2,2-f"
  * - 項目番号 N … N番の機能のオン/オフ（t / f）
- * - 項目番号 N.M … N番の機能の M番目の追加設定（数値、または t / f）
+ * - 項目番号 N＋英字 … N番の機能の詳細設定（a が1つ目、b が2つ目…）。値は数値、または t / f
  */
 public final class TextSettings {
     private TextSettings() {
@@ -79,16 +79,22 @@ public final class TextSettings {
         return new Result(changed, messages, errors);
     }
 
+    private static final java.util.regex.Pattern KEY = java.util.regex.Pattern.compile("(\\d+)(?:([a-z]+)|\\.(\\d+))?");
+
     private static Component applyOne(String key, String raw, List<Component> messages) {
-        String[] parts = key.split("\\.");
+        key = key.toLowerCase(Locale.ROOT);
+        java.util.regex.Matcher m = KEY.matcher(key);
+        if (!m.matches()) {
+            return Component.translatable("minecrafttweak.text.error.key", key);
+        }
         int featureNo;
         int optionNo = 0;
         try {
-            featureNo = Integer.parseInt(parts[0]);
-            if (parts.length == 2) {
-                optionNo = Integer.parseInt(parts[1]);
-            } else if (parts.length != 1) {
-                return Component.translatable("minecrafttweak.text.error.key", key);
+            featureNo = Integer.parseInt(m.group(1));
+            if (m.group(2) != null) {
+                optionNo = FeatureOption.indexOfLetters(m.group(2)) + 1;
+            } else if (m.group(3) != null) {
+                optionNo = Integer.parseInt(m.group(3)); // 古い「1.1」の書き方も読める
             }
         } catch (NumberFormatException e) {
             return Component.translatable("minecrafttweak.text.error.key", key);

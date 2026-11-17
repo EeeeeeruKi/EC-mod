@@ -39,9 +39,58 @@ public final class FeatureOption {
         return feature.nameKey() + "." + id;
     }
 
-    /** 「機能番号.設定番号」の形の番号。 */
+    public String descriptionKey() {
+        return nameKey() + ".desc";
+    }
+
+    /** 「機能番号＋英字」の形の番号（1a, 1b, …, 1z, 1aa, …）。 */
     public String number() {
-        return feature.number() + "." + (feature.options().indexOf(this) + 1);
+        return feature.number() + letters(feature.options().indexOf(this));
+    }
+
+    static String letters(int index) {
+        StringBuilder sb = new StringBuilder();
+        int n = index;
+        do {
+            sb.insert(0, (char) ('a' + n % 26));
+            n = n / 26 - 1;
+        } while (n >= 0);
+        return sb.toString();
+    }
+
+    static int indexOfLetters(String letters) {
+        int n = 0;
+        for (char c : letters.toCharArray()) {
+            if (c < 'a' || c > 'z') {
+                return -1;
+            }
+            n = n * 26 + (c - 'a' + 1);
+        }
+        return n - 1;
+    }
+
+    /** 入れられる範囲（数値の設定のときだけ）。 */
+    public String rangeText() {
+        return switch (type) {
+            case INT -> (int) min + " ~ " + (int) max;
+            case DOUBLE -> min + " ~ " + max;
+            case BOOLEAN -> "t / f";
+        };
+    }
+
+    public boolean booleanValue() {
+        return loaded() && value.get() instanceof Boolean b && b;
+    }
+
+    /** 初期値に戻す。 */
+    @SuppressWarnings("unchecked")
+    public void reset() {
+        if (!loaded()) {
+            return;
+        }
+        ModConfigSpec.ConfigValue<Object> v = (ModConfigSpec.ConfigValue<Object>) value;
+        v.set(v.getDefault());
+        v.save();
     }
 
     private boolean loaded() {

@@ -12,7 +12,7 @@ import net.minecraft.network.chat.HoverEvent;
 
 /**
  * /minecrafttweak list … 番号つきの一覧と、今の設定コードを表示
- * /minecrafttweak import &lt;設定コード&gt; … 例: /minecrafttweak import 1-t,1.1-0
+ * /minecrafttweak import &lt;設定コード&gt; … 例: /minecrafttweak import 1-t,1a-0
  */
 public final class TweakCommand {
     private TweakCommand() {
