@@ -11,11 +11,15 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLEnvironment;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.RegisterCommandsEvent;
+import com.eeeeeeruki.minecrafttweak.command.TweakCommand;
 import org.slf4j.Logger;
 
 /**
  * minEcraft twEEk のメインクラス。
- * 機能（Feature）は core/Features.java に登録し、分類ごとに設定でオン/オフできる。
+ * Quark の前提MOD。Quark にない改善機能だけを入れる。
+ * 機能（Feature）は core/Features.java に登録し、設定画面・テキスト・コマンドでオン/オフできる。
  */
 @Mod(MinecraftTweak.MODID)
 public class MinecraftTweak {
@@ -29,6 +33,8 @@ public class MinecraftTweak {
         for (Feature feature : Features.all()) {
             feature.register(modBus);
         }
+
+        MinecraftForge.EVENT_BUS.addListener((RegisterCommandsEvent e) -> TweakCommand.register(e.getDispatcher()));
 
         if (FMLEnvironment.dist == Dist.CLIENT) {
             com.eeeeeeruki.minecrafttweak.client.ClientSetup.init();

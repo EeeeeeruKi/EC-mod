@@ -8,8 +8,8 @@ version="${mod_version}"
 displayName="${mod_name}"
 authors="EeeeeeruKi"
 description='''
-Quarkのように、小さな改善をたくさん詰め込むためのMODです。
-機能は分類ごとに分かれていて、MOD一覧の「設定」からひとつずつオン/オフできます。
+Quark を前提にして、Quark にない小さな改善をたくさん詰め込むためのMODです。
+機能は最初はすべてオフです。MOD一覧の「設定」、またはテキスト（例: 1 t 1.1 0）でオン/オフできます。
 '''
 
 [[dependencies.${mod_id}]]
@@ -24,4 +24,11 @@ Quarkのように、小さな改善をたくさん詰め込むためのMODです
     mandatory=true
     versionRange="[1.20.1,1.21)"
     ordering="NONE"
+    side="BOTH"
+
+[[dependencies.${mod_id}]]
+    modId="quark"
+    mandatory=true
+    versionRange="*"
+    ordering="AFTER"
     side="BOTH"
