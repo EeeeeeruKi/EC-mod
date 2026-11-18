@@ -1,0 +1,3397 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>MODライブラリ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&family=M+PLUS+1p:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one narrow column that narrows down step by step — mod list, then Minecraft version, then mod version, then the download block. */
+:root {
+  --bg: #f3f4f1;
+  --surface: #ffffff;
+  --fg: #1d2420;
+  --muted: #5d6862;
+  --line: #d9ded9;
+  --accent: #2c7a57;
+  --accent-soft: #e3f1ea;
+  --accent-fg: #ffffff;
+  --warn-bg: #fff4dc;
+  --warn-fg: #7a5410;
+  --font-display: "DotGothic16", "M PLUS 1p", system-ui, sans-serif;
+  --font-body: "M PLUS 1p", "Hiragino Sans", "Yu Gothic", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #151a17; --surface: #1d2420; --fg: #e6ebe7; --muted: #9aa69f; --line: #2f3833;
+    --accent: #5cc493; --accent-soft: #1f3a2d; --accent-fg: #0f1a14; --warn-bg: #3a2f17; --warn-fg: #f2cd83;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #151a17; --surface: #1d2420; --fg: #e6ebe7; --muted: #9aa69f; --line: #2f3833;
+  --accent: #5cc493; --accent-soft: #1f3a2d; --accent-fg: #0f1a14; --warn-bg: #3a2f17; --warn-fg: #f2cd83;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.75;
+}
+.wrap {
+  max-width: 760px;
+  margin: 0 auto;
+  padding-inline: 16px;
+  padding-block: 36px 56px;
+  display: grid;
+  gap: 28px;
+}
+header { display: grid; gap: 8px; }
+h1 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(30px, 6vw, 42px);
+  line-height: 1.15;
+  margin: 0;
+}
+.lead { margin: 0; color: var(--muted); max-width: 60ch; }
+h2 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 20px;
+  margin: 0;
+  text-wrap: balance;
+}
+.step { display: grid; gap: 12px; }
+.step-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.step-no {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--accent);
+  letter-spacing: 0.06em;
+}
+.hint { color: var(--muted); font-size: 13.5px; margin: 0; }
+
+/* mod cards */
+.mods { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 12px; }
+.mod-card {
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 16px;
+  display: grid;
+  gap: 8px;
+  cursor: pointer;
+  min-width: 0;
+}
+.mod-card:hover { border-color: var(--accent); }
+.mod-card:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.mod-card[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.mod-card .name { font-family: var(--font-display); font-size: 20px; line-height: 1.2; }
+.mod-card .sum { color: var(--muted); font-size: 13.5px; line-height: 1.6; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.chip {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  line-height: 1.6;
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--fg);
+}
+.chip.warn { background: var(--warn-bg); color: var(--warn-fg); font-family: var(--font-body); }
+.chip.count { font-family: var(--font-body); }
+
+/* option buttons */
+.options { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt {
+  font: inherit;
+  font-size: 14px;
+  color: var(--fg);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 8px 14px;
+  cursor: pointer;
+  display: inline-flex;
+  gap: 8px;
+  align-items: baseline;
+}
+.opt:hover { border-color: var(--accent); }
+.opt:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.opt[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
+.opt .sub { font-family: var(--font-mono); font-size: 11.5px; opacity: 0.8; }
+
+/* mod details */
+.details {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 18px;
+  display: grid;
+  gap: 14px;
+}
+.details h3 { margin: 0; font-size: 15px; }
+.feature { display: grid; grid-template-columns: 8.5em minmax(0, 1fr); gap: 10px; font-size: 14px; }
+.feature b { font-weight: 700; }
+.feature span { color: var(--muted); }
+.back {
+  font: inherit;
+  font-size: 13.5px;
+  color: var(--accent);
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  justify-self: start;
+}
+.back:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* download block */
+.download {
+  background: var(--surface);
+  border: 2px solid var(--accent);
+  border-radius: 8px;
+  padding: 20px;
+  display: grid;
+  gap: 14px;
+}
+.status {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  background: var(--warn-bg);
+  color: var(--warn-fg);
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+.status b { white-space: nowrap; }.row { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; }
+button.dl, a.dl { display:inline-block; text-decoration:none;
+
+  font: inherit;
+  font-weight: 700;
+  font-size: 15px;
+  background: var(--accent);
+  color: var(--accent-fg);
+  border: 0;
+  border-radius: 6px;
+  padding: 12px 22px;
+  cursor: pointer;
+}
+button.dl:hover, a.dl:hover { filter: brightness(1.08); }
+button.dl:focus-visible, a.dl:focus-visible { outline: 3px solid var(--fg); outline-offset: 2px; }
+button.dl:disabled { opacity: 0.5; cursor: default; filter: none; }
+.msg { font-size: 13.5px; color: var(--muted); }
+.msg.ok { color: var(--accent); }
+.msg.err { color: var(--warn-fg); }
+dl.file {
+  margin: 0;
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 4px 16px;
+  font-size: 13px;
+}
+dl.file dt { color: var(--muted); }
+dl.file dd { margin: 0; font-family: var(--font-mono); overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+ol.steps { margin: 0; padding-left: 1.4em; display: grid; gap: 6px; font-size: 14px; }
+code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 0 5px;
+}
+
+/* folders (その他 → アドオン) */
+.crumbs { display: flex; flex-wrap: wrap; gap: 4px 6px; align-items: baseline; font-size: 13.5px; color: var(--muted); }
+.crumbs button { font: inherit; color: var(--accent); background: none; border: 0; padding: 0; cursor: pointer; }
+.crumbs button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.crumbs .here { color: var(--fg); font-weight: 700; }
+.mod-card.folder { border-style: dashed; }
+.mod-card.folder .name::before { content: "▸ "; color: var(--accent); }
+@media (max-width: 480px) {
+  .feature { grid-template-columns: 1fr; gap: 0; }
+  dl.file { grid-template-columns: 1fr; }
+  dl.file dd { margin-bottom: 6px; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .step { animation: rise 0.18s ease-out; }
+  @keyframes rise { from { transform: translateY(4px); } to { transform: none; } }
+}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>MODライブラリ</h1>
+    <p class="lead">Claude が作った Minecraft のMODを置いています。MODを選び、使っている Minecraft のバージョンとMODの版を選ぶと、ダウンロードボタンが出ます。統合版のアドオンは「その他」→「アドオン」、データパックは「その他」→「データパック」、ほかの人のMODの移植版は「その他」→「移植」にあります。</p>
+  </header>
+
+  <section class="step" aria-labelledby="s1">
+    <div class="step-head"><span class="step-no">STEP 1</span><h2 id="s1">MODを選ぶ</h2></div>
+    <nav class="crumbs" id="crumbs" aria-label="現在の場所" hidden></nav>
+    <div class="mods" id="mod-list"></div>
+  </section>
+
+  <div id="flow"></div>
+</div>
+
+<script>
+// ---------------------------------------------------------------------------
+// Catalog. To add a mod or a version, add an entry here and publish the zip,
+// base64-encoded as <name>.zip.b64.txt, under files/<mod id>/.
+// An entry with `children` is a folder (その他 → アドオン); add-ons (kind: "addon")
+// ship one .mcaddon, stored the same way as <name>.mcaddon.b64.txt.
+// ---------------------------------------------------------------------------
+const CATALOG = [
+  {
+    id: "mcadminpanel",
+    name: "mcAdminPanel",
+    summary: "OP向けの管理パネル。プレイヤー・ゲームルール・MOD設定（人気MOD上位100件の設定ファイルも）・コマンドをゲーム内のGUIで管理します。",
+    features: [
+      ["プレイヤー", "体力・満腹度・座標・効果・インベントリを表示。ゲームモード変更、回復、TP、飛行切替、効果付与、キル、キック、OP付与／解除。"],
+      ["ゲームルール", "カテゴリ別の一覧と検索。オン／オフや数値をその場で変更。初期値と違うものは色付きで表示。"],
+      ["MOD設定", "NeoForge（1.20.1 版は Forge）の設定を使う全MODを自動で一覧化して編集。config/mcadminpanel/overlays に JSON を置くと日本語の名前や説明を付けられます。"],
+      ["人気MOD", "v1.2.0 から「MOD設定」タブにまとまりました。Modrinth の人気MOD上位100件（1.21.1 版は NeoForge 1.21.1、1.20.1 版は Forge 1.20.1 の順位）に対応し、独自の設定ファイル（JSON・properties・TOML など）も同じ画面で編集できます。一覧を「人気MOD上位100」に切り替えると、入っていないMODも順位つきで見られます。Sodium・Iris・JEI・Jade など25件は日本語の説明付きです。自分のPCの設定と、サーバー側MODの設定（接続先サーバー）の両方を変えられます。"],
+      ["コマンド", "主なバニラコマンド約35個を説明付きのフォームで実行。Tab で補完、お気に入り、実行履歴。"],
+      ["ショートカット", "同じ操作をボタンとキーの両方で。クイックバーと、好きなコマンドを登録できるカスタム枠9個。"]
+    ],
+    notes: [
+      "パネルを開くには権限レベル2以上、キックとOP操作には3以上が必要です（サーバー設定で変更可）。",
+      "サーバーにこのMODが入っていない場合も接続はでき、「コマンド」と「ショートカット」だけ使えます。",
+      "サーバー側のMODの設定ファイルを変えるには権限レベル3以上が必要です。サーバー設定の allowModFileEdit をオフにすると禁止できます。",
+      "v1.2.0 で「人気MOD」タブを「MOD設定」タブにまとめ、上位20件から100件に増やしました。日本語の説明がないMODは、configフォルダにあるMOD名のファイルを自動で探して、項目名を英語のまま表示します。",
+      "表示言語は日本語と英語で、ゲームの言語設定に合わせて切り替わります。",
+      "v1.1.0 から Forge 1.20.1 版もあります。機能は NeoForge 1.21.1 版と同じですが、人気MODの一覧は Forge 1.20.1 で人気のものです。Forge 1.20.1 版では、MOD一覧の「設定」ボタンからこのMODの設定画面は開けません（設定は「MOD設定」タブで変更できます）。"
+    ],
+    install: [
+      "{loader} {loaderVersion} を Minecraft {mc} に入れます。",
+      "ダウンロードしたZIPを展開し、中の <code>{jar}</code> を取り出します。",
+      "jar を <code>.minecraft/mods</code> フォルダに入れます。",
+      "マルチプレイで使う場合は、サーバーの <code>mods</code> フォルダにも同じ jar を入れます。",
+      "ゲームを起動し、OP権限のある状態で <code>F7</code> を押すとパネルが開きます。"
+    ],
+    versions: [
+      {
+        mc: "1.21.1",
+        loader: "NeoForge",
+        loaderVersion: "21.1.x",
+        modVersion: "1.2.0",
+        released: "2026-11-02",
+        file: "files/mcadminpanel/mcAdminPanel-1.2.0-neoforge-1.21.1.zip.b64.txt",
+        fileName: "mcAdminPanel-1.2.0-neoforge-1.21.1.zip",
+        zipBytes: 259368,
+        jar: "mcadminpanel-1.2.0.jar",
+        jarBytes: 272471,
+        sha256: "7F276EBEDC3BDC0204CAB19EA05145A396A3F66C754F837FB614D0F151958C23",
+        tested: false
+      },
+      {
+        mc: "1.20.1",
+        loader: "Forge",
+        loaderVersion: "47.x",
+        modVersion: "1.2.0",
+        released: "2026-11-02",
+        file: "files/mcadminpanel/mcAdminPanel-1.2.0-forge-1.20.1.zip.b64.txt",
+        fileName: "mcAdminPanel-1.2.0-forge-1.20.1.zip",
+        zipBytes: 250364,
+        jar: "mcadminpanel-forge-1.20.1-1.2.0.jar",
+        jarBytes: 265804,
+        sha256: "34533E9CBF0F27FEEFA157A67F243DEDAFD2DEC6CB8DEAF88CE413E5808B67D3",
+        tested: false
+      },
+      {
+        mc: "1.20.1",
+        loader: "Forge",
+        loaderVersion: "47.x",
+        modVersion: "1.1.0",
+        released: "2026-10-31",
+        file: "files/mcadminpanel/mcAdminPanel-1.1.0-forge-1.20.1.zip.b64.txt",
+        fileName: "mcAdminPanel-1.1.0-forge-1.20.1.zip",
+        zipBytes: 248037,
+        jar: "mcadminpanel-forge-1.20.1-1.1.0.jar",
+        jarBytes: 263861,
+        sha256: "F5E4CEE89B665EABA1347CA48E91628945A1C4F1C880EBA052DA334D121DDE20",
+        tested: false
+      },
+      {
+        mc: "1.21.1",
+        loader: "NeoForge",
+        loaderVersion: "21.1.x",
+        modVersion: "1.1.0",
+        released: "2026-10-24",
+        file: "files/mcadminpanel/mcAdminPanel-1.1.0-neoforge-1.21.1.zip.b64.txt",
+        fileName: "mcAdminPanel-1.1.0-neoforge-1.21.1.zip",
+        zipBytes: 253663,
+        jar: "mcadminpanel-1.1.0.jar",
+        jarBytes: 267084,
+        sha256: "175E48B8649B6A0BC256E29C2B41B0C7A175716DA2CB5176530F497A5C54F58F",
+        tested: false
+      },
+      {
+        mc: "1.21.1",
+        loader: "NeoForge",
+        loaderVersion: "21.1.x",
+        modVersion: "1.0.0",
+        released: "2026-10-21",
+        file: "files/mcadminpanel/mcAdminPanel-1.0.0-neoforge-1.21.1.zip.b64.txt",
+        fileName: "mcAdminPanel-1.0.0-neoforge-1.21.1.zip",
+        zipBytes: 181140,
+        jar: "mcadminpanel-1.0.0.jar",
+        jarBytes: 191809,
+        sha256: "694072B01CAD3B1535B099CA91FD3063161E89678B095272EC7FE9B98011CE75",
+        tested: false
+      }
+    ]
+  },
+  {
+    id: "moremekaponder",
+    name: "More MekaPonder",
+    summary: "Mekanism の機械・ケーブル・アイテム・道具・防具の使い方を、思案画面（Ponder）で解説するMODです。公式アドオン（Generators・Additions・Tools）にも対応しています。",
+    features: [
+      ["機械", "濃縮室・冶金吹込機・電解分離機・デジタルマイナーなど、単体で動く機械の使い方を解説します。ファクトリーやティア違いのブロックからも開けます。"],
+      ["物流", "ユニバーサルケーブル・物流トランスポーター・メカニカルパイプ・加圧チューブなどのつなぎ方を解説します。"],
+      ["濃縮アイテム・粉", "凝塊・欠片・結晶・濃縮アイテム・粉などの使い道を解説します。"],
+      ["道具・防具", "コンフィギュレーター・原子分解機・MekaSuit・ジェットパック、Mekanism Tools の道具と防具などの使い方を解説します。"],
+      ["演出", "ブロックはその場に設置され、機械はアイテムが入って動き、できたアイテムが正面から出てきます。化学物質は色の付いた粒で流れを表します。レーザー・爆発・プレイヤーは Ponderererer で表示します。"]
+    ],
+    notes: [
+      "前提MOD: Mekanism、Mekanism: Ponders、Ponderererer が必要です。",
+      "クライアント専用です。サーバーには入れなくても大丈夫です。",
+      "Generators・Additions・Tools が入っていないときは、そのアドオンの思案画面は出ません。",
+      "アイテムにカーソルを合わせて W キーを長押しすると、思案画面が開きます。",
+      "v1.0.2 で、思案画面の中でブロックが設置されない不具合を直しました。",
+      "v1.0.1 で、ブロックが上から落ちてくるのではなく、その場に設置されるようにしました。機械の画面やゲージの表示をやめて、アイテムや粒で動きを見せるようにしました。",
+      "v1.0.0 は最初の版です（134種類）。思案画面の動きは解説文に合わせて自動で作っているので、実際と少し違う場面があります。まだゲーム内での動作確認はしていません。"
+    ],
+    install: [
+      "{loader} {loaderVersion} を Minecraft {mc} に入れます。",
+      "Mekanism、Mekanism: Ponders、Ponderererer を入れます。",
+      "ダウンロードしたZIPを展開し、中の <code>{jar}</code> を取り出して <code>.minecraft/mods</code> フォルダに入れます。"
+    ],
+    versions: [
+      {
+        mc: "1.21.1",
+        loader: "NeoForge",
+        loaderVersion: "21.1.x",
+        modVersion: "1.0.2",
+        released: "2026-11-16",
+        file: "files/moremekaponder/MoreMekaPonder-1.0.2-neoforge-1.21.1.zip.b64.txt",
+        fileName: "MoreMekaPonder-1.0.2-neoforge-1.21.1.zip",
+        zipBytes: 37449,
+        jar: "moremekaponder-neoforge-1.21.1-1.0.2.jar",
+        jarBytes: 51658,
+        sha256: "56F824B59B270900C1BFB840226553201A80630BC6844D9DC521341E1781FD22",
+        tested: false
+      },
+      {
+        mc: "1.21.1",
+        loader: "NeoForge",
+        loaderVersion: "21.1.x",
+        modVersion: "1.0.1",
+        released: "2026-11-16",
+        file: "files/moremekaponder/MoreMekaPonder-1.0.1-neoforge-1.21.1.zip.b64.txt",
+        fileName: "MoreMekaPonder-1.0.1-neoforge-1.21.1.zip",
+        zipBytes: 37425,
+        jar: "moremekaponder-neoforge-1.21.1-1.0.1.jar",
+        jarBytes: 51633,
+        sha256: "C43CB9870D0F62062B4C8E19AAE72E4A086A4A666C418B2412EF13F36F214DAF",
+        tested: false
+      },
+      {
+        mc: "1.21.1",
+        loader: "NeoForge",
+        loaderVersion: "21.1.x",
+        modVersion: "1.0.0",
+        released: "2026-11-16",
+        file: "files/moremekaponder/MoreMekaPonder-1.0.0-neoforge-1.21.1.zip.b64.txt",
+        fileName: "MoreMekaPonder-1.0.0-neoforge-1.21.1.zip",
+        zipBytes: 36763,
+        jar: "moremekaponder-neoforge-1.21.1-1.0.0.jar",
+        jarBytes: 50971,
+        sha256: "384C9DB2D792EA11E5B9C5B3DA73E6AF88BB9A9DF5089E73933EF0FFC7916173",
+        tested: false
+      }
+    ]
+  },
+  {
+    id: "ponderererer",
+    name: "Ponderererer",
+    summary: "Ponder（思案画面）に、レーザー・稲妻・爆発・ゲージ・機械の画面・プレイヤーなどの描画を追加するライブラリMODです。思案画面を作るMODから使います。",
+    features: [
+      ["レーザー・稲妻", "2点の間に光るレーザーや、バチバチした電気の線を出せます。レーザーは撃ち出す動きや、端を動かすこともできます。"],
+      ["爆発", "パーティクル・白い光・音を出し、まわりのブロックを消すこともできます。"],
+      ["ゲージ", "ブロックの横に、エネルギーや液体の量のバーを表示します。量が増えたり減ったりする動きも付けられます。"],
+      ["機械の画面", "スロット・進み具合の矢印・バーがある、機械の画面のような表示を出せます。カーソルでスロットをクリックする動きも見せられます。"],
+      ["プレイヤー", "歩く・しゃがむ・飛ぶ・エリトラ・腕を振る・アイテムを使う、の動きができるプレイヤーを出せます。防具も着られるので、MODの防具もゲームと同じ見た目で表示されます。"],
+      ["画面の色・音", "画面を暗くしたり、一瞬白く光らせたりできます。音は一度だけ鳴らし、思案画面を早送りしたときは鳴りません。"]
+    ],
+    notes: [
+      "前提MODとして Ponder が必要です（Mekanism: Ponders などに同梱されているものでも動きます）。",
+      "クライアント専用です。サーバーには入れなくても大丈夫です。",
+      "config/ponderererer-client.toml の demoScenes を true にして再起動すると、避雷針で見本の思案画面を見られます。",
+      "v1.0.1 で、demoScenes を true にしても避雷針に見本の思案画面が出ない不具合と、見本の中でブロックが置かれない不具合を直しました。",
+      "v1.0.0 は最初の版です。まだゲーム内での動作確認はしていません。"
+    ],
+    install: [
+      "{loader} {loaderVersion} を Minecraft {mc} に入れます。",
+      "Ponder（または Mekanism: Ponders など、Ponder が入っているMOD）を入れます。",
+      "ダウンロードしたZIPを展開し、中の <code>{jar}</code> を取り出して <code>.minecraft/mods</code> フォルダに入れます。"
+    ],
+    versions: [
+      {
+        mc: "1.21.1",
+        loader: "NeoForge",
+        loaderVersion: "21.1.x",
+        modVersion: "1.0.1",
+        released: "2026-11-16",
+        file: "files/ponderererer/Ponderererer-1.0.1-neoforge-1.21.1.zip.b64.txt",
+        fileName: "Ponderererer-1.0.1-neoforge-1.21.1.zip",
+        zipBytes: 46604,
+        jar: "ponderererer-neoforge-1.21.1-1.0.1.jar",
+        jarBytes: 50671,
+        sha256: "B6F3CF23D067DD43A4B2F9D70D61A73ACB184E96478F54D9F2B83B2765E52985",
+        tested: false
+      },
+      {
+        mc: "1.21.1",
+        loader: "NeoForge",
+        loaderVersion: "21.1.x",
+        modVersion: "1.0.0",
+        released: "2026-11-16",
+        file: "files/ponderererer/Ponderererer-1.0.0-neoforge-1.21.1.zip.b64.txt",
+        fileName: "Ponderererer-1.0.0-neoforge-1.21.1.zip",
+        zipBytes: 46089,
+        jar: "ponderererer-neoforge-1.21.1-1.0.0.jar",
+        jarBytes: 50154,
+        sha256: "7158D0336B5ABAF2B28AB5FD25202A65368E945A0BA84662B31BF5A052831A6E",
+        tested: false
+      }
+    ]
+  },
+  {
+    id: "recipecraft",
+    name: "RecipeCraft",
+    summary: "ゲームの中でレシピをGUIで作り変えられるMOD。データパックやJSONを書かずに、作業台に材料を置く感覚でレシピを編集・追加・削除できます。",
+    features: [
+      ["レシピ編集", "K キーでエディタを開きます。インベントリでアイテムにカーソルを合わせて K を押すと、そのアイテムのレシピを直接開けます。レシピの追加・削除もでき、「元に戻す」でいつでも元のレシピに戻せます。"],
+      ["対応レシピ", "作業台（形あり・形なし）、かまど・溶鉱炉・燻製器・焚き火、石切台、鍛冶台（変換・装飾）、金床（このMOD独自。経験値コストや必要数も設定可）。そのほかのレシピは JSON モードで編集できます。"],
+      ["ほかのMOD", "v0.2.0 から。Mekanism・Create・AE2・Farmer's Delight・Immersive Engineering・Botania・Thermal のレシピも、作業台に置く感覚で編集できます（入っているMODの分だけ選べます）。Create は副産物・確率・必要な熱、IE はエネルギー、Botania はマナも設定できます。"],
+      ["タグ指定", "「鉄インゴットならどれでも可」のように、材料をタグで指定できます。"],
+      ["マルチプレイ", "編集できるのは OP（権限レベル2）だけ。保存したレシピはサーバーの全員にすぐ反映されます。「一旦保存」でまとめて編集し、あとで一気に反映することもできます。"],
+      ["JEI・EMI", "変更したレシピだけを差し替えるので、MODが多くても重くなりにくい作りです。"],
+      ["バックアップ", "編集内容を番号付きでいくつでも保存・復元できます。ファイルやコードに書き出して、別のワールドや友だちに渡せます。"]
+    ],
+    notes: [
+      "サーバーとクライアントの両方に入れてください。",
+      "染色など、JSONを持たない特殊なレシピは編集できません。",
+      "編集したレシピはワールドごとに保存されます。",
+      "v0.2.0 の主な変更: 他MODのレシピ（Mekanism の濃縮室、Create のメカニカルクラフトなど37種類）に対応。「一旦保存」で元に戻したレシピが「保存して反映」で反映されない不具合を修正。バックアップに削除したレシピと反映待ちのレシピも入るようになり、読み込んだ内容は「反映する」を押すまで反映待ちになります。",
+      "Thermal のレシピは 1.20.1 版だけで使えます（Thermal に 1.21.1 版がないため）。",
+      "v0.2.1 で、/reload のあとなどに改変したレシピが元に戻ることがある不具合と、Mekanism・Create・IE の機械が改変前のレシピを使い続ける不具合を直しました。",
+      "v0.2.2 で、ワールドを開いたときに、ほかのMOD（KubeJS など）の起動処理で改変したレシピが元に戻ることがある問題に対策しました。戻っていたら自動で当て直します。"
+    ],
+    install: [
+      "{loader} {loaderVersion} を Minecraft {mc} に入れます。",
+      "ダウンロードしたZIPを展開し、中の <code>{jar}</code> を取り出します。",
+      "jar を <code>.minecraft/mods</code> フォルダに入れます。",
+      "マルチプレイで使う場合は、サーバーの <code>mods</code> フォルダにも同じ jar を入れます（両方に必要です）。",
+      "ゲームを起動し、OP権限のある状態で <code>K</code> を押すとレシピエディタが開きます。左の一覧からアイテムを選び、材料と完成品を置いて「保存して反映」を押せば完了です。"
+    ],
+    versions: [
+      {
+        mc: "1.21.1",
+        loader: "NeoForge",
+        loaderVersion: "21.1.x",
+        modVersion: "0.2.2",
+        released: "2026-10-26",
+        file: "files/recipecraft/RecipeCraft-0.2.2-neoforge-1.21.1.zip.b64.txt",
+        fileName: "RecipeCraft-0.2.2-neoforge-1.21.1.zip",
+        zipBytes: 154599,
+        jar: "recipecraft-0.2.2.jar",
+        jarBytes: 163593,
+        sha256: "D2EDAB08B5AB954C21B47D6A3BCB8163B0D1C0A8025E83AB671BE983E12B5BD1",
+        tested: false
+      },
+      {
+        mc: "1.20.1",
+        loader: "Forge",
+        loaderVersion: "47.x",
+        modVersion: "0.2.2",
+        released: "2026-10-26",
+        file: "files/recipecraft/RecipeCraft-0.2.2-forge-1.20.1.zip.b64.txt",
+        fileName: "RecipeCraft-0.2.2-forge-1.20.1.zip",
+        zipBytes: 151181,
+        jar: "recipecraft-0.2.2.jar",
+        jarBytes: 160894,
+        sha256: "32B11DA641470E179506510BC2254B4BAC5D3F8576A7D4C298F592890B1E5635",
+        tested: false
+      },
+      {
+        mc: "1.21.1",
+        loader: "NeoForge",
+        loaderVersion: "21.1.x",
+        modVersion: "0.2.1",
+        released: "2026-10-24",
+        file: "files/recipecraft/RecipeCraft-0.2.1-neoforge-1.21.1.zip.b64.txt",
+        fileName: "RecipeCraft-0.2.1-neoforge-1.21.1.zip",
+        zipBytes: 153144,
+        jar: "recipecraft-0.2.1.jar",
+        jarBytes: 162148,
+        sha256: "64DEA8322F9D8ACF0E0A94C290D77FF723E03DA6BAED2F8BA7E72E8B5F53AD3C",
+        tested: false
+      },
+      {
+        mc: "1.20.1",
+        loader: "Forge",
+        loaderVersion: "47.x",
+        modVersion: "0.2.1",
+        released: "2026-10-24",
+        file: "files/recipecraft/RecipeCraft-0.2.1-forge-1.20.1.zip.b64.txt",
+        fileName: "RecipeCraft-0.2.1-forge-1.20.1.zip",
+        zipBytes: 149704,
+        jar: "recipecraft-0.2.1.jar",
+        jarBytes: 159441,
+        sha256: "E8EC355A4BF28502ACA4D334466AFF5FA82E9693728E05C1F520050156689113",
+        tested: false
+      },
+      {
+        mc: "1.21.1",
+        loader: "NeoForge",
+        loaderVersion: "21.1.x",
+        modVersion: "0.2.0",
+        released: "2026-10-24",
+        file: "files/recipecraft/RecipeCraft-0.2.0-neoforge-1.21.1.zip.b64.txt",
+        fileName: "RecipeCraft-0.2.0-neoforge-1.21.1.zip",
+        zipBytes: 151622,
+        jar: "recipecraft-0.2.0.jar",
+        jarBytes: 160274,
+        sha256: "7CD58FDF7C4D7C9F941994E87B016FABFA28C3924A5CEDBD0663BDA9455A9B3F",
+        tested: false
+      },
+      {
+        mc: "1.20.1",
+        loader: "Forge",
+        loaderVersion: "47.x",
+        modVersion: "0.2.0",
+        released: "2026-10-24",
+        file: "files/recipecraft/RecipeCraft-0.2.0-forge-1.20.1.zip.b64.txt",
+        fileName: "RecipeCraft-0.2.0-forge-1.20.1.zip",
+        zipBytes: 148277,
+        jar: "recipecraft-0.2.0.jar",
+        jarBytes: 157580,
+        sha256: "09223DB92E230334B7FFD2F36DCA4585CEF82409CB5B6E9E8058086FCBB46E9B",
+        tested: false
+      },
+      {
+        mc: "1.21.1",
+        loader: "NeoForge",
+        loaderVersion: "21.1.x",
+        modVersion: "0.1.0",
+        released: "2026-10-22",
+        file: "files/recipecraft/RecipeCraft-0.1.0-neoforge-1.21.1.zip.b64.txt",
+        fileName: "RecipeCraft-0.1.0-neoforge-1.21.1.zip",
+        zipBytes: 134093,
+        jar: "recipecraft-0.1.0.jar",
+        jarBytes: 142462,
+        sha256: "176D87792705C8F1642B1D62E33B13998409A36E1F0CD58EE87E30E125FABF8A",
+        tested: true
+      },
+      {
+        mc: "1.20.1",
+        loader: "Forge",
+        loaderVersion: "47.x",
+        modVersion: "0.1.0",
+        released: "2026-10-22",
+        file: "files/recipecraft/RecipeCraft-0.1.0-forge-1.20.1.zip.b64.txt",
+        fileName: "RecipeCraft-0.1.0-forge-1.20.1.zip",
+        zipBytes: 131889,
+        jar: "recipecraft-0.1.0.jar",
+        jarBytes: 140730,
+        sha256: "501FEDE41026CAE8CD0ACF276143D4052A2BF50DD207E8718C7E2A58FECC24C5",
+        tested: true
+      }
+    ]
+  },
+  {
+    id: "emcgui",
+    name: "EMC Editor GUI",
+    summary: "ProjectE のアイテムの EMC を、ゲーム内の一覧から選んで書き換えられるMOD。ProjectE 標準のコマンドを送るだけなので、クライアントに入れるだけで使えます。",
+    features: [
+      ["開き方", "O キーで開きます（キー設定で変更可）。手に持っているアイテムが選ばれた状態になります。インベントリでアイテムにカーソルを合わせて O、またはチャットで /emcgui でも開けます。"],
+      ["アイテム一覧", "名前・IDで検索、@modid でMODを指定。「すべて／EMCあり／EMCなし」の切り替えができ、EMC のないアイテムには赤い印が付きます。ホイール・スクロールバー・ドラッグでスクロールできます。"],
+      ["EMC編集", "「EMCを設定」「EMCを削除（0にする）」「初期値に戻す」の3種類。対象に #forge:ingots/iron（1.21.1 では #c:ingots/iron）のようなタグを書けば、タグ単位で設定できます。"],
+      ["まとめて編集", "Ctrl／Shift＋クリックで複数のアイテムを選び、同じ値を一度に設定できます。"],
+      ["反映", "ProjectE の仕様で、変更は /reload で反映されます。「変更を反映」ボタンで送れるほか、変更のたびに自動で反映する設定もあります。"]
+    ],
+    notes: [
+      "ProjectE が必要です（Forge 1.20.1・NeoForge 1.20.4・NeoForge 1.21.1 のそれぞれに合った版）。サーバー側にはこのMODを入れなくても使えます。",
+      "v1.1.0 で NeoForge 1.20.4 と 1.21.1 に対応しました（ProjectE の NeoForge 版がこの2つにあるため）。1.21.1 版は NeoForge 21.1.x、1.20.4 版は 20.4.x ならどの版でも動きます。NeoForge 版では「自動で反映」がチェックボックスではなくオン／オフのボタンになっています。",
+      "EMC を変更するには OP 権限（レベル2）が必要です。権限がないとボタンが押せず、警告が出ます。シングルプレイではチートをオンにしてください。",
+      "変更内容はサーバーの config/ProjectE/custom_emc.json に保存されます。"
+    ],
+    install: [
+      "{loader} {loaderVersion} と ProjectE を Minecraft {mc} に入れます。",
+      "ダウンロードしたZIPを展開し、中の <code>{jar}</code> を取り出します。",
+      "jar を <code>.minecraft/mods</code> フォルダに入れます。クライアント専用なので、サーバーには入れなくて大丈夫です。",
+      "ゲームを起動し、OP権限のある状態で <code>O</code> を押すとEMCエディターが開きます。値を設定したら「変更を反映（/reload）」を押してください。"
+    ],
+    versions: [
+      {
+        mc: "1.21.1",
+        loader: "NeoForge",
+        loaderVersion: "21.1.x",
+        modVersion: "1.1.0",
+        released: "2026-10-25",
+        file: "files/emcgui/EMCEditorGUI-1.1.0-neoforge-1.21.1.zip.b64.txt",
+        fileName: "EMCEditorGUI-1.1.0-neoforge-1.21.1.zip",
+        zipBytes: 25223,
+        jar: "emcgui-neoforge-1.21.1-1.1.0.jar",
+        jarBytes: 26715,
+        sha256: "CE4C2ACE4F16F5EF1A4F07391C8E834A9E817A6B11A0320562E69BA300CD54CF",
+        tested: false
+      },
+      {
+        mc: "1.20.4",
+        loader: "NeoForge",
+        loaderVersion: "20.4.x",
+        modVersion: "1.1.0",
+        released: "2026-10-25",
+        file: "files/emcgui/EMCEditorGUI-1.1.0-neoforge-1.20.4.zip.b64.txt",
+        fileName: "EMCEditorGUI-1.1.0-neoforge-1.20.4.zip",
+        zipBytes: 25333,
+        jar: "emcgui-neoforge-1.20.4-1.1.0.jar",
+        jarBytes: 26811,
+        sha256: "58BD6BCF0B3714A77DAC30639DE1AA6FD8ADCF9D0E4175B5D1FE2C57900A5874",
+        tested: false
+      },
+      {
+        mc: "1.20.1",
+        loader: "Forge",
+        loaderVersion: "47.x",
+        modVersion: "1.0.0",
+        released: "2026-10-22",
+        file: "files/emcgui/EMCEditorGUI-1.0.0-forge-1.20.1.zip.b64.txt",
+        fileName: "EMCEditorGUI-1.0.0-forge-1.20.1.zip",
+        zipBytes: 25728,
+        jar: "emcgui-1.0.0.jar",
+        jarBytes: 27611,
+        sha256: "315CD9241898343BDA160800EAC8BE7F6F018D10F01FDB7CF205DEFAAD17863D",
+        tested: true
+      }
+    ]
+  }
+  ,
+    {
+      id: "hijiki-neoforge",
+      name: "ひじき豆modV2",
+      summary: "ひじき豆とひじブロックを追加するMOD。v1.0.2 から「弱いよ」と「弱いよブロック」、v1.0.5 から「iri」と「iriブロック」、v1.1.0 から「ひじウィザー」も入っています。",
+      features: [
+        ["ひじき豆", "右クリックすると声が鳴ります（1秒のクールダウンあり）。"],
+        ["ひじブロック", "ひじき豆からできるブロックです。"],
+        ["弱いよ", "v1.0.2 から追加されたアイテムです。v1.0.7 から、右クリックすると自分に弱体化が30秒かかります。弱体化のレベルは、それまでに弱いよを使った回数と同じです（最大255）。"],
+        ["弱いよブロック", "v1.0.2 から。弱いよからできるブロックです。"],
+        ["iri", "v1.0.5 から。右クリックすると自分が倒れます。Hyperlink か Hyperlink-E が入っていると、ノベルカリバーで自分を攻撃してから倒れます。"],
+        ["iriブロック", "v1.0.5 から追加されたブロックです。"],
+        ["ひじウィザー", "v1.1.0 から。ウィザーよりひと回り小さいモブです。今は見た目だけで、スポーンエッグで出すとその場でじっとしています。"],
+        ["クリエイティブタブ", "「Hijiki Tab」にすべてのアイテムとブロックが入っています。"]
+      ],
+      notes: [
+        "ひじき豆とひじブロックの元のMOD: Hijiki Mod（作者 ramune1256、MITライセンス）。",
+        "MOD ID は元のMODと同じ hijiki なので、元のMODと一緒には入れられません。",
+        "v1.0.2 で「弱いよ」と「弱いよブロック」を追加しました。",
+        "v1.0.2 から Forge 1.20.1 版もあります。中身は NeoForge 1.21.1 版と同じです。",
+        "v1.0.5 で「iri」と「iriブロック」を追加しました。",
+        "iri はクリエイティブモードでも倒れます。",
+        "v1.0.6 で iri の見た目を変えました（白いところが透明になりました）。",
+        "弱いよを使った回数はプレイヤーごとに統計（使用回数）に記録され、倒れてもリセットされません。",
+        "v1.0.8 から、弱いよを使うと画面下に今の弱体化のレベルが表示されます。ゲームの効果の表示では、レベル11以上になると数字が出なくなるためです。",
+        "v1.0.9 で、v1.0.8 で追加した弱体化のレベルの表示をなくしました。",
+        "v1.1.0 で「ひじウィザー」とそのスポーンエッグを追加しました。まだ動いたり攻撃したりはしません。出した場所から遠く離れても消えません。"
+      ],
+      install: [
+        "{loader} {loaderVersion} を Minecraft {mc} に入れます。",
+        "ダウンロードしたZIPを展開し、中の <code>{jar}</code> を取り出します。",
+        "jar を <code>.minecraft/mods</code> フォルダに入れます。",
+        "マルチプレイで使う場合は、サーバーの <code>mods</code> フォルダにも同じ jar を入れます（両方に必要です）。",
+        "ゲームを起動すると、クリエイティブタブ「Hijiki Tab」にアイテムが入っています。"
+      ],
+      versions: [
+        {
+          mc: "1.21.1",
+          loader: "NeoForge",
+          loaderVersion: "21.1.x",
+          modVersion: "1.1.0",
+          released: "2026-11-08",
+          file: "files/hijiki-neoforge/HijikiMod-1.1.0-neoforge-1.21.1.zip.b64.txt",
+          fileName: "HijikiMod-1.1.0-neoforge-1.21.1.zip",
+          zipBytes: 574410,
+          jar: "hijiki-neoforge-1.21.1-1.1.0-neoforge.jar",
+          jarBytes: 582023,
+          sha256: "01419DAF369A5E3962AA675F54F009E81B995626A033E7EAA0242599104CA8E3",
+          tested: false
+        },
+        {
+          mc: "1.20.1",
+          loader: "Forge",
+          loaderVersion: "47.x",
+          modVersion: "1.1.0",
+          released: "2026-11-08",
+          file: "files/hijiki-neoforge/HijikiMod-1.1.0-forge-1.20.1.zip.b64.txt",
+          fileName: "HijikiMod-1.1.0-forge-1.20.1.zip",
+          zipBytes: 574587,
+          jar: "hijiki-forge-1.20.1-1.1.0-forge.jar",
+          jarBytes: 583578,
+          sha256: "CECF8F2804C7B1F3052D7ABCAE52D765C79B6CA49DF5FE6625BB791B1524FBE7",
+          tested: false
+        },
+        {
+          mc: "1.21.1",
+          loader: "NeoForge",
+          loaderVersion: "21.1.x",
+          modVersion: "1.0.9",
+          released: "2026-10-30",
+          file: "files/hijiki-neoforge/HijikiMod-1.0.9-neoforge-1.21.1.zip.b64.txt",
+          fileName: "HijikiMod-1.0.9-neoforge-1.21.1.zip",
+          zipBytes: 564450,
+          jar: "hijiki-neoforge-1.21.1-1.0.9-neoforge.jar",
+          jarBytes: 570765,
+          sha256: "3EDB12F5F3AC8C623D8193D13B7D8264FC492B0231FD77993FF3D99C96B064E5",
+          tested: false
+        },
+        {
+          mc: "1.20.1",
+          loader: "Forge",
+          loaderVersion: "47.x",
+          modVersion: "1.0.9",
+          released: "2026-10-30",
+          file: "files/hijiki-neoforge/HijikiMod-1.0.9-forge-1.20.1.zip.b64.txt",
+          fileName: "HijikiMod-1.0.9-forge-1.20.1.zip",
+          zipBytes: 564553,
+          jar: "hijiki-forge-1.20.1-1.0.9-forge.jar",
+          jarBytes: 572164,
+          sha256: "BF87B8F1C21494AF1D8A6462F57244C25782210C46EE5DE223B712FEA750D0A6",
+          tested: false
+        },
+        {
+          mc: "1.21.1",
+          loader: "NeoForge",
+          loaderVersion: "21.1.x",
+          modVersion: "1.0.8",
+          released: "2026-10-30",
+          file: "files/hijiki-neoforge/HijikiMod-1.0.8-neoforge-1.21.1.zip.b64.txt",
+          fileName: "HijikiMod-1.0.8-neoforge-1.21.1.zip",
+          zipBytes: 564792,
+          jar: "hijiki-neoforge-1.21.1-1.0.8-neoforge.jar",
+          jarBytes: 571057,
+          sha256: "F0CD4BBB63C5B781247F672A2A1DA2F5FEB550201BFD10E87CB34412A2CAB34A",
+          tested: false
+        },
+        {
+          mc: "1.20.1",
+          loader: "Forge",
+          loaderVersion: "47.x",
+          modVersion: "1.0.8",
+          released: "2026-10-30",
+          file: "files/hijiki-neoforge/HijikiMod-1.0.8-forge-1.20.1.zip.b64.txt",
+          fileName: "HijikiMod-1.0.8-forge-1.20.1.zip",
+          zipBytes: 564870,
+          jar: "hijiki-forge-1.20.1-1.0.8-forge.jar",
+          jarBytes: 572451,
+          sha256: "712F63D38DB3DE36848B48C23CBD0213A9311A4A233FE7CC8A2120E8CEE44420",
+          tested: false
+        },
+        {
+          mc: "1.21.1",
+          loader: "NeoForge",
+          loaderVersion: "21.1.x",
+          modVersion: "1.0.7",
+          released: "2026-10-29",
+          file: "files/hijiki-neoforge/HijikiMod-1.0.7-neoforge-1.21.1.zip.b64.txt",
+          fileName: "HijikiMod-1.0.7-neoforge-1.21.1.zip",
+          zipBytes: 564450,
+          jar: "hijiki-neoforge-1.21.1-1.0.7-neoforge.jar",
+          jarBytes: 570765,
+          sha256: "2E6E52CBEFC35863F7692D9C1D95CD8CC40A25541DA74931B52EF2AC4D3F722F",
+          tested: false
+        },
+        {
+          mc: "1.20.1",
+          loader: "Forge",
+          loaderVersion: "47.x",
+          modVersion: "1.0.7",
+          released: "2026-10-29",
+          file: "files/hijiki-neoforge/HijikiMod-1.0.7-forge-1.20.1.zip.b64.txt",
+          fileName: "HijikiMod-1.0.7-forge-1.20.1.zip",
+          zipBytes: 564552,
+          jar: "hijiki-forge-1.20.1-1.0.7-forge.jar",
+          jarBytes: 572163,
+          sha256: "0A1F3D570A44789E5B79EF8B1EC6B5F0DD04CC61E55EF8506B813E76E815137D",
+          tested: false
+        },
+        {
+          mc: "1.21.1",
+          loader: "NeoForge",
+          loaderVersion: "21.1.x",
+          modVersion: "1.0.6",
+          released: "2026-10-28",
+          file: "files/hijiki-neoforge/HijikiMod-1.0.6-neoforge-1.21.1.zip.b64.txt",
+          fileName: "HijikiMod-1.0.6-neoforge-1.21.1.zip",
+          zipBytes: 563247,
+          jar: "hijiki-neoforge-1.21.1-1.0.6-neoforge.jar",
+          jarBytes: 569451,
+          sha256: "EBD341668602D99760E1DF3A4E2344E3677158EFF9E89B85914E1CB1AAD10579",
+          tested: false
+        },
+        {
+          mc: "1.20.1",
+          loader: "Forge",
+          loaderVersion: "47.x",
+          modVersion: "1.0.6",
+          released: "2026-10-28",
+          file: "files/hijiki-neoforge/HijikiMod-1.0.6-forge-1.20.1.zip.b64.txt",
+          fileName: "HijikiMod-1.0.6-forge-1.20.1.zip",
+          zipBytes: 563372,
+          jar: "hijiki-forge-1.20.1-1.0.6-forge.jar",
+          jarBytes: 570854,
+          sha256: "A60241E47FC5E9FBD464538748C157E753192C6EDBB0450AAC7AF1683E4AB72C",
+          tested: false
+        },
+        {
+          mc: "1.21.1",
+          loader: "NeoForge",
+          loaderVersion: "21.1.x",
+          modVersion: "1.0.5",
+          released: "2026-10-28",
+          file: "files/hijiki-neoforge/HijikiMod-1.0.5-neoforge-1.21.1.zip.b64.txt",
+          fileName: "HijikiMod-1.0.5-neoforge-1.21.1.zip",
+          zipBytes: 563677,
+          jar: "hijiki-neoforge-1.21.1-1.0.5-neoforge.jar",
+          jarBytes: 569786,
+          sha256: "4B7CAA677FBAD48C6CEFAF141156BC156F05CF28C9504E8BCF7A060790385BF2",
+          tested: false
+        },
+        {
+          mc: "1.20.1",
+          loader: "Forge",
+          loaderVersion: "47.x",
+          modVersion: "1.0.5",
+          released: "2026-10-28",
+          file: "files/hijiki-neoforge/HijikiMod-1.0.5-forge-1.20.1.zip.b64.txt",
+          fileName: "HijikiMod-1.0.5-forge-1.20.1.zip",
+          zipBytes: 563811,
+          jar: "hijiki-forge-1.20.1-1.0.5-forge.jar",
+          jarBytes: 571174,
+          sha256: "950523AD2B7CA408430DB48D0904AE0CDF13275B064F6D5ACF656382CAB8762C",
+          tested: false
+        },
+        {
+          mc: "1.21.1",
+          loader: "NeoForge",
+          loaderVersion: "21.1.x",
+          modVersion: "1.0.4",
+          released: "2026-10-27",
+          file: "files/hijiki-neoforge/HijikiMod-1.0.4-neoforge-1.21.1.zip.b64.txt",
+          fileName: "HijikiMod-1.0.4-neoforge-1.21.1.zip",
+          zipBytes: 468438,
+          jar: "hijiki-neoforge-1.21.1-1.0.4-neoforge.jar",
+          jarBytes: 473556,
+          sha256: "D62EDCA24ED34B8EC43E4CAA941958E0090EA5BD22C3AD533201487757A97F50",
+          tested: false
+        },
+        {
+          mc: "1.20.1",
+          loader: "Forge",
+          loaderVersion: "47.x",
+          modVersion: "1.0.4",
+          released: "2026-10-27",
+          file: "files/hijiki-neoforge/HijikiMod-1.0.4-forge-1.20.1.zip.b64.txt",
+          fileName: "HijikiMod-1.0.4-forge-1.20.1.zip",
+          zipBytes: 468545,
+          jar: "hijiki-forge-1.20.1-1.0.4-forge.jar",
+          jarBytes: 474835,
+          sha256: "F14A559248A7C53B9C44DB8FEDC95B0623485AD1F9165424D2BE6C95F30B0EFE",
+          tested: false
+        },
+        {
+          mc: "1.21.1",
+          loader: "NeoForge",
+          loaderVersion: "21.1.x",
+          modVersion: "1.0.3",
+          released: "2026-10-27",
+          file: "files/hijiki-neoforge/HijikiMod-1.0.3-neoforge-1.21.1.zip.b64.txt",
+          fileName: "HijikiMod-1.0.3-neoforge-1.21.1.zip",
+          zipBytes: 468596,
+          jar: "hijiki-neoforge-1.21.1-1.0.3-neoforge.jar",
+          jarBytes: 473813,
+          sha256: "F74F64D274BD6F398AD02701CA9333D6EF3D07589C2F0A1D2803BFB861DCEAC9",
+          tested: false
+        },
+        {
+          mc: "1.20.1",
+          loader: "Forge",
+          loaderVersion: "47.x",
+          modVersion: "1.0.3",
+          released: "2026-10-27",
+          file: "files/hijiki-neoforge/HijikiMod-1.0.3-forge-1.20.1.zip.b64.txt",
+          fileName: "HijikiMod-1.0.3-forge-1.20.1.zip",
+          zipBytes: 468694,
+          jar: "hijiki-forge-1.20.1-1.0.3-forge.jar",
+          jarBytes: 475117,
+          sha256: "4610137483E48CD1963C24D59C51BE38AE0D97EBAFBC5F1423A4B58B6A45EC96",
+          tested: false
+        },
+        {
+          mc: "1.21.1",
+          loader: "NeoForge",
+          loaderVersion: "21.1.x",
+          modVersion: "1.0.2",
+          released: "2026-10-27",
+          file: "files/hijiki-neoforge/HijikiMod-1.0.2-neoforge-1.21.1.zip.b64.txt",
+          fileName: "HijikiMod-1.0.2-neoforge-1.21.1.zip",
+          zipBytes: 468396,
+          jar: "hijiki-neoforge-1.21.1-1.0.2-neoforge.jar",
+          jarBytes: 473511,
+          sha256: "7473B0AD7632B81989B1D5DDD5C9A4F56F7C470C20F3098F88EC951A5C80B192",
+          tested: false
+        },
+        {
+          mc: "1.20.1",
+          loader: "Forge",
+          loaderVersion: "47.x",
+          modVersion: "1.0.2",
+          released: "2026-10-27",
+          file: "files/hijiki-neoforge/HijikiMod-1.0.2-forge-1.20.1.zip.b64.txt",
+          fileName: "HijikiMod-1.0.2-forge-1.20.1.zip",
+          zipBytes: 468507,
+          jar: "hijiki-forge-1.20.1-1.0.2-forge.jar",
+          jarBytes: 474798,
+          sha256: "5CF5C5D37949708BA1E3162A9B755E5770F03E9D863AC72D87FC54FB836F09E8",
+          tested: false
+        },
+        {
+          mc: "1.21.1",
+          loader: "NeoForge",
+          loaderVersion: "21.1.x",
+          modVersion: "1.0.1",
+          released: "2026-10-27",
+          file: "files/hijiki-neoforge/HijikiMod-1.0.1-neoforge-1.21.1.zip.b64.txt",
+          fileName: "HijikiMod-1.0.1-neoforge-1.21.1.zip",
+          zipBytes: 185235,
+          jar: "hijiki-neoforge-1.21.1-1.0.1-neoforge.jar",
+          jarBytes: 189195,
+          sha256: "44A6AEB833CDB44E74D5D43D8DF0C30F263A35C4F874A2AABB1EE52D913EE657",
+          tested: false
+        }
+      ]
+  }
+  ,
+  {
+    id: "mentionmod",
+    name: "Mention Mod",
+    summary: "チャットで @プレイヤー名・@OP・@everyone のメンションと、メッセージへの返信ができるMOD。メンションは色付きで表示され、ゲームを見ていないときは Windows の通知が届きます。",
+    features: [
+      ["@プレイヤー名", "オンラインのプレイヤーをメンションします。大文字・小文字はどちらでも構いません。名前は水色で表示されます。"],
+      ["@OP", "オンラインの OP 全員をメンションします。金色で表示されます。"],
+      ["@everyone", "オンラインの全員をメンションします。使えるのは OP（権限レベル2以上）だけで、OP 以外が使うと本人にだけお知らせが出ます。"],
+      ["返信", "v1.1.0 から。チャット画面でメッセージを右クリックすると返信モードになり、入力欄の上に返信先が出ます。そのまま送ると「↪名前「元のメッセージ」」が付き、相手に通知が届きます。もう一度右クリックするか Esc で解除できます。"],
+      ["Watut 連携", "v1.2.0 から。What Are They Up To（Watut）が入っていると、チャット画面の「〇〇 is typing」が「〇〇が入力中」になり、返信モードで打っている人は「〇〇が返信中」と表示されます。"],
+      ["@ai", "v1.4.0 から（v1.5.0 から @ai。@gemini でも使えます）。Call AI（v1.4.0 以降）と一緒にサーバーに入れると、チャットで @ai と書いて話しかけた内容に、Gemini がチャットで返事をします。考えている間は全員の画面に「Geminiが考え中」「Geminiが返信中」と出ます。"],
+      ["AI の状態", "v1.3.0 から。Call AI（v1.3.0 以降）と一緒に入れると、/tell @gemini でささやいた人のチャット画面に「Geminiが考え中」「Geminiが返信中」と出ます。Watut が無くても出ます。"],
+      ["通知の音", "v1.4.0 から。メンションや返信をされると、ゲーム内でも「ポーン」と音が鳴ります。"],
+      ["Windows 通知", "メンションや返信をされたとき、Minecraft が最前面にない（最小化中や別の画面を見ている）ときだけ、送り主「Minecraft」の通知が届き、タスクバーのアイコンが点滅します。"]
+    ],
+    notes: [
+      "v1.5.0 で、Call AI v2.0.0 以降に合わせて、チャットで @ai と書くとAIが返事をするようにしました（@gemini でも今までどおり使えます）。",
+      "サーバーとクライアントの両方に入れてください。このMODが入っていないプレイヤーもサーバーには入れます（色付き表示だけが見え、通知は届きません）。",
+      "通知は Windows 10・11 だけで出ます。ほかの OS では色付き表示だけになります。",
+      "自分で自分をメンションしても通知は届きません。",
+      "返信は、メッセージの本文（名前以外の部分）を右クリックしてください。サーバーにこのMODが入っていない場合は、返信の代わりに「@名前」が付いて送られます。",
+      "Watut 連携は Watut が入っているときだけ動きます。Watut の設定で入力中の表示をオフにしていると表示されません。「返信中」を出すには、サーバーにもこのMODが必要です。",
+      "v1.4.1 で、Gemini が長く考えているときに「考え中」の表示が途中で消えないようにしました。",
+      "v1.4.0 で、チャットの @gemini への返事と、ゲーム内の通知音を追加しました。@gemini への返事は、Call AI v1.7.0 から 1.21.1 NeoForge 版もあるので、どちらのバージョンでも使えます。会話の記憶は /tell @gemini と共通です。",
+      "v1.3.0 で Call AI との連携を追加しました。AI の状態はささやいた本人にだけ表示されます。サーバーとクライアントで版をそろえてください。",
+      "v1.2.0 で Watut 連携を追加しました。v1.1.0 とは通信の形式が違うので、サーバーとクライアントで版をそろえてください。",
+      "v1.1.0 で返信機能を追加しました。v1.0.0 とは通信の形式が違うので、サーバーとクライアントで版をそろえてください。"
+    ],
+    install: [
+      "{loader} {loaderVersion} を Minecraft {mc} に入れます。",
+      "ダウンロードしたZIPを展開し、中の <code>{jar}</code> を取り出します。",
+      "jar を <code>.minecraft/mods</code> フォルダに入れます。",
+      "マルチプレイで使う場合は、サーバーの <code>mods</code> フォルダにも同じ jar を入れます。",
+      "ゲームを起動し、チャットで <code>@</code> に続けてプレイヤー名を書くとメンションできます。返信するときは、チャット画面でメッセージを右クリックしてから送ります。"
+    ],
+    versions: [
+      {
+        mc: "1.21.1",
+        loader: "NeoForge",
+        loaderVersion: "21.1.x",
+        modVersion: "1.5.0",
+        released: "2026-10-30",
+        file: "files/mentionmod/MentionMod-1.5.0-neoforge-1.21.1.zip.b64.txt",
+        fileName: "MentionMod-1.5.0-neoforge-1.21.1.zip",
+        zipBytes: 41650,
+        jar: "mentionmod-neoforge-1.21.1-1.5.0.jar",
+        jarBytes: 45332,
+        sha256: "D4D3321B7E12B3845767C4DBAC24BA68F06D0C2A3B8DE3C36ED01706464E5097",
+        tested: false
+      },
+      {
+        mc: "1.20.1",
+        loader: "Forge",
+        loaderVersion: "47.x",
+        modVersion: "1.5.0",
+        released: "2026-10-30",
+        file: "files/mentionmod/MentionMod-1.5.0-forge-1.20.1.zip.b64.txt",
+        fileName: "MentionMod-1.5.0-forge-1.20.1.zip",
+        zipBytes: 40412,
+        jar: "mentionmod-forge-1.20.1-1.5.0.jar",
+        jarBytes: 44607,
+        sha256: "41E7B4A4E0FA1EF229A304C820FA3B56040DE73DA8C1721717BE7ED07803BBF1",
+        tested: false
+      },
+      {
+        mc: "1.21.1",
+        loader: "NeoForge",
+        loaderVersion: "21.1.x",
+        modVersion: "1.4.1",
+        released: "2026-10-28",
+        file: "files/mentionmod/MentionMod-1.4.1-neoforge-1.21.1.zip.b64.txt",
+        fileName: "MentionMod-1.4.1-neoforge-1.21.1.zip",
+        zipBytes: 41698,
+        jar: "mentionmod-neoforge-1.21.1-1.4.1.jar",
+        jarBytes: 45324,
+        sha256: "FFD6B8B81312D10BD44388C7D5E6C1594821F280D244A7F36DDE5D583806A3EF",
+        tested: false
+      },
+      {
+        mc: "1.20.1",
+        loader: "Forge",
+        loaderVersion: "47.x",
+        modVersion: "1.4.1",
+        released: "2026-10-28",
+        file: "files/mentionmod/MentionMod-1.4.1-forge-1.20.1.zip.b64.txt",
+        fileName: "MentionMod-1.4.1-forge-1.20.1.zip",
+        zipBytes: 40474,
+        jar: "mentionmod-forge-1.20.1-1.4.1.jar",
+        jarBytes: 44594,
+        sha256: "B10FFE7D4957DF9FA6288C5BE32D8EDEBA8C746A738484EB235B08E6EB02B2F5",
+        tested: false
+      },
+      {
+        mc: "1.21.1",
+        loader: "NeoForge",
+        loaderVersion: "21.1.x",
+        modVersion: "1.4.0",
+        released: "2026-10-27",
+        file: "files/mentionmod/MentionMod-1.4.0-neoforge-1.21.1.zip.b64.txt",
+        fileName: "MentionMod-1.4.0-neoforge-1.21.1.zip",
+        zipBytes: 41698,
+        jar: "mentionmod-neoforge-1.21.1-1.4.0.jar",
+        jarBytes: 45325,
+        sha256: "255FFA0E01EE43F2D969915964B661B729548680C4935BC9E01EB217ABC40D53",
+        tested: false
+      },
+      {
+        mc: "1.20.1",
+        loader: "Forge",
+        loaderVersion: "47.x",
+        modVersion: "1.4.0",
+        released: "2026-10-27",
+        file: "files/mentionmod/MentionMod-1.4.0-forge-1.20.1.zip.b64.txt",
+        fileName: "MentionMod-1.4.0-forge-1.20.1.zip",
+        zipBytes: 40451,
+        jar: "mentionmod-forge-1.20.1-1.4.0.jar",
+        jarBytes: 44593,
+        sha256: "0F47C4F1C1ABB0E15AC3BD4D3F2A6AAA2CFA5265F0CCD5D45783DFF70708D69C",
+        tested: false
+      },
+      {
+        mc: "1.21.1",
+        loader: "NeoForge",
+        loaderVersion: "21.1.x",
+        modVersion: "1.3.0",
+        released: "2026-10-27",
+        file: "files/mentionmod/MentionMod-1.3.0-neoforge-1.21.1.zip.b64.txt",
+        fileName: "MentionMod-1.3.0-neoforge-1.21.1.zip",
+        zipBytes: 38259,
+        jar: "mentionmod-neoforge-1.21.1-1.3.0.jar",
+        jarBytes: 41814,
+        sha256: "3C9DA51B18C29844A9629B068B80D0D20802EA7386F2DD8DA4D222DC06B2AD6C",
+        tested: false
+      },
+      {
+        mc: "1.20.1",
+        loader: "Forge",
+        loaderVersion: "47.x",
+        modVersion: "1.3.0",
+        released: "2026-10-27",
+        file: "files/mentionmod/MentionMod-1.3.0-forge-1.20.1.zip.b64.txt",
+        fileName: "MentionMod-1.3.0-forge-1.20.1.zip",
+        zipBytes: 37016,
+        jar: "mentionmod-forge-1.20.1-1.3.0.jar",
+        jarBytes: 41099,
+        sha256: "E2A939C7D8C7858F3D17876886E3F10C4B033C72F3040B39490648A8CA094165",
+        tested: false
+      },
+      {
+        mc: "1.21.1",
+        loader: "NeoForge",
+        loaderVersion: "21.1.x",
+        modVersion: "1.2.0",
+        released: "2026-10-27",
+        file: "files/mentionmod/MentionMod-1.2.0-neoforge-1.21.1.zip.b64.txt",
+        fileName: "MentionMod-1.2.0-neoforge-1.21.1.zip",
+        zipBytes: 35006,
+        jar: "mentionmod-neoforge-1.21.1-1.2.0.jar",
+        jarBytes: 38235,
+        sha256: "C28C202108F5A838212B7AEE631F4C2DD66FECB10C724899D9D5FA49296BE96C",
+        tested: false
+      },
+      {
+        mc: "1.20.1",
+        loader: "Forge",
+        loaderVersion: "47.x",
+        modVersion: "1.2.0",
+        released: "2026-10-27",
+        file: "files/mentionmod/MentionMod-1.2.0-forge-1.20.1.zip.b64.txt",
+        fileName: "MentionMod-1.2.0-forge-1.20.1.zip",
+        zipBytes: 34004,
+        jar: "mentionmod-forge-1.20.1-1.2.0.jar",
+        jarBytes: 37711,
+        sha256: "F82A28558F7303F96A046C79650D0496FABF8DEB205B179E5B356673B279CC90",
+        tested: false
+      },
+      {
+        mc: "1.21.1",
+        loader: "NeoForge",
+        loaderVersion: "21.1.x",
+        modVersion: "1.1.0",
+        released: "2026-10-27",
+        file: "files/mentionmod/MentionMod-1.1.0-neoforge-1.21.1.zip.b64.txt",
+        fileName: "MentionMod-1.1.0-neoforge-1.21.1.zip",
+        zipBytes: 26332,
+        jar: "mentionmod-neoforge-1.21.1-1.1.0.jar",
+        jarBytes: 29192,
+        sha256: "F74B69A7CDC2D39945D8F04932A70CA4DAA59710508E68112998D3FD29529569",
+        tested: false
+      },
+      {
+        mc: "1.20.1",
+        loader: "Forge",
+        loaderVersion: "47.x",
+        modVersion: "1.1.0",
+        released: "2026-10-27",
+        file: "files/mentionmod/MentionMod-1.1.0-forge-1.20.1.zip.b64.txt",
+        fileName: "MentionMod-1.1.0-forge-1.20.1.zip",
+        zipBytes: 25667,
+        jar: "mentionmod-forge-1.20.1-1.1.0.jar",
+        jarBytes: 28959,
+        sha256: "11FF72E17C9952627695C6EC588240BE29579AC4AEBA08AC3859940CE886B1A3",
+        tested: false
+      },
+      {
+        mc: "1.21.1",
+        loader: "NeoForge",
+        loaderVersion: "21.1.x",
+        modVersion: "1.0.0",
+        released: "2026-10-27",
+        file: "files/mentionmod/MentionMod-1.0.0-neoforge-1.21.1.zip.b64.txt",
+        fileName: "MentionMod-1.0.0-neoforge-1.21.1.zip",
+        zipBytes: 14860,
+        jar: "mentionmod-neoforge-1.21.1-1.0.0.jar",
+        jarBytes: 16924,
+        sha256: "A5BF5C647BE5444752FE1E5B91697DB62734152877926A9E1E2C48C2D16D9D91",
+        tested: false
+      },
+      {
+        mc: "1.20.1",
+        loader: "Forge",
+        loaderVersion: "47.x",
+        modVersion: "1.0.0",
+        released: "2026-10-27",
+        file: "files/mentionmod/MentionMod-1.0.0-forge-1.20.1.zip.b64.txt",
+        fileName: "MentionMod-1.0.0-forge-1.20.1.zip",
+        zipBytes: 14640,
+        jar: "mentionmod-forge-1.20.1-1.0.0.jar",
+        jarBytes: 17056,
+        sha256: "48DB5855C1AFFD63AA075A764A4B178B1215554C430DFC37CC5BF54023993F46",
+        tested: false
+      }
+    ]
+  }
+  ,
+  {
+    id: "geminitell",
+    name: "Call AI",
+    summary: "/tell @ai でささやくと、AI（Google の Gemini か、OpenAI・Ollama・LM Studio などの OpenAI互換API）がささやき返してくれるMOD。頼めばコマンドも実行してくれます。サーバーのOPがAPIキーを設定すれば、参加者の誰でも Gemini と話せます。",
+    features: [
+      ["物を覚える", "v2.2.0 から。「覚えて」と頼んだことや、名前・好きなもの・拠点の座標などをAIが覚えて、ログアウトやサーバーの再起動のあとも思い出します。覚えた時は「📝 AIが覚えました」と出ます。/ai memory で覚えていることの一覧、/ai memory add <内容> で自分で覚えさせる、/ai memory remove <番号> と /ai memory clear で忘れさせられます。サーバーのみんなに関係することは /ai memory server で見られます（変えるのは OP）。"],
+      ["OpenAI互換API", "v2.0.0 から。Gemini のほかに、OpenAI互換のAPI（OpenAI・Ollama・LM Studio・llama.cpp など）にもつなげます。OP が /ai provider openai でつなぐ先を切り替え、/ai openai url <URL>（例: http://192.168.0.10:11434/v1）でURL、/ai model <名前> でモデル、キーが要るサーバーなら /ai openai key <キー> を設定します。/ai provider gemini で Gemini に戻せます。自分のPCやスマホで動かしているAIなら無料で使えます。"],
+      ["できごとに反応", "v2.1.0 から。プレイヤーが進捗（挑戦など）を達成した時はAIが褒めたり煽ったり、死んだ時は煽ったり慰めたりして、チャットでひとこと喋ります。/ai react で今の設定を確認、/ai react me false で自分には反応しないようにできます。OP は /ai react advancement <off|praise|tease|mixed>、/ai react advancement scope <challenge|goal|task>（反応する進捗の種類）、/ai react death <off|tease|comfort|mixed>、/ai react output <chat|whisper>、/ai react chance <0〜100>、/ai react cooldown <秒> で変えられます。"],
+      ["AIの名前", "v2.0.0 から。OP が /ai name <名前> で、ささやきやチャットに出るAIの名前を変えられます（初期値は AI）。"],
+      ["ささやく", "/tell @ai <メッセージ> で話しかけると、Gemini からささやきで返事が届きます。/msg と /w でも使えます。"],
+      ["@ai", "v1.1.0 から、@ai が正式なセレクターになりました。入力中に赤くならず、Tab で候補に出ます（OP でなくても出ます）。v1.4.0 からは /tell・/msg・/w の宛先にだけ候補が出て、/kill などには出なくなりました。"],
+      ["会話の記憶", "プレイヤーごとに直近10往復の会話を覚えています。/ai reset で自分の会話を消せます。ログアウトすると消えます。"],
+      ["画面の読み取り", "v1.6.0 から。/ai read true にすると、Gemini に話しかけたときに、そのときのあなたの画面のスクリーンショットも Gemini に送られ、画面を見て答えてくれます。/ai read false でオフ、/ai read で今の設定を確認できます。初期値はオフです。"],
+      ["キーの使い分け", "v1.7.0 から。/ai key set <APIキー> で自分のキーを設定します（最後に何も付けないか public なら、ほかの人も借りられます。private なら自分だけ）。/ai key list で借りられるキーの一覧、/ai key use <名前> でその人のキーを借りて話せます（/ai key use だけでやめる）。使う順番は「借りているキー → 自分のキー → デフォルトのキー」です。"],
+      ["OP用コマンド", "/ai default_key set <APIキー> で、自分でキーを設定していない人が使うデフォルトのキーを設定、/ai default_key clear で削除、/ai model <名前> でモデルを変更できます。/ai status は誰でも使えます（キーは伏せ字で表示）。"],
+      ["Mention Mod 連携", "v1.3.0 から。Mention Mod（v1.3.0 以降）も入っていると、Gemini に問い合わせている間は「Geminiが考え中」、返事が届く直前は「Geminiが返信中」と、ささやいた人のチャット画面に出ます。"],
+      ["チャットで話しかける", "v1.4.0 から。Mention Mod（v1.4.0 以降）もサーバーに入っていると、チャットで @ai と書いて話しかけた内容に、Gemini がチャットで全員に見える返事をします。"],
+      ["コマンドの実行", "v1.9.0 から。/ai do <やってほしいこと>（例: /ai do 朝にして）で、Gemini が必要なコマンドを考えて実行し、何をしたかをささやきで教えてくれます。/tell @ai やチャットの @ai で頼んでもOKです。実行したコマンドはあなたの画面に表示されます。権限は話しかけた人の権限までなので、OP でない人が Gemini に OP 用のコマンドを実行させることはできません。"],
+      ["コマンドの設定", "v1.9.0 から。/ai commands で今の設定を確認できます。OP は /ai commands mode <all|do|off> で実行できる場面（all＝どこでも、do＝/ai do のときだけ、off＝実行しない）、/ai commands level <0〜4> で権限の上限（初期値 2）、/ai commands block <名前> と unblock <名前> で実行させないコマンドを変えられます。/stop・/op・/ban などは初めから禁止されています。"],
+      ["考える時間", "v1.8.0 から。/ai thinking <default|minimal|low|medium|high> で Gemini が返事の前に考える量を変えられます（初期値は low で速めに返事が来ます）。/ai timeout <秒> で返事を待つ最大秒数を 5〜600 秒にできます（初期値 120 秒）。どちらも OP 用です。"],
+      ["設定", "ワールドの serverconfig/callai-server.toml（v1.1.0 は geminitell-server.toml）で、表示名・Geminiへの指示・覚える往復数・クールダウン・返事の最大文字数などを変えられます。"]
+    ],
+    notes: [
+      "v2.2.1 で、小さいモデルが返事に [覚えて: nothing] のような目印をそのまま書いてしまうのを直しました（中身が無い目印は覚えず、チャットにも出しません）。覚えていることを聞かれた時に答えやすくしました。OP が /ai memory auto false にすると、AIが自分から覚えるのをやめられます（/ai memory add で覚えさせたことは思い出します）。",
+      "v2.2.0 で、AIが物を覚えられるようにしました（ワールドの serverconfig/callai-memory.json に保存。1人30個、サーバー全体で50個まで）。進捗への反応は、初期設定ですべての進捗に反応するようにしました（前の版の設定は使わず、新しい初期値になります）。Mention Mod v1.5.0 と一緒に入れると、チャットでは @ai で話しかけられます。",
+      "v2.1.1 で、OpenAI互換APIの返事の形がちがうサーバー（スマホのAIアプリなど）で「返事が空でした」になっていたのを直しました。それでも空のときは、サーバーの返事の中身をエラーに表示します。",
+      "v2.1.0 で、進捗の達成や死亡にAIが反応するようにしました。初期設定では「目標」と「挑戦」の進捗と死亡に、チャットで全員に見えるように反応します。反応するたびにAPIを1回使うので、同じ人には10秒に1回までにしています（/ai react cooldown で変えられます）。煽るときも、ひどい悪口は言わないように指示しています。",
+      "Gemini API のキー（Google AI Studio で作れます）が必要です。API の利用料金はキーの持ち主にかかります。",
+      "サーバーには必須です。クライアントは入れなくても参加できますが、入れると @gemini が補完されます。",
+      "OP用コマンドには権限レベル2以上が必要です。",
+      "モデルの初期設定は gemini-flash-latest（いつも最新の Flash を使う指定）です。",
+      "/kill @gemini のように、ほかのコマンドで @gemini を使っても誰にも当たりません。",
+      "v1.9.0 で、Gemini がコマンドを実行できるようにしました。1回の話しかけで実行できるのは初期設定で8個までです（設定ファイルの maxCommandsPerMessage で変えられます）。Gemini が実行したコマンドはサーバーのログにも残ります。Forge 1.20.1 版の MOD 一覧で説明文が文字化けしていたのも直しました。",
+      "v1.8.0 で、考える時間が長いモデルで時間切れになりにくくしました。返事を待つ時間の初期値を30秒から120秒にし、考える量（thinking）を設定できるようにしました。考える量に対応していないモデルでは自動で指定なしに戻ります。待ち時間の設定は新しい名前（replyTimeoutSeconds）になったので、前に timeoutSeconds を変えていた人はもう一度設定してください。",
+      "v1.7.0 から NeoForge 1.21.1 版もあります。中身は Forge 1.20.1 版と同じです。Mention Mod（v1.4.0 以降）の 1.21.1 版と一緒に入れると、1.21.1 でもチャットの @gemini で話しかけられます。",
+      "v1.7.0 でキーの仕組みを変えました。今までの「みんなで使うキー」は「デフォルトのキー」になり、/gemini default_key set で設定します（今までのキーはそのまま引き継がれます）。/gemini key set は自分のキーの設定になりました。v1.5.0 の自分だけのキーは private として引き継がれます。借りた人はキーの中身を見られませんが、使った分はキーの持ち主の使用量になります。",
+      "v1.6.0 で画面の読み取り（/gemini read）を追加しました。設定はプレイヤーごとです。使うにはクライアントにも Call AI が必要です。スクリーンショットはファイルに保存されず、Gemini に送るときだけ撮られます。画像を送る分、API の使用量は少し増えます。",
+      "v1.5.0 で自分だけのAPIキー（private）を追加しました。/gemini key set の最後に何も付けないと、今までどおりみんなで使うキー（public）になります。自分だけのキーはワールドの serverconfig/callai-private-keys.json に保存されるので、サーバーの管理者には見えます。/gemini status は誰でも使えるようになりました（みんなのキーの中身はOPにだけ伏せ字で表示）。",
+      "v1.4.0 で、@gemini の候補を /tell・/msg・/w だけに出すようにし、Mention Mod からチャットで話しかけられるようにしました。",
+      "v1.3.0 で Mention Mod との連携を追加しました。Mention Mod が入っているときは、返事を届ける前に「返信中」を少し（1〜4秒）表示します。Mention Mod が無ければ今までどおりすぐ届きます。",
+      "v1.2.0 でMODの名前を「Gemini Tell」から「Call AI」に変えました（MOD ID も callai に変わりました）。機能は v1.1.0 と同じです。v1.1.0 から更新するときは古い jar を消してください。設定ファイルが新しくなるので、もう一度 /gemini key set でAPIキーを設定してください。"
+    ],
+    install: [
+      "{loader} {loaderVersion} を Minecraft {mc} に入れます。",
+      "ダウンロードしたZIPを展開し、中の <code>{jar}</code> を取り出します。",
+      "jar をサーバーの <code>mods</code> フォルダに入れます。補完を使いたい人は <code>.minecraft/mods</code> にも入れます。",
+      "サーバーを起動し、OP が <code>/ai default_key set &lt;APIキー&gt;</code> を実行します（OpenAI互換APIを使うときは <code>/ai provider openai</code>・<code>/ai openai url &lt;URL&gt;</code>・<code>/ai model &lt;名前&gt;</code>）。",
+      "<code>/tell @ai こんにちは</code> と送ると、Gemini から返事が届きます。コマンドを頼むときは <code>/ai do 朝にして</code> のように送ります。"
+    ],
+    versions: [
+      {
+        mc: "1.21.1",
+        loader: "NeoForge",
+        loaderVersion: "21.1.x",
+        modVersion: "2.2.1",
+        released: "2026-10-30",
+        file: "files/callai/CallAI-2.2.1-neoforge-1.21.1.zip.b64.txt",
+        fileName: "CallAI-2.2.1-neoforge-1.21.1.zip",
+        zipBytes: 101844,
+        jar: "callai-neoforge-1.21.1-2.2.1.jar",
+        jarBytes: 106369,
+        sha256: "5E2A2216E8F4CD0EEE3B8695650E398CBE3F8D67E76E4B9B0865FAD85E966FB2",
+        tested: false
+      },
+      {
+        mc: "1.20.1",
+        loader: "Forge",
+        loaderVersion: "47.x",
+        modVersion: "2.2.1",
+        released: "2026-10-30",
+        file: "files/callai/CallAI-2.2.1-forge-1.20.1.zip.b64.txt",
+        fileName: "CallAI-2.2.1-forge-1.20.1.zip",
+        zipBytes: 101352,
+        jar: "callai-2.2.1.jar",
+        jarBytes: 106570,
+        sha256: "89AC734D4C2D5EF5C51079BFDD635D68C3C2FEB541B8EEF3BDD1376BAB3C4ADA",
+        tested: false
+      },
+      {
+        mc: "1.21.1",
+        loader: "NeoForge",
+        loaderVersion: "21.1.x",
+        modVersion: "2.2.0",
+        released: "2026-10-30",
+        file: "files/callai/CallAI-2.2.0-neoforge-1.21.1.zip.b64.txt",
+        fileName: "CallAI-2.2.0-neoforge-1.21.1.zip",
+        zipBytes: 100514,
+        jar: "callai-neoforge-1.21.1-2.2.0.jar",
+        jarBytes: 105074,
+        sha256: "AFEF5CEB62CD390B29C8FB946AE1458EAB0E7649103A4A5A50363C187B3137CF",
+        tested: false
+      },
+      {
+        mc: "1.20.1",
+        loader: "Forge",
+        loaderVersion: "47.x",
+        modVersion: "2.2.0",
+        released: "2026-10-30",
+        file: "files/callai/CallAI-2.2.0-forge-1.20.1.zip.b64.txt",
+        fileName: "CallAI-2.2.0-forge-1.20.1.zip",
+        zipBytes: 99977,
+        jar: "callai-2.2.0.jar",
+        jarBytes: 105232,
+        sha256: "F0B5FD3DFDD274E5CED5185EEC5959FDCC592DCB753F1DCD92450ABB760AAEA2",
+        tested: false
+      },
+      {
+        mc: "1.21.1",
+        loader: "NeoForge",
+        loaderVersion: "21.1.x",
+        modVersion: "2.1.1",
+        released: "2026-10-30",
+        file: "files/callai/CallAI-2.1.1-neoforge-1.21.1.zip.b64.txt",
+        fileName: "CallAI-2.1.1-neoforge-1.21.1.zip",
+        zipBytes: 90607,
+        jar: "callai-neoforge-1.21.1-2.1.1.jar",
+        jarBytes: 94937,
+        sha256: "B10DF64FFA3BB805B3223E53EF619456C25E575EFD3AA9D9992F481192275E0F",
+        tested: false
+      },
+      {
+        mc: "1.20.1",
+        loader: "Forge",
+        loaderVersion: "47.x",
+        modVersion: "2.1.1",
+        released: "2026-10-30",
+        file: "files/callai/CallAI-2.1.1-forge-1.20.1.zip.b64.txt",
+        fileName: "CallAI-2.1.1-forge-1.20.1.zip",
+        zipBytes: 90115,
+        jar: "callai-2.1.1.jar",
+        jarBytes: 95124,
+        sha256: "01114CB8015045F2AC1FA96C84776E80F30099B29017497D7D0D481C147496FC",
+        tested: false
+      },
+      {
+        mc: "1.21.1",
+        loader: "NeoForge",
+        loaderVersion: "21.1.x",
+        modVersion: "2.1.0",
+        released: "2026-10-30",
+        file: "files/callai/CallAI-2.1.0-neoforge-1.21.1.zip.b64.txt",
+        fileName: "CallAI-2.1.0-neoforge-1.21.1.zip",
+        zipBytes: 89643,
+        jar: "callai-neoforge-1.21.1-2.1.0.jar",
+        jarBytes: 93979,
+        sha256: "10841B083EAF16EC573A77C71EFD726CF3125C50186004459A37A20A79B7E4C6",
+        tested: false
+      },
+      {
+        mc: "1.20.1",
+        loader: "Forge",
+        loaderVersion: "47.x",
+        modVersion: "2.1.0",
+        released: "2026-10-30",
+        file: "files/callai/CallAI-2.1.0-forge-1.20.1.zip.b64.txt",
+        fileName: "CallAI-2.1.0-forge-1.20.1.zip",
+        zipBytes: 89188,
+        jar: "callai-2.1.0.jar",
+        jarBytes: 94151,
+        sha256: "51DB0210F2C1AEF45D72EDE67CAC5BAACF8BE227408238DBC5832A9D11482B0D",
+        tested: false
+      },
+      {
+        mc: "1.21.1",
+        loader: "NeoForge",
+        loaderVersion: "21.1.x",
+        modVersion: "2.0.0",
+        released: "2026-10-30",
+        file: "files/callai/CallAI-2.0.0-neoforge-1.21.1.zip.b64.txt",
+        fileName: "CallAI-2.0.0-neoforge-1.21.1.zip",
+        zipBytes: 77695,
+        jar: "callai-neoforge-1.21.1-2.0.0.jar",
+        jarBytes: 81877,
+        sha256: "1630812A4A743FAD826B70D562108452CB609DC0F69AAB5899E12E824123D812",
+        tested: false
+      },
+      {
+        mc: "1.20.1",
+        loader: "Forge",
+        loaderVersion: "47.x",
+        modVersion: "2.0.0",
+        released: "2026-10-30",
+        file: "files/callai/CallAI-2.0.0-forge-1.20.1.zip.b64.txt",
+        fileName: "CallAI-2.0.0-forge-1.20.1.zip",
+        zipBytes: 77284,
+        jar: "callai-2.0.0.jar",
+        jarBytes: 82143,
+        sha256: "FAD540EDB4AEF73579420B0F20966F7F7C7BA69B6AED95DA069FA2616DB1F9BF",
+        tested: false
+      },
+      {
+        mc: "1.21.1",
+        loader: "NeoForge",
+        loaderVersion: "21.1.x",
+        modVersion: "1.9.0",
+        released: "2026-10-29",
+        file: "files/callai/CallAI-1.9.0-neoforge-1.21.1.zip.b64.txt",
+        fileName: "CallAI-1.9.0-neoforge-1.21.1.zip",
+        zipBytes: 67995,
+        jar: "callai-neoforge-1.21.1-1.9.0.jar",
+        jarBytes: 72180,
+        sha256: "81BA4394C902693C9EAD695D6B36C5ED4C2312C3DF4D5180D866AAFBBD6EF02F",
+        tested: false
+      },
+      {
+        mc: "1.20.1",
+        loader: "Forge",
+        loaderVersion: "47.x",
+        modVersion: "1.9.0",
+        released: "2026-10-29",
+        file: "files/callai/CallAI-1.9.0-forge-1.20.1.zip.b64.txt",
+        fileName: "CallAI-1.9.0-forge-1.20.1.zip",
+        zipBytes: 67635,
+        jar: "callai-1.9.0.jar",
+        jarBytes: 72502,
+        sha256: "B99D27D8A1346DBA7004DF065B363DA7199E784D92D2BE2F8589AB26A7AEA275",
+        tested: false
+      },
+      {
+        mc: "1.21.1",
+        loader: "NeoForge",
+        loaderVersion: "21.1.x",
+        modVersion: "1.8.0",
+        released: "2026-10-28",
+        file: "files/callai/CallAI-1.8.0-neoforge-1.21.1.zip.b64.txt",
+        fileName: "CallAI-1.8.0-neoforge-1.21.1.zip",
+        zipBytes: 51754,
+        jar: "callai-neoforge-1.21.1-1.8.0.jar",
+        jarBytes: 55338,
+        sha256: "4A4AC8585C184CA63057B3086C3AA97285D5C75374CE78BA594DDCFB7C1F951E",
+        tested: false
+      },
+      {
+        mc: "1.20.1",
+        loader: "Forge",
+        loaderVersion: "47.x",
+        modVersion: "1.8.0",
+        released: "2026-10-28",
+        file: "files/callai/CallAI-1.8.0-forge-1.20.1.zip.b64.txt",
+        fileName: "CallAI-1.8.0-forge-1.20.1.zip",
+        zipBytes: 51591,
+        jar: "callai-1.8.0.jar",
+        jarBytes: 55717,
+        sha256: "88B5E1FE3CE3B362EE56D7BB61C44A70F4CD28287718BF8236D2CBD489FEA9C4",
+        tested: false
+      },
+      {
+        mc: "1.21.1",
+        loader: "NeoForge",
+        loaderVersion: "21.1.x",
+        modVersion: "1.7.0",
+        released: "2026-10-28",
+        file: "files/callai/CallAI-1.7.0-neoforge-1.21.1.zip.b64.txt",
+        fileName: "CallAI-1.7.0-neoforge-1.21.1.zip",
+        zipBytes: 49062,
+        jar: "callai-neoforge-1.21.1-1.7.0.jar",
+        jarBytes: 52650,
+        sha256: "258F78FDFEF89A9839307FFBF8CB3363E15BAA67090951E372BA76ECBF651EE1",
+        tested: false
+      },
+      {
+        mc: "1.20.1",
+        loader: "Forge",
+        loaderVersion: "47.x",
+        modVersion: "1.7.0",
+        released: "2026-10-27",
+        file: "files/callai/CallAI-1.7.0-forge-1.20.1.zip.b64.txt",
+        fileName: "CallAI-1.7.0-forge-1.20.1.zip",
+        zipBytes: 48908,
+        jar: "callai-1.7.0.jar",
+        jarBytes: 53031,
+        sha256: "C2E31C1B44942139D909CAAF2B4A700DDF5B719F16DADB65945964ECC900C123",
+        tested: false
+      },
+      {
+        mc: "1.20.1",
+        loader: "Forge",
+        loaderVersion: "47.x",
+        modVersion: "1.6.0",
+        released: "2026-10-27",
+        file: "files/callai/CallAI-1.6.0-forge-1.20.1.zip.b64.txt",
+        fileName: "CallAI-1.6.0-forge-1.20.1.zip",
+        zipBytes: 43632,
+        jar: "callai-1.6.0.jar",
+        jarBytes: 47395,
+        sha256: "0BB643AFD1D3F45178B1282B9E02D335BC6B6E5C5A2634FD4C1FC6467032E467",
+        tested: false
+      },
+      {
+        mc: "1.20.1",
+        loader: "Forge",
+        loaderVersion: "47.x",
+        modVersion: "1.5.0",
+        released: "2026-10-27",
+        file: "files/callai/CallAI-1.5.0-forge-1.20.1.zip.b64.txt",
+        fileName: "CallAI-1.5.0-forge-1.20.1.zip",
+        zipBytes: 28355,
+        jar: "callai-1.5.0.jar",
+        jarBytes: 30876,
+        sha256: "6D8EC3ECC90B59DF0463AFECF2061C958271008C34C783B70E0AC28220452480",
+        tested: false
+      },
+      {
+        mc: "1.20.1",
+        loader: "Forge",
+        loaderVersion: "47.x",
+        modVersion: "1.4.0",
+        released: "2026-10-27",
+        file: "files/callai/CallAI-1.4.0-forge-1.20.1.zip.b64.txt",
+        fileName: "CallAI-1.4.0-forge-1.20.1.zip",
+        zipBytes: 24100,
+        jar: "callai-1.4.0.jar",
+        jarBytes: 26376,
+        sha256: "B083CD48AF726CEA14E19BD65EDF9616D8452A50CBA46712D6CF2EFD72D50947",
+        tested: false
+      },
+      {
+        mc: "1.20.1",
+        loader: "Forge",
+        loaderVersion: "47.x",
+        modVersion: "1.3.0",
+        released: "2026-10-27",
+        file: "files/callai/CallAI-1.3.0-forge-1.20.1.zip.b64.txt",
+        fileName: "CallAI-1.3.0-forge-1.20.1.zip",
+        zipBytes: 22426,
+        jar: "callai-1.3.0.jar",
+        jarBytes: 24433,
+        sha256: "5B1C0F63D8786E153A8F5DF0AED8D2B3D7E06D3FE977E2AE4A8A2FA7A123F8C9",
+        tested: false
+      },
+      {
+        mc: "1.20.1",
+        loader: "Forge",
+        loaderVersion: "47.x",
+        modVersion: "1.2.0",
+        released: "2026-10-27",
+        file: "files/callai/CallAI-1.2.0-forge-1.20.1.zip.b64.txt",
+        fileName: "CallAI-1.2.0-forge-1.20.1.zip",
+        zipBytes: 20747,
+        jar: "callai-1.2.0.jar",
+        jarBytes: 22677,
+        sha256: "E460D0C70322ED8B6958C41442020CB3DD0CEE35ACF8EF368F76EE775C09E955",
+        tested: false
+      },
+      {
+        mc: "1.20.1",
+        loader: "Forge",
+        loaderVersion: "47.x",
+        modVersion: "1.1.0",
+        released: "2026-10-27",
+        file: "files/geminitell/GeminiTell-1.1.0-forge-1.20.1.zip.b64.txt",
+        fileName: "GeminiTell-1.1.0-forge-1.20.1.zip",
+        zipBytes: 20773,
+        jar: "geminitell-1.1.0.jar",
+        jarBytes: 22809,
+        sha256: "1A3731C6D5E61AEFD8B48AD64CC4BF5BA1E4B596462CFC1FB5A37BCE7A2BDF1A",
+        tested: false
+      }
+    ]
+  }
+  ,
+  {
+    id: "claudeupdater",
+    name: "Claude MOD Updater",
+    summary: "ゲームの起動時に、このライブラリのMODの新しい版があるか確認し、選んだMODを自動で入れ替えるMOD。jarを毎回ダウンロードして置き換える手間がなくなります。",
+    features: [
+      ["起動時に確認", "起動すると裏で更新情報を確認し、新しい版があればタイトル画面に一覧が出ます。入っているMODのうち、使っている Minecraft とローダーに合う版だけが対象です。"],
+      ["選んで更新", "更新するMODを選んで「選んだMODを更新」を押すとダウンロードします。「今回は更新しない」も選べます。カーソルを合わせると変更内容が出ます。"],
+      ["二度と表示しない", "v1.1.0 から。押すと、そのとき一覧に出ていたMODの更新は起動時に二度と出なくなります。あとから新しく入れたMODに更新があるときは、そのMODだけが表示されます。"],
+      ["安全な入れ替え", "ダウンロードしたファイルは SHA-256 で壊れていないか確かめます。入れ替えはゲームを終了したあとに行われ、次の起動から新しい版になります（起動中のjarは置き換えられないため）。"],
+      ["更新ボタン", "v1.1.0 から。タイトル画面の言語ボタンの左に、矢印のアイコンの更新ボタンが出ます。押すとその場で確認し直せます（「二度と表示しない」にしたMODも出ます）。更新があるときはアイコンに緑の印が付きます。MOD一覧の「設定」ボタンからも開けます。"],
+      ["サーバー", "専用サーバーでは確認画面なしで自動でダウンロードし、サーバーを停止したあとに入れ替えます（設定で止められます）。"],
+      ["Ctrl+U で開く", "v1.3.0 から。タイトル画面などのメニューで Ctrl+U を押すと、更新の確認画面が開きます（ほかのMODでボタンが隠れたり重なったりしても使えます）。キーは操作設定の「MODの更新を確認」で変えられます。"],
+      ["必要なMODの案内", "v1.4.0 から。ダウンロードしたMODにほかのMODが必要なとき（Hyperlink Ponder の Hyperlink-E・Ponder など）、まだ入っていなければ教えてくれます。MODライブラリにあるMODは選んで一緒にダウンロードでき、ないMODは名前をコピーしたり、Modrinth の検索ページを開いたりできます。v1.4.1 から、CurseForge アプリか Modrinth App で起動しているときは、ライブラリにないMODがそのサイトにあるかどうかも一文で出て、「開く」でそのサイトのページが開きます。"],
+      ["MODを追加", "v1.5.0 から。更新ボタンの上の「＋」のボタンを押すと、まだ入れていないMODをMODライブラリから選んで追加できます。"],
+      ["ワールドの中から", "v1.5.0 から。ワールドで遊んでいる間も Ctrl+U で更新の確認画面が開きます。ポーズ画面（Esc）の「ゲームに戻る」の左にも、更新ボタンと「MODを追加」ボタンが出ます。"],
+      ["自分も更新", "このMOD自身の新しい版も同じように入れ替わります。"]
+    ],
+    notes: [
+      "更新情報とjarは公開リポジトリ EeeeeeruKi/EC-mod から取得します。インターネットにつながっている必要があります。",
+      "対象は mods フォルダに直接入っている jar だけです。ほかのMOD（Modrinth などで配られているもの）は触りません。",
+      "設定は config/claudeupdater.json です。起動時の確認のオン／オフ、サーバーでの自動更新、起動時に表示しないMOD（hidden）を変えられます。",
+      "v1.1.0 で「選んだ版は今後お知らせしない」を「二度と表示しない」に変えました。v1.0.0 でお知らせしないにしたMODは、そのまま「二度と表示しない」に引き継がれます。また表示したいときは、更新ボタンから開いて「起動時にまた表示する」を押してください。",
+      "v1.5.0 で、タイトル画面の更新ボタンの上に「MODを追加」ボタンを付け、ワールドの中（遊んでいる間とポーズ画面）からも開けるようにしました。ワールドの中でダウンロードしたときは、ワールドから出てゲームを終了すると入れ替わります（ワールドの中からはゲームを終了するボタンは出ません）。",
+      "v1.4.1 で、CurseForge アプリか Modrinth App で起動しているのがはっきりわかるときだけ、ライブラリにない必要なMODがそのサイトにあるかを調べるようにしました（Prism や公式ランチャーでは今までどおり Modrinth の検索ページを開きます）。Modrinth は公式の API、CurseForge は公開されている CFWidget を使って調べます。CurseForge はMODの名前から探すので、名前が違うと見つからないことがあります。",
+      "v1.4.0 で、一度ダウンロードしたMODが、更新画面を開き直すとまたダウンロードできてしまう不具合を直しました。ダウンロード済みのMODは、ゲームを終了して入れ替わるまで一覧に出ません。また、1.0 と 1.0.0 のように書き方だけ違う版を新しい版と間違えないようにし、サーバーでも「二度と表示しない」にしたMODは自動で更新しないようにしました。",
+      "必要なMODは、ダウンロードしたjarの中の情報（mods.toml・fabric.mod.json）から読み取ります。必要なMODが入っているかどうかだけを見て、版が古いかどうかは確かめません。",
+      "v1.3.0 から Fabric 1.21.1 版もあります（Fabric API が必要です）。中身は NeoForge 版と同じです。Fabric 版では、Ctrl+U の Ctrl は変えられません（キー設定で変えられるのは U の部分だけです）。新しいMODを入れる画面は Ctrl+Shift+U です。設定ボタンは Mod Menu が入っているときに MOD 一覧から使えます。",
+      "v1.3.0 で、メニューで Ctrl+U を押すと更新の確認画面が開くようにしました。ワールドに入っている間は反応しません。",
+      "v1.2.2 で、ゲームのフォルダ名に日本語などが入っていると、終了後の入れ替えが失敗することがある不具合を直しました。",
+      "v1.2.1 で、ゲームを終了したあとにMODが入れ替わらないことがある不具合を直しました。v1.2.0 以前から更新するときは、このMODだけ一度手で入れ替えてください。",
+      "入れ替えの記録は claudeupdater/apply.log に残ります。",
+      "クライアントとサーバーの片方だけに入れても問題ありません。"
+    ],
+    install: [
+      "{loader} {loaderVersion} を Minecraft {mc} に入れます。",
+      "ダウンロードしたZIPを展開し、中の <code>{jar}</code> を取り出します。",
+      "jar を <code>.minecraft/mods</code> フォルダに入れます。サーバーも自動で更新したい場合は、サーバーの <code>mods</code> にも入れます。",
+      "ゲームを起動すると、新しい版があるときだけタイトル画面に更新の画面が出ます。"
+    ],
+    versions: [
+      {
+        mc: "1.21.1",
+        loader: "Fabric",
+        loaderVersion: "Loader 0.16以降 + Fabric API",
+        modVersion: "1.5.0",
+        released: "2026-11-16",
+        file: "files/claudeupdater/ClaudeUpdater-1.5.0-fabric-1.21.1.zip.b64.txt",
+        fileName: "ClaudeUpdater-1.5.0-fabric-1.21.1.zip",
+        zipBytes: 83288,
+        jar: "claudeupdater-1.5.0-fabric-1.21.1.jar",
+        jarBytes: 89595,
+        sha256: "82F3DCD486E6B9A0A6B7DC13558783D5244827926C61BDBA1DA5BA925C2E3C56",
+        tested: false
+      },
+      {
+        mc: "1.21.1",
+        loader: "NeoForge",
+        loaderVersion: "21.1.x",
+        modVersion: "1.5.0",
+        released: "2026-11-16",
+        file: "files/claudeupdater/ClaudeUpdater-1.5.0-neoforge-1.21.1.zip.b64.txt",
+        fileName: "ClaudeUpdater-1.5.0-neoforge-1.21.1.zip",
+        zipBytes: 82350,
+        jar: "claudeupdater-1.5.0-neoforge-1.21.1.jar",
+        jarBytes: 87810,
+        sha256: "E1CB016CC792636A303E0095A476C1743FF22D8CFDDE42F9C7B772FCE5C564B1",
+        tested: false
+      },
+      {
+        mc: "1.20.1",
+        loader: "Forge",
+        loaderVersion: "47.x",
+        modVersion: "1.5.0",
+        released: "2026-11-16",
+        file: "files/claudeupdater/ClaudeUpdater-1.5.0-forge-1.20.1.zip.b64.txt",
+        fileName: "ClaudeUpdater-1.5.0-forge-1.20.1.zip",
+        zipBytes: 83226,
+        jar: "claudeupdater-1.5.0-forge-1.20.1.jar",
+        jarBytes: 89535,
+        sha256: "D508557F605CD944F6F542CF4004D75130B448606A8D1923C9F4C7F23B73F8E4",
+        tested: false
+      },
+      {
+        mc: "1.21.1",
+        loader: "Fabric",
+        loaderVersion: "Loader 0.16以降 + Fabric API",
+        modVersion: "1.4.1",
+        released: "2026-11-16",
+        file: "files/claudeupdater/ClaudeUpdater-1.4.1-fabric-1.21.1.zip.b64.txt",
+        fileName: "ClaudeUpdater-1.4.1-fabric-1.21.1.zip",
+        zipBytes: 82121,
+        jar: "claudeupdater-1.4.1-fabric-1.21.1.jar",
+        jarBytes: 88292,
+        sha256: "1F9215FEFC5FA1FF6F4A3D097FBF27E5D83164F2E24A4325249425DEDAA70011",
+        tested: false
+      },
+      {
+        mc: "1.21.1",
+        loader: "NeoForge",
+        loaderVersion: "21.1.x",
+        modVersion: "1.4.1",
+        released: "2026-11-16",
+        file: "files/claudeupdater/ClaudeUpdater-1.4.1-neoforge-1.21.1.zip.b64.txt",
+        fileName: "ClaudeUpdater-1.4.1-neoforge-1.21.1.zip",
+        zipBytes: 81237,
+        jar: "claudeupdater-1.4.1-neoforge-1.21.1.jar",
+        jarBytes: 86544,
+        sha256: "3A8E2F27BCA2C08D43D8ED759DF02750009A36DDF7CCFD5E8C2CC5A363078282",
+        tested: false
+      },
+      {
+        mc: "1.20.1",
+        loader: "Forge",
+        loaderVersion: "47.x",
+        modVersion: "1.4.1",
+        released: "2026-11-16",
+        file: "files/claudeupdater/ClaudeUpdater-1.4.1-forge-1.20.1.zip.b64.txt",
+        fileName: "ClaudeUpdater-1.4.1-forge-1.20.1.zip",
+        zipBytes: 82025,
+        jar: "claudeupdater-1.4.1-forge-1.20.1.jar",
+        jarBytes: 88240,
+        sha256: "2ADECA405510FF602DE90853BF847B9802621CEF56EB15155957EE4179B69975",
+        tested: false
+      },
+      {
+        mc: "1.21.1",
+        loader: "Fabric",
+        loaderVersion: "Loader 0.16以降 + Fabric API",
+        modVersion: "1.4.0",
+        released: "2026-11-16",
+        file: "files/claudeupdater/ClaudeUpdater-1.4.0-fabric-1.21.1.zip.b64.txt",
+        fileName: "ClaudeUpdater-1.4.0-fabric-1.21.1.zip",
+        zipBytes: 73630,
+        jar: "claudeupdater-1.4.0-fabric-1.21.1.jar",
+        jarBytes: 79425,
+        sha256: "2C7F21B9B3C5882F2927F432F1F3C99DAED5E7A380CAD3D79F83968CFAB73E85",
+        tested: false
+      },
+      {
+        mc: "1.21.1",
+        loader: "NeoForge",
+        loaderVersion: "21.1.x",
+        modVersion: "1.4.0",
+        released: "2026-11-16",
+        file: "files/claudeupdater/ClaudeUpdater-1.4.0-neoforge-1.21.1.zip.b64.txt",
+        fileName: "ClaudeUpdater-1.4.0-neoforge-1.21.1.zip",
+        zipBytes: 72779,
+        jar: "claudeupdater-1.4.0-neoforge-1.21.1.jar",
+        jarBytes: 77768,
+        sha256: "61A83C3C7E92F90A059E362D05ABD691341171916654DF20529BD86F9666F891",
+        tested: false
+      },
+      {
+        mc: "1.20.1",
+        loader: "Forge",
+        loaderVersion: "47.x",
+        modVersion: "1.4.0",
+        released: "2026-11-16",
+        file: "files/claudeupdater/ClaudeUpdater-1.4.0-forge-1.20.1.zip.b64.txt",
+        fileName: "ClaudeUpdater-1.4.0-forge-1.20.1.zip",
+        zipBytes: 73676,
+        jar: "claudeupdater-1.4.0-forge-1.20.1.jar",
+        jarBytes: 79471,
+        sha256: "FBFBEC315235DD8F9EDD1B7CED9AF575F7C3022168B316E5F7DBD70A8FBD4985",
+        tested: false
+      },
+      {
+        mc: "1.21.1",
+        loader: "Fabric",
+        loaderVersion: "Loader 0.16以降 + Fabric API",
+        modVersion: "1.3.0",
+        released: "2026-11-05",
+        file: "files/claudeupdater/ClaudeUpdater-1.3.0-fabric-1.21.1.zip.b64.txt",
+        fileName: "ClaudeUpdater-1.3.0-fabric-1.21.1.zip",
+        zipBytes: 54383,
+        jar: "claudeupdater-1.3.0-fabric-1.21.1.jar",
+        jarBytes: 58914,
+        sha256: "BD1E982A21609061F5F474FBA845F511597B944CBA86DDB676B6A4807C9421FD",
+        tested: false
+      },
+      {
+        mc: "1.21.1",
+        loader: "NeoForge",
+        loaderVersion: "21.1.x",
+        modVersion: "1.3.0",
+        released: "2026-11-05",
+        file: "files/claudeupdater/ClaudeUpdater-1.3.0-neoforge-1.21.1.zip.b64.txt",
+        fileName: "ClaudeUpdater-1.3.0-neoforge-1.21.1.zip",
+        zipBytes: 53562,
+        jar: "claudeupdater-1.3.0-neoforge-1.21.1.jar",
+        jarBytes: 57462,
+        sha256: "13758F9570B77AC36A23D86757C89D76C0EE46BFDB772A9FB525AC6FBBD68397",
+        tested: false
+      },
+      {
+        mc: "1.20.1",
+        loader: "Forge",
+        loaderVersion: "47.x",
+        modVersion: "1.3.0",
+        released: "2026-11-05",
+        file: "files/claudeupdater/ClaudeUpdater-1.3.0-forge-1.20.1.zip.b64.txt",
+        fileName: "ClaudeUpdater-1.3.0-forge-1.20.1.zip",
+        zipBytes: 54360,
+        jar: "claudeupdater-1.3.0-forge-1.20.1.jar",
+        jarBytes: 58974,
+        sha256: "F2053ECB01A4C826F6866EED05772E1FA95EE53F28FDCE9CE5E10E5F34CD581F",
+        tested: false
+      },
+      {
+        mc: "1.21.1",
+        loader: "NeoForge",
+        loaderVersion: "21.1.x",
+        modVersion: "1.2.2",
+        released: "2026-10-29",
+        file: "files/claudeupdater/ClaudeUpdater-1.2.2-neoforge-1.21.1.zip.b64.txt",
+        fileName: "ClaudeUpdater-1.2.2-neoforge-1.21.1.zip",
+        zipBytes: 52840,
+        jar: "claudeupdater-1.2.2-neoforge-1.21.1.jar",
+        jarBytes: 56733,
+        sha256: "9D8015E5A8D95FFF6CAD16DAC50616DD59F1C8911F79FBF0C97627FE04E21B91",
+        tested: false
+      },
+      {
+        mc: "1.20.1",
+        loader: "Forge",
+        loaderVersion: "47.x",
+        modVersion: "1.2.2",
+        released: "2026-10-29",
+        file: "files/claudeupdater/ClaudeUpdater-1.2.2-forge-1.20.1.zip.b64.txt",
+        fileName: "ClaudeUpdater-1.2.2-forge-1.20.1.zip",
+        zipBytes: 53642,
+        jar: "claudeupdater-1.2.2-forge-1.20.1.jar",
+        jarBytes: 58237,
+        sha256: "AC5FE7439CAD3027A2DA5367342CA6546699C7C0D99FD4AAA4A0C4EDFF8761D7",
+        tested: false
+      },
+      {
+        mc: "1.21.1",
+        loader: "NeoForge",
+        loaderVersion: "21.1.x",
+        modVersion: "1.2.1",
+        released: "2026-10-29",
+        file: "files/claudeupdater/ClaudeUpdater-1.2.1-neoforge-1.21.1.zip.b64.txt",
+        fileName: "ClaudeUpdater-1.2.1-neoforge-1.21.1.zip",
+        zipBytes: 52812,
+        jar: "claudeupdater-1.2.1-neoforge-1.21.1.jar",
+        jarBytes: 56692,
+        sha256: "BBE9ADCA1FEF4DA0835722201ACD4F2F8BAEF1884C0F18E8719F3D182FE1A22C",
+        tested: false
+      },
+      {
+        mc: "1.20.1",
+        loader: "Forge",
+        loaderVersion: "47.x",
+        modVersion: "1.2.1",
+        released: "2026-10-29",
+        file: "files/claudeupdater/ClaudeUpdater-1.2.1-forge-1.20.1.zip.b64.txt",
+        fileName: "ClaudeUpdater-1.2.1-forge-1.20.1.zip",
+        zipBytes: 53607,
+        jar: "claudeupdater-1.2.1-forge-1.20.1.jar",
+        jarBytes: 58208,
+        sha256: "1F1028B5E864CCEEF0C535E31B87CE7FC81485C8C85D548DE343F16EFCC9C29A",
+        tested: false
+      },
+      {
+        mc: "1.21.1",
+        loader: "NeoForge",
+        loaderVersion: "21.1.x",
+        modVersion: "1.2.0",
+        released: "2026-10-29",
+        file: "files/claudeupdater/ClaudeUpdater-1.2.0-neoforge-1.21.1.zip.b64.txt",
+        fileName: "ClaudeUpdater-1.2.0-neoforge-1.21.1.zip",
+        zipBytes: 51420,
+        jar: "claudeupdater-1.2.0-neoforge-1.21.1.jar",
+        jarBytes: 55319,
+        sha256: "3DA9864327AA4F5679EC3A1B2773BFAC874ABF74CE00425F3F6A2E614FB0518B",
+        tested: false
+      },
+      {
+        mc: "1.20.1",
+        loader: "Forge",
+        loaderVersion: "47.x",
+        modVersion: "1.2.0",
+        released: "2026-10-29",
+        file: "files/claudeupdater/ClaudeUpdater-1.2.0-forge-1.20.1.zip.b64.txt",
+        fileName: "ClaudeUpdater-1.2.0-forge-1.20.1.zip",
+        zipBytes: 52258,
+        jar: "claudeupdater-1.2.0-forge-1.20.1.jar",
+        jarBytes: 56858,
+        sha256: "2C8A9824111D3FE583E4DDEA181CF1B0723DA7D2C6BC5CDEB4713DE5BA8A34C6",
+        tested: false
+      },
+      {
+        mc: "1.21.1",
+        loader: "NeoForge",
+        loaderVersion: "21.1.x",
+        modVersion: "1.1.0",
+        released: "2026-10-28",
+        file: "files/claudeupdater/ClaudeUpdater-1.1.0-neoforge-1.21.1.zip.b64.txt",
+        fileName: "ClaudeUpdater-1.1.0-neoforge-1.21.1.zip",
+        zipBytes: 40735,
+        jar: "claudeupdater-1.1.0-neoforge-1.21.1.jar",
+        jarBytes: 44232,
+        sha256: "45244153CB1BD92E3DE54B3D0DEAF2BB7B8A8B6B71DCF2C55FA1354436A852E8",
+        tested: false
+      },
+      {
+        mc: "1.20.1",
+        loader: "Forge",
+        loaderVersion: "47.x",
+        modVersion: "1.1.0",
+        released: "2026-10-28",
+        file: "files/claudeupdater/ClaudeUpdater-1.1.0-forge-1.20.1.zip.b64.txt",
+        fileName: "ClaudeUpdater-1.1.0-forge-1.20.1.zip",
+        zipBytes: 41427,
+        jar: "claudeupdater-1.1.0-forge-1.20.1.jar",
+        jarBytes: 45560,
+        sha256: "DE7E16C71FD76474F6989276DD7F2BBB8B65CF774C3BE622EC9060D3417768AD",
+        tested: false
+      },
+      {
+        mc: "1.21.1",
+        loader: "NeoForge",
+        loaderVersion: "21.1.x",
+        modVersion: "1.0.0",
+        released: "2026-10-27",
+        file: "files/claudeupdater/ClaudeUpdater-1.0.0-neoforge-1.21.1.zip.b64.txt",
+        fileName: "ClaudeUpdater-1.0.0-neoforge-1.21.1.zip",
+        zipBytes: 36949,
+        jar: "claudeupdater-1.0.0-neoforge-1.21.1.jar",
+        jarBytes: 39828,
+        sha256: "36A53190D5FCA4298EB952DEA2BB1A3E3A143A942535A9B9DE04232A74E0C744",
+        tested: false
+      },
+      {
+        mc: "1.20.1",
+        loader: "Forge",
+        loaderVersion: "47.x",
+        modVersion: "1.0.0",
+        released: "2026-10-27",
+        file: "files/claudeupdater/ClaudeUpdater-1.0.0-forge-1.20.1.zip.b64.txt",
+        fileName: "ClaudeUpdater-1.0.0-forge-1.20.1.zip",
+        zipBytes: 37658,
+        jar: "claudeupdater-1.0.0-forge-1.20.1.jar",
+        jarBytes: 41012,
+        sha256: "A48D4FF6344CF5FB761BBB58FA6169FFC7BC1413E68098D2233A22A2D3F7512F",
+        tested: false
+      }
+    ]
+  }
+  ,
+  {
+    id: "tonsofadv",
+    name: "Tons of Advancements（進捗どっさり）",
+    summary: "進捗を1700個以上追加するMOD。アイテム集め・モブ討伐・探検・やり込み・ネタ系の進捗がどっさり入っていて、達成すると経験値がもらえます。v1.4.0 から、人気のMOD100個（Create・Mekanism・AE2・黄昏の森など）の進捗も追加されます。データパック版もあります。",
+    features: [
+      ["ちょっとした行動", "v1.8.0 から。歩いた・走った・しゃがんだ・ジャンプした・チェストを開けたなど「はじめての○○」の進捗と、MOD版では、右を向いた・左を向いた・上を見た・下を見た・真上を見た・後ろに歩いた・カニ歩き・キョロキョロ・うなずいた・一回転などの進捗が「ちょっとした行動」タブに入っています。"],
+      ["26.2 対応", "v1.7.0 から Minecraft 26.2 の NeoForge 版と Fabric 版があります（Fabric 版は Fabric API が必要です）。26.2 版には、26.2 に対応しているMOD 29 個（Mekanism・Biomes O' Plenty・SecurityCraft・Occultism・Ender IO・Sophisticated Backpacks など）の進捗が入っています。"],
+      ["ほぼ全部の行動", "v1.6.0 から。全部のブロックを置く・掘る、作れるアイテムを全部作る、全部の効果を受ける・ポーションを醸造する・エンチャントを集める、釣り・取引・乗り物・攻撃を受けた相手・斧で皮をはぐなどの体験、全部のモブ・MODのモブの討伐数、全部の道具の使いつぶしの進捗があります。MOD版では、チャット・コマンド・クリティカル・作物の収穫・原木・鉱石・経験値オーブなどの回数も数えます。"],
+      ["音の設定", "v1.6.0 から。エーテルなどの特別な進捗の音を鳴らすかどうかを設定できます（初めはオン）。MOD一覧でこのMODを選んで「設定」から変えられます。"],
+      ["何かをした回数", "v1.5.0 から。クラフトした回数・製錬した数・置いた／壊したブロックの数・集めた経験値・最高レベル・食べた回数・ポーション・弓・手なずけた数・達成した進捗の数（MOD版だけ）、アイテムごとの作った数・使った回数・使いつぶした回数、やられた相手、死なずに過ごした日数などの進捗があります。新しいタブ「クラフト・製錬」「使いこみ」「やられ図鑑」に入っています。"],
+      ["MODの回数", "v1.5.0 から。Iron's Spells は唱えた呪文の数・スクロールを使った数・学派ごとの数、Ars Nouveau は唱えた呪文の数、AE2 はMEネットワークにしまった量（1k〜16Mバイト・アイテム数・種類数）で進捗がもらえます。"],
+      ["MOD連携", "v1.4.0 から人気のMOD100個に対応しました（v1.1.0 は14個）。入っているMODのアイテム入手・モブ討伐（ボスは挑戦）・バイオーム・ディメンションの進捗が、MODごとのタブに追加されます。1.20.1 版は86個、1.21.1 版は89個のMODに対応しています（MODによってはどちらかの版しかないため）。"],
+      ["エーテルの音", "v1.2.0 から。エーテルが入っていると、エーテルのタブの進捗のトーストが出たときに、エーテルの進捗の音が鳴ります（v1.3.0 からトーストの表示に合わせて鳴ります）。v1.8.1 から、エーテルの進捗の音（エーテル本体の進捗も、このMODのエーテルのタブの進捗も）は「ジュークボックス/音ブロック」の音量で大きさを変えられます。ダンジョンのボス（スライダー・ヴァルキリークイーン・太陽の精霊）は、エーテルと同じく銅・銀・金の音です。"],
+      ["集める", "ほぼすべてのアイテム・ブロック（約1100種類）に「手に入れる」進捗があります。木材・石材・カラフル・鉱石・装備・レッドストーン・自然・食べ物・いろいろのタブに分かれています。"],
+      ["倒す", "すべてのモブの討伐に加えて、主なモブを10体・100体・1000体倒すやり込み進捗があります。"],
+      ["探検", "すべてのバイオーム・構造物・ディメンションに行く進捗と、Y-60より下・Y300より上・原点から1万ブロックなどの進捗があります。"],
+      ["やり込み", "歩いた距離・ジャンプ回数・遊んだ時間・釣った魚・取引回数などの統計と、ブロックの採掘数に段階つきの進捗があります。"],
+      ["グルメ・動物", "すべての食べ物を食べる、動物を繁殖させる・手なずける進捗があります。"],
+      ["ネタ", "かぼちゃ頭、成金（金の防具を全身）、はじめての死、ダイヤの山など、ちょっと変わった進捗も入っています。"],
+      ["報酬", "達成すると経験値がもらえます（ふつう5、目標20、挑戦50。やり込みは段階が上がるほど多くもらえます）。"]
+    ],
+    notes: [
+      "進捗のタブは「どっさり：○○」という名前で、全部で約20個あります。",
+      "アイテムの名前はゲームの言語設定に合わせて表示されます。",
+      "1.20.1 版は1734個、1.21.1 版は1818個です（1.21.1 で増えたアイテムやモブの分が多くなっています）。",
+      "v1.1.0 で、MOD連携の進捗を追加しました（1.20.1 版で約5200個、1.21.1 版で約5700個）。入っていないMODの進捗は読み込まれないので、全部そろえなくても大丈夫です。進捗の数が多いので、MODをたくさん入れているとタブが多くなります。",
+      "MOD連携の進捗は、それぞれのMODの公開されているソースからアイテムを集めて作っています。MODの版によっては一部の進捗が読み込まれず、ログに出ることがあります（ゲームには影響しません）。",
+      "v1.4.0 で、MOD連携を人気のMOD100個に広げました（MOD連携の進捗は合計約14000個）。人気の順番は Modrinth・CurseForge のダウンロード数をもとにした目安で、ライブラリや軽量化MODのようにアイテムを追加しないMODは入れていません。ChippedやRechiseledのようにブロックの種類がとても多いMODは、400個まで間引いています。進捗の数が多いので、MODをたくさん入れていると読み込みが少し長くなることがあります。",
+      "対応MOD（人気順）: Create、Farmer's Delight、Supplementaries、Quark、Alex's Mobs、Sophisticated Backpacks、BiomesOPlenty、Mekanism、Applied Energistics 2、The Twilight Forest、Tinkers' Construct、The Aether、Storage Drawers、Botania、Iron's Spells 'n Spellbooks、Ars Nouveau、Alex's Caves、Immersive Engineering、Ice and Fire、Artifacts、Apotheosis、Sophisticated Storage、TravelersBackpack、Comforts、Aquaculture 2、Chipped、Handcrafted、Deeper and Darker、SecurityCraft、Mystical Agriculture、Functional Storage、Tom's Simple Storage Mod、Ender IO、Industrial Foregoing、Ad Astra、The Undergarden、The Bumblezone、Naturalist、Another Furniture、Friends&Foes、Create Crafts & Additions、Create: Steam 'n' Rails、Pipez、Gravestone Mod、Easy Villagers、Productive Bees、Blood Magic、Occultism、Forbidden & Arcanus、Enigmatic Legacy、Relics、tetra、PneumaticCraft: Repressurized、Draconic Evolution、Extended Crafting、Lootr、Rechiseled、XNet、RFToolsUtility、IntegratedDynamics、EvilCraft、Simply Swords、Epic Fight、amendments、Immersive Armors、Immersive Aircraft、Minecraft Comes Alive、Cyclic、storagenetwork、Snow! Real Magic!、Torchmaster、Building Gadgets 2、Mining Gadgets、Just Dire Things、LaserIO、Flux Networks、CC: Tweaked、advancedperipherals、FramedBlocks、SereneSeasons、ToughAsNails、Iron Furnaces、Hostile Neural Networks、NaturesAura、Actually Additions、exposure、Modern Industrialization、Oritech、Elevator Mod、ProjectE、Silent Gear、Backpacked、Dynamic Trees、BotanyPots、Iron Jetpacks、Mystical Agradditions、EnderStorage、expatternprovider、AE2WTLib、Ars Elemental。",
+      "v1.8.5 で、ふつうの進捗もチャットに流すようにしました（タブの一番上と「ちょっとした行動」タブは流しません）。Minecraft 本体に同じ条件の進捗があるもの（ダイヤモンド・鉄インゴット・ネザーへようこそ・すやすや など1.20.1で26個）は、本体のほうを残してこちらを消しました。進捗エディターで書き換えた名前（「歩く鉄」「おしゃれ！」など23個）も入っています。",
+      "v1.8.4 で、同じことをすると同時に達成される進捗（「おやすみ」と「すやすや」、「泳いだ」と「クロール」、「あちっ」と「あちちっ」など16個）を1つにまとめました。消えた進捗の続きの進捗は、1つ前の進捗につながります。",
+      "v1.8.3 で、ATM9 No Frills に入っているMODのほとんど（Allthemodium・All the Ores・Powah・Thermal・Extreme Reactors・RFTools・MEGA Cells・AdvancedAE・Supplementaries・Cataclysm・Blue Skies・Stargate Journey など56個）の進捗を 1.20.1 版に足しました（1.20.1 版の進捗は約26,000個）。CurseForge にしかないMODのうち、中身を調べられなかったもの（AllTheCompressed・All the Arcanist Gear・All the Wizard Gear・Mob Grinding Utils など）は入っていません。また、全部の版で、基本→上級→エリート→アルティメット、Tier 1→2→3、鉄→ダイヤ→ネザライトのように段階があるアイテムと、アップグレードのアイテムを、進捗の画面で順番に一列に並べました。",
+      "v1.8.2 で、1.21.1 版でこのMODのエーテルのタブの進捗にエーテルの音が鳴っていなかったのを直しました（エーテル 1.21.1 の仕組みが 1.20.1 と違っていたため）。Fabric 1.21.1 版もエーテル（Fabric 版）に対応して、エーテルの音とジュークボックスの音量での調節が使えるようになりました。Fabric 版には設定画面がないので、config/tonsofadv-client.properties の specialSounds・soundsAsRecords を false にしてゲームを再起動すると切り替えられます。",
+      "v1.8.1 から 1.21.1 の Fabric 版もあります（Fabric API が必要です）。進捗は NeoForge 1.21.1 版と同じで、入っているMODの進捗も追加されます（NeoForge にしかないMODの進捗は出ません）。クリティカル・飛び道具を当てた数・経験値オーブの数と、Iron's Spells・Ars Nouveau・AE2 の回数の進捗は入っていません。",
+      "v1.8.1 で、エーテルの進捗の音を「音楽」ではなく「ジュークボックス/音ブロック」の音量で鳴らすようにしました。エーテル本体の進捗の音も変わります。BGMを小さくしても進捗の音は聞こえます。元の「音楽」の音量に戻したいときは、MOD一覧の「設定」か config/tonsofadv-client.toml の soundsAsRecords を false にしてください。この変更は 1.20.1 版と 1.21.1 版だけです（26.2 にはエーテルがないため）。",
+      "v1.8.0 で「ちょっとした行動」タブを追加しました。向きや見た方向、後ろ・横に歩いた距離はこのMODが毎ティック数えます（この版を入れてから数え始めます）。「はじめての○○」はゲームの統計を使うので、前から遊んでいるワールドではすぐに達成されることがあります。",
+      "v1.7.1 で、MOD連携の進捗のうち、アイテムではなく説明文などを拾ってしまっていたもの（約570個）を取り除きました。これが原因で、同じグループの進捗がいくつか読み込まれないことがありました。",
+      "v1.7.0 で 26.2 版（NeoForge・Fabric）を追加しました。Create・AE2・黄昏の森など、まだ 26.2 版が出ていないMODの進捗は 26.2 版には入っていません。26.2 にはエーテルがないので、特別な音の設定もありません。",
+      "Fabric 26.2 版では、クリティカル・飛び道具を当てた数・経験値オーブの数の進捗は入っていません。置いたブロック・食べた回数・ポーション・弓の回数は、ゲームの統計から計算します（5秒ごと）。",
+      "v1.7.0 で、1.20.1 版で鍛冶型の名前が正しく出ていなかったのを直しました。MODの説明文も柔らかい言い方にしました。",
+      "v1.6.0 で、進捗の説明を「〜しよう」のような柔らかい言い方にしました。「○○職人 ×1」のような ×1 の表示もなくしました。統計を見る進捗は、毎ティックではなく1秒ごとに確かめるようにして、重くなりにくくしました（達成が最大1秒遅れることがあります）。",
+      "音の設定は config/tonsofadv-client.toml の specialSounds でも変えられます（false でオフ）。",
+      "v1.5.0 で「何かをした回数」の進捗を追加しました。合計クラフト回数などバニラの統計にない回数は、このMODが独自の統計として数えます（統計画面の「その他」にも出ます）。数え始めるのはこの版を入れてからです。",
+      "AE2 の量は、MEターミナル（無線ターミナルも）を開いている間に2秒ごとに数えて、いちばん多かった量を記録します。バイトはアイテムの数と種類から出した目安で、セルの表示と少しずれることがあります。",
+      "v1.5.0 で、v1.4.0 の 1.21.1 版で AE2 と Botania の進捗が抜けていたのを直しました。",
+      "データパック版にはMOD連携の進捗は入っていません。",
+      "v1.3.0 で、エーテルの音をトーストが画面に出たときに鳴らすようにしました（v1.2.0 は進捗を達成した瞬間に鳴っていたので、トーストが順番待ちのときにずれていました）。エーテルの仕組みを使っているので、エーテルを入れているときはサーバーとクライアントの両方にこのMODを入れてください。",
+      "v1.2.0 で、エーテルのタブの進捗にエーテルの音を付けました。音は「音楽」の音量で鳴ります（エーテルの進捗と同じ）。音を鳴らすのはサーバー側なので、サーバーにこのMODとエーテルが入っていれば鳴ります。エーテルのボス討伐の進捗は、普通の挑戦の音と重ならないように「目標」にしました。",
+      "サーバーで使う場合はサーバーだけに入れても動きます。クライアントにも入れると、タブの名前などがゲームの言語（日本語・英語）に合わせて表示されます。",
+      "MODを入れずに使いたい場合は「その他」→「データパック」から、同じ内容のデータパック版をダウンロードできます。"
+    ],
+    install: [
+      "{loader} {loaderVersion} を Minecraft {mc} に入れます。",
+      "ダウンロードしたZIPを展開し、中の <code>{jar}</code> を取り出します。",
+      "jar を <code>.minecraft/mods</code> フォルダに入れます。",
+      "マルチプレイで使う場合は、サーバーの <code>mods</code> フォルダにも同じ jar を入れます。",
+      "ゲームを起動して <code>L</code> キー（進捗）を押すと、「どっさり：○○」のタブが並んでいます。"
+    ],
+    versions: [
+      {
+        mc: "1.20.1",
+        loader: "Forge",
+        loaderVersion: "47.x",
+        modVersion: "1.8.5",
+        released: "2026-11-08",
+        file: "files/tonsofadv/TonsOfAdvancements-1.8.5-forge-1.20.1.zip.b64.txt",
+        fileName: "TonsOfAdvancements-1.8.5-forge-1.20.1.zip",
+        zipBytes: 8458846,
+        jar: "tonsofadv-forge-1.20.1-1.8.5.jar",
+        jarBytes: 14953246,
+        sha256: "CE39BDB2D7F1572893E9D4D8ECC618BD1F389CCE2BCB1B5A17CE3B1D1CEE81DB",
+        tested: false
+      },
+      {
+        mc: "1.21.1",
+        loader: "NeoForge",
+        loaderVersion: "21.1.x",
+        modVersion: "1.8.5",
+        released: "2026-11-08",
+        file: "files/tonsofadv/TonsOfAdvancements-1.8.5-neoforge-1.21.1.zip.b64.txt",
+        fileName: "TonsOfAdvancements-1.8.5-neoforge-1.21.1.zip",
+        zipBytes: 6796598,
+        jar: "tonsofadv-neoforge-1.21.1-1.8.5.jar",
+        jarBytes: 11584225,
+        sha256: "60D7A71CFEEDE0917F58823E330C8AAC7072877C48A00E4945530386E7EE285D",
+        tested: false
+      },
+      {
+        mc: "1.21.1",
+        loader: "Fabric",
+        loaderVersion: "Loader 0.16以降 + Fabric API",
+        modVersion: "1.8.5",
+        released: "2026-11-08",
+        file: "files/tonsofadv/TonsOfAdvancements-1.8.5-fabric-1.21.1.zip.b64.txt",
+        fileName: "TonsOfAdvancements-1.8.5-fabric-1.21.1.zip",
+        zipBytes: 6997996,
+        jar: "tonsofadv-fabric-1.21.1-1.8.5.jar",
+        jarBytes: 11992865,
+        sha256: "4B1CE5D008E8DC450D5A6CB2D605D94A167896A37AF84B68E0FD16448F2B5A63",
+        tested: false
+      },
+      {
+        mc: "26.2",
+        loader: "NeoForge",
+        loaderVersion: "26.2.0.x",
+        modVersion: "1.8.5",
+        released: "2026-11-08",
+        file: "files/tonsofadv/TonsOfAdvancements-1.8.5-neoforge-26.2.zip.b64.txt",
+        fileName: "TonsOfAdvancements-1.8.5-neoforge-26.2.zip",
+        zipBytes: 3672783,
+        jar: "tonsofadv-neoforge-26.2-1.8.5.jar",
+        jarBytes: 6081594,
+        sha256: "7FD951184B2245126BFC285E89CCCBD1BCAD7C064682E40C7EC189682AC069A5",
+        tested: false
+      },
+      {
+        mc: "26.2",
+        loader: "Fabric",
+        loaderVersion: "Loader 0.20.1以降 + Fabric API",
+        modVersion: "1.8.5",
+        released: "2026-11-08",
+        file: "files/tonsofadv/TonsOfAdvancements-1.8.5-fabric-26.2.zip.b64.txt",
+        fileName: "TonsOfAdvancements-1.8.5-fabric-26.2.zip",
+        zipBytes: 3737517,
+        jar: "tonsofadv-fabric-26.2-1.8.5.jar",
+        jarBytes: 6288331,
+        sha256: "244B7E39B80E320BECC9136040C3AE6D1B905FBD86B476FCA3103F4BD6133DA3",
+        tested: false
+      },
+      {
+        mc: "1.20.1",
+        loader: "Forge",
+        loaderVersion: "47.x",
+        modVersion: "1.8.4",
+        released: "2026-11-07",
+        file: "files/tonsofadv/TonsOfAdvancements-1.8.4-forge-1.20.1.zip.b64.txt",
+        fileName: "TonsOfAdvancements-1.8.4-forge-1.20.1.zip",
+        zipBytes: 8468068,
+        jar: "tonsofadv-forge-1.20.1-1.8.4.jar",
+        jarBytes: 15000617,
+        sha256: "B6E6EB56CDD95D6677C679DBD3AEA436A146EE04CDC85897482E42FD7AF7A88A",
+        tested: false
+      },
+      {
+        mc: "1.21.1",
+        loader: "NeoForge",
+        loaderVersion: "21.1.x",
+        modVersion: "1.8.4",
+        released: "2026-11-07",
+        file: "files/tonsofadv/TonsOfAdvancements-1.8.4-neoforge-1.21.1.zip.b64.txt",
+        fileName: "TonsOfAdvancements-1.8.4-neoforge-1.21.1.zip",
+        zipBytes: 6825051,
+        jar: "tonsofadv-neoforge-1.21.1-1.8.4.jar",
+        jarBytes: 11620998,
+        sha256: "77C2128A235FE015264E145CFD59028C180A3C12DE45A9565FFED0066893CC5F",
+        tested: false
+      },
+      {
+        mc: "1.21.1",
+        loader: "Fabric",
+        loaderVersion: "Loader 0.16以降 + Fabric API",
+        modVersion: "1.8.4",
+        released: "2026-11-07",
+        file: "files/tonsofadv/TonsOfAdvancements-1.8.4-fabric-1.21.1.zip.b64.txt",
+        fileName: "TonsOfAdvancements-1.8.4-fabric-1.21.1.zip",
+        zipBytes: 7013597,
+        jar: "tonsofadv-fabric-1.21.1-1.8.4.jar",
+        jarBytes: 12033536,
+        sha256: "0BEFE4DF4BBC437C4A92B0A81CAEAE6C4C8A5644772A13E567BF826ABF7771CF",
+        tested: false
+      },
+      {
+        mc: "26.2",
+        loader: "NeoForge",
+        loaderVersion: "26.2.0.x",
+        modVersion: "1.8.4",
+        released: "2026-11-07",
+        file: "files/tonsofadv/TonsOfAdvancements-1.8.4-neoforge-26.2.zip.b64.txt",
+        fileName: "TonsOfAdvancements-1.8.4-neoforge-26.2.zip",
+        zipBytes: 3709137,
+        jar: "tonsofadv-neoforge-26.2-1.8.4.jar",
+        jarBytes: 6111225,
+        sha256: "A138AD32C6DC512E5972B56F804704C6977549DDC91DB05F4C6B784D2D07E66D",
+        tested: false
+      },
+      {
+        mc: "26.2",
+        loader: "Fabric",
+        loaderVersion: "Loader 0.20.1以降 + Fabric API",
+        modVersion: "1.8.4",
+        released: "2026-11-07",
+        file: "files/tonsofadv/TonsOfAdvancements-1.8.4-fabric-26.2.zip.b64.txt",
+        fileName: "TonsOfAdvancements-1.8.4-fabric-26.2.zip",
+        zipBytes: 3773734,
+        jar: "tonsofadv-fabric-26.2-1.8.4.jar",
+        jarBytes: 6319376,
+        sha256: "7888C4B7A7A0213A33001B7A5B50794CAF93503B70B3C2C8F86E595F7E0DA843",
+        tested: false
+      },
+      {
+        mc: "1.20.1",
+        loader: "Forge",
+        loaderVersion: "47.x",
+        modVersion: "1.8.3",
+        released: "2026-11-07",
+        file: "files/tonsofadv/TonsOfAdvancements-1.8.3-forge-1.20.1.zip.b64.txt",
+        fileName: "TonsOfAdvancements-1.8.3-forge-1.20.1.zip",
+        zipBytes: 8468699,
+        jar: "tonsofadv-forge-1.20.1-1.8.3.jar",
+        jarBytes: 15009468,
+        sha256: "6B6F8FC648C2F5FD4029E4A25FE4087BC7B99D5C1BCEF4E1F41FB79A63B81FC4",
+        tested: false
+      },
+      {
+        mc: "1.21.1",
+        loader: "NeoForge",
+        loaderVersion: "21.1.x",
+        modVersion: "1.8.3",
+        released: "2026-11-07",
+        file: "files/tonsofadv/TonsOfAdvancements-1.8.3-neoforge-1.21.1.zip.b64.txt",
+        fileName: "TonsOfAdvancements-1.8.3-neoforge-1.21.1.zip",
+        zipBytes: 6830703,
+        jar: "tonsofadv-neoforge-1.21.1-1.8.3.jar",
+        jarBytes: 11629526,
+        sha256: "D523D30072DBBCF16D58F01FC4BC9C3F0F0E79132DB608C74D410C2037095CCB",
+        tested: false
+      },
+      {
+        mc: "1.21.1",
+        loader: "Fabric",
+        loaderVersion: "Loader 0.16以降 + Fabric API",
+        modVersion: "1.8.3",
+        released: "2026-11-07",
+        file: "files/tonsofadv/TonsOfAdvancements-1.8.3-fabric-1.21.1.zip.b64.txt",
+        fileName: "TonsOfAdvancements-1.8.3-fabric-1.21.1.zip",
+        zipBytes: 7019296,
+        jar: "tonsofadv-fabric-1.21.1-1.8.3.jar",
+        jarBytes: 12042321,
+        sha256: "389235C0DC49092A01B5478CCC69AC92D49328BFA4E7B44B511C298242D69A17",
+        tested: false
+      },
+      {
+        mc: "26.2",
+        loader: "NeoForge",
+        loaderVersion: "26.2.0.x",
+        modVersion: "1.8.3",
+        released: "2026-11-07",
+        file: "files/tonsofadv/TonsOfAdvancements-1.8.3-neoforge-26.2.zip.b64.txt",
+        fileName: "TonsOfAdvancements-1.8.3-neoforge-26.2.zip",
+        zipBytes: 3714576,
+        jar: "tonsofadv-neoforge-26.2-1.8.3.jar",
+        jarBytes: 6119616,
+        sha256: "51779C7D6731E4E473904F346DCBEE1414337351CD211B7B6F08D0EBF1B1ABF8",
+        tested: false
+      },
+      {
+        mc: "26.2",
+        loader: "Fabric",
+        loaderVersion: "Loader 0.20.1以降 + Fabric API",
+        modVersion: "1.8.3",
+        released: "2026-11-07",
+        file: "files/tonsofadv/TonsOfAdvancements-1.8.3-fabric-26.2.zip.b64.txt",
+        fileName: "TonsOfAdvancements-1.8.3-fabric-26.2.zip",
+        zipBytes: 3779219,
+        jar: "tonsofadv-fabric-26.2-1.8.3.jar",
+        jarBytes: 6328007,
+        sha256: "81DD4BB973E6E1E637883FAB4E43F99A23EC986DFD0E3EC81E078E3EFE7FFA37",
+        tested: false
+      }
+    ]
+  }
+  ,
+  {
+    id: "compacttoasts",
+    name: "Compact Toasts",
+    summary: "画面右上のトースト（進捗・レシピ解除などの通知）をコンパクトにするMOD。たくさん出たときは1件ずつ1行にまとめ、同時に表示できる数も 5 から 20 に増えます。",
+    features: [
+      ["コンパクト表示", "表示中のトーストが4つ以上になると、1件ずつ高さ16ピクセルの1行にまとめます。左の色の線で種類がわかります（進捗は黄色、挑戦は紫、レシピは緑、システムは青）。"],
+      ["1行の中身", "進捗はアイコンと名前、レシピは完成品のアイコンと名前（2つ以上なら「ほか○件」）、システムのお知らせはタイトルと1行目を表示します。中身が読み取れないMODのトーストは、縮小してそのまま表示します。"],
+      ["MODのトースト", "v1.1.0 から。FTB Quests（クエスト完了・報酬・チャプター完了など、FTB Library のトースト）は、アイコンとクエスト名を1行で表示します（チャプター完了はピンク、ほかは金色の線）。ボタニアの辞典など Patchouli の本の「新しい項目」トーストは、本のアイコンと本の名前を表示します（緑の線）。そのほかのMODでも、タイトルやアイコンを読み取れるトーストは1行で表示します（オレンジの線）。"],
+      ["見出し", "v1.2.0 から。コンパクト表示のとき、バニラと同じように、はじめの2秒は「進捗を達成しました！」「クエスト完了！」「新しいレシピを解除しました！」などの見出しを出してから、名前に切り替えます。設定の「見出しの表示」で、有効・進捗以外（初期設定）・無効から選べます。「進捗以外」では、進捗のトーストだけ見出しを出さずに最初から名前を表示します。"],
+      ["表示数", "同時に表示できるトーストの数がバニラの5から20になります。画面に入りきらないときは、空くまで順番待ちになります。"],
+      ["設定", "MOD一覧の「設定」ボタンから、最大表示数（1〜50）と、コンパクト表示にする数（1〜51）をスライダーで変えられます。「テスト用のトーストを表示」で、その場で見え方を確かめられます。"]
+    ],
+    notes: [
+      "クライアント専用のMODです。サーバーには入れなくて大丈夫です。",
+      "設定は config/compacttoasts-client.toml にも保存されます（maxToasts と compactThreshold）。",
+      "コンパクト表示にする数を最大表示数より大きくすると、コンパクト表示はオフになります。",
+      "トーストの表示を丸ごと差し替えるMOD（ほかのトースト改造MOD）とは、一緒に入れると片方が効かないことがあります。",
+      "v1.2.0 で「見出しの表示」の設定を追加しました（config ファイルでは headerMode。ALL＝有効、EXCEPT_ADVANCEMENTS＝進捗以外、NONE＝無効）。見出しはコンパクト表示のときだけ使われます。普通の大きさで出ているトーストはバニラと同じ表示です。",
+      "v1.1.0 で、FTB Quests・Patchouli（ボタニアの辞典など）のトーストや、ほかのMODのトーストもアイコンと名前の1行で表示するようにしました。どのMODにも依存していないので、入っていなくても動きます。",
+      "Fabric 1.21.1 版もあります（Fabric API が必要です）。中身は NeoForge 版と同じです。設定画面は、Mod Menu が入っていれば MOD 一覧の設定ボタンから、入っていなくてもチャットで /compacttoasts と入力すると開けます。設定は config/compacttoasts.json に保存されます。"
+    ],
+    install: [
+      "{loader} {loaderVersion} を Minecraft {mc} に入れます。",
+      "ダウンロードしたZIPを展開し、中の <code>{jar}</code> を取り出します。",
+      "jar を <code>.minecraft/mods</code> フォルダに入れます。クライアント専用なので、サーバーには入れなくて大丈夫です。",
+      "ゲームを起動すると、トーストが4つ以上出たときにコンパクト表示になります。数を変えるときは、MOD一覧で Compact Toasts を選んで「設定」を押してください。"
+    ],
+    versions: [
+      {
+        mc: "1.21.1",
+        loader: "Fabric",
+        loaderVersion: "Loader 0.16以降 + Fabric API",
+        modVersion: "1.2.0",
+        released: "2026-11-08",
+        file: "files/compacttoasts/CompactToasts-1.2.0-fabric-1.21.1.zip.b64.txt",
+        fileName: "CompactToasts-1.2.0-fabric-1.21.1.zip",
+        zipBytes: 30663,
+        jar: "compacttoasts-fabric-1.21.1-1.2.0.jar",
+        jarBytes: 33270,
+        sha256: "D4BA87DBC7550DED0E4B041C48580911F47D5497303990E3CD8C0A1B249BB9A8",
+        tested: false
+      },
+      {
+        mc: "1.21.1",
+        loader: "NeoForge",
+        loaderVersion: "21.1.x",
+        modVersion: "1.2.0",
+        released: "2026-11-08",
+        file: "files/compacttoasts/CompactToasts-1.2.0-neoforge-1.21.1.zip.b64.txt",
+        fileName: "CompactToasts-1.2.0-neoforge-1.21.1.zip",
+        zipBytes: 29010,
+        jar: "compacttoasts-neoforge-1.21.1-1.2.0.jar",
+        jarBytes: 31171,
+        sha256: "3E3D052956215CD916474C7B1250BF37B4F0D641F150C9D343F4D40C28FF1AC9",
+        tested: false
+      },
+      {
+        mc: "1.20.1",
+        loader: "Forge",
+        loaderVersion: "47.x",
+        modVersion: "1.2.0",
+        released: "2026-11-08",
+        file: "files/compacttoasts/CompactToasts-1.2.0-forge-1.20.1.zip.b64.txt",
+        fileName: "CompactToasts-1.2.0-forge-1.20.1.zip",
+        zipBytes: 29527,
+        jar: "compacttoasts-forge-1.20.1-1.2.0.jar",
+        jarBytes: 32290,
+        sha256: "ADFFABDD938D7759D14A4121E6F4DDC4FA60C9FE386DC274D26B78A27A6F6E42",
+        tested: false
+      },
+      {
+        mc: "1.21.1",
+        loader: "Fabric",
+        loaderVersion: "Loader 0.16以降 + Fabric API",
+        modVersion: "1.1.0",
+        released: "2026-11-07",
+        file: "files/compacttoasts/CompactToasts-1.1.0-fabric-1.21.1.zip.b64.txt",
+        fileName: "CompactToasts-1.1.0-fabric-1.21.1.zip",
+        zipBytes: 28125,
+        jar: "compacttoasts-fabric-1.21.1-1.1.0.jar",
+        jarBytes: 30602,
+        sha256: "31A69483015D763CF89AF84CCA7D96B90633C994FBE040A06F0BB22D2AD81F43",
+        tested: false
+      },
+      {
+        mc: "1.21.1",
+        loader: "NeoForge",
+        loaderVersion: "21.1.x",
+        modVersion: "1.1.0",
+        released: "2026-11-07",
+        file: "files/compacttoasts/CompactToasts-1.1.0-neoforge-1.21.1.zip.b64.txt",
+        fileName: "CompactToasts-1.1.0-neoforge-1.21.1.zip",
+        zipBytes: 26414,
+        jar: "compacttoasts-neoforge-1.21.1-1.1.0.jar",
+        jarBytes: 28462,
+        sha256: "74E08836688D9C1C272E43CF172F02D954A521598AFCD69636D90FC9EDFCA784",
+        tested: false
+      },
+      {
+        mc: "1.20.1",
+        loader: "Forge",
+        loaderVersion: "47.x",
+        modVersion: "1.1.0",
+        released: "2026-11-07",
+        file: "files/compacttoasts/CompactToasts-1.1.0-forge-1.20.1.zip.b64.txt",
+        fileName: "CompactToasts-1.1.0-forge-1.20.1.zip",
+        zipBytes: 26962,
+        jar: "compacttoasts-forge-1.20.1-1.1.0.jar",
+        jarBytes: 29595,
+        sha256: "EB843B86375501A8E2F894368279CE777AAF30D63A4FB5818D7CE36B1145BDE0",
+        tested: false
+      },
+      {
+        mc: "1.21.1",
+        loader: "Fabric",
+        loaderVersion: "Loader 0.16以降 + Fabric API",
+        modVersion: "1.0.0",
+        released: "2026-11-05",
+        file: "files/compacttoasts/CompactToasts-1.0.0-fabric-1.21.1.zip.b64.txt",
+        fileName: "CompactToasts-1.0.0-fabric-1.21.1.zip",
+        zipBytes: 22541,
+        jar: "compacttoasts-fabric-1.21.1-1.0.0.jar",
+        jarBytes: 24726,
+        sha256: "A8D45BCC24C9A9470EBC1055F89CDC48DA973BF570914F2C83C2A54BB389CB12",
+        tested: false
+      },
+      {
+        mc: "1.21.1",
+        loader: "NeoForge",
+        loaderVersion: "21.1.x",
+        modVersion: "1.0.0",
+        released: "2026-11-03",
+        file: "files/compacttoasts/CompactToasts-1.0.0-neoforge-1.21.1.zip.b64.txt",
+        fileName: "CompactToasts-1.0.0-neoforge-1.21.1.zip",
+        zipBytes: 20839,
+        jar: "compacttoasts-neoforge-1.21.1-1.0.0.jar",
+        jarBytes: 22622,
+        sha256: "45594B56C290EB0F245634EE5EBFFE471ABA1E776185F7B559CC0B562359424A",
+        tested: false
+      },
+      {
+        mc: "1.20.1",
+        loader: "Forge",
+        loaderVersion: "47.x",
+        modVersion: "1.0.0",
+        released: "2026-11-03",
+        file: "files/compacttoasts/CompactToasts-1.0.0-forge-1.20.1.zip.b64.txt",
+        fileName: "CompactToasts-1.0.0-forge-1.20.1.zip",
+        zipBytes: 21444,
+        jar: "compacttoasts-forge-1.20.1-1.0.0.jar",
+        jarBytes: 23782,
+        sha256: "90060DD4410F20D718370C53CC6D3D26181A6CE4D765C576E6FB9EE418FECB74",
+        tested: false
+      }
+    ]
+  }
+  ,
+  {
+    id: "hyperponder",
+    name: "Hyperlink Ponder",
+    summary: "Hyperlink と Hyperlink-E のハイパーアイテムとフメツウィザーの使い方を、Ponder の思案画面で見られるようにするMODです。アイテムを持って W キーを長押しすると開きます。",
+    features: [
+      ["ムテキスター", "ホットバーに入れるとムテキになること、コマンドセレクタに選ばれず、アイテムも盗まれないことを説明します。"],
+      ["ノベルカリバー", "左クリックで視線付近のエンティティを全て倒すこと、スニーク中は一体だけ倒すことを説明します。"],
+      ["クロニクロック", "始点と終点を右クリックして領域を保護すること、左クリックで解除することを説明します。"],
+      ["ピックドクス", "左クリックでの即時採掘と、コンボチェイン・コンボクラスターでのまとめ採掘を説明します。"],
+      ["V.R.X.", "右クリックでVRXを開いて対象に与えること、左クリックで解くことを説明します。"],
+      ["フメツウィザー", "v1.1.0 から。召喚方法、倒し方、怒った時の挙動、不死性の4つの思案画面を、スポーンエッグなどを持って見られます。"]
+    ],
+    notes: [
+      "v1.1.1 で、フメツウィザーの倒し方の説明を直しました。ノベルカリバーの攻撃は受けず、基本的な倒し方は再読み込み（ログイン・ログアウト・ディメンション移動・死亡・リスポーン）です。v1.1.0 の説明は誤りでした。",
+      "v1.1.0 で、フメツウィザーの思案画面を追加しました。説明は Hyperlink-E のソースに合わせているので、本家の Hyperlink とは細かい仕様が違うことがあります。",
+      "Hyperlink（本家は 1.20.1 Forge、Hyperlink-E は 1.21.1 NeoForge）と、Ponder が必要です。Ponder は Create とは別のMODで、Create が無くても動きます。",
+      "クライアントだけに入れれば動きます。サーバーに入れる必要はありません。",
+      "Hyperlink の 1.18.2 版は、Ponder が 1.20.1 以降にしか対応していないため、対象外です。",
+      "ゲームの中ではまだ動作を確かめていません。表示がおかしいときは教えてください。"
+    ],
+    install: [
+      "{loader} {loaderVersion} を Minecraft {mc} に入れます。",
+      "Ponder と Hyperlink（Hyperlink-E）を入れておきます。",
+      "ダウンロードしたZIPを展開し、中の <code>{jar}</code> を取り出します。",
+      "jar を <code>.minecraft/mods</code> フォルダに入れます。",
+      "ゲームを起動し、ムテキスターなどのハイパーアイテムを持って W キーを長押しすると、思案画面が開きます。"
+    ],
+    versions: [
+      {
+        mc: "1.21.1",
+        loader: "NeoForge",
+        loaderVersion: "21.1.x",
+        modVersion: "1.1.1",
+        released: "2026-11-08",
+        file: "files/hyperponder/HyperlinkPonder-1.1.1-neoforge-1.21.1.zip.b64.txt",
+        fileName: "HyperlinkPonder-1.1.1-neoforge-1.21.1.zip",
+        zipBytes: 16642,
+        jar: "HyperlinkPonder-1.21.1-neoforge-1.1.1.jar",
+        jarBytes: 19292,
+        sha256: "27463A1040976C1B0C32480360EB875773BC85523D934D8FA9CB49FD8C0F854C",
+        tested: false
+      },
+      {
+        mc: "1.20.1",
+        loader: "Forge",
+        loaderVersion: "47.x",
+        modVersion: "1.1.1",
+        released: "2026-11-08",
+        file: "files/hyperponder/HyperlinkPonder-1.1.1-forge-1.20.1.zip.b64.txt",
+        fileName: "HyperlinkPonder-1.1.1-forge-1.20.1.zip",
+        zipBytes: 17921,
+        jar: "HyperlinkPonder-1.20.1-forge-1.1.1.jar",
+        jarBytes: 21162,
+        sha256: "98842EC6B1B49CFD525DCD92FCBEE86E05804D29C8EF161F594C2A24A66C872C",
+        tested: false
+      },
+      {
+        mc: "1.21.1",
+        loader: "NeoForge",
+        loaderVersion: "21.1.x",
+        modVersion: "1.1.0",
+        released: "2026-11-08",
+        file: "files/hyperponder/HyperlinkPonder-1.1.0-neoforge-1.21.1.zip.b64.txt",
+        fileName: "HyperlinkPonder-1.1.0-neoforge-1.21.1.zip",
+        zipBytes: 16562,
+        jar: "HyperlinkPonder-1.21.1-neoforge-1.1.0.jar",
+        jarBytes: 19209,
+        sha256: "0C6BA5575AF78506C803458314D61C19BA09C5841C48316EE26B745FB6E0F12B",
+        tested: false
+      },
+      {
+        mc: "1.20.1",
+        loader: "Forge",
+        loaderVersion: "47.x",
+        modVersion: "1.1.0",
+        released: "2026-11-08",
+        file: "files/hyperponder/HyperlinkPonder-1.1.0-forge-1.20.1.zip.b64.txt",
+        fileName: "HyperlinkPonder-1.1.0-forge-1.20.1.zip",
+        zipBytes: 17826,
+        jar: "HyperlinkPonder-1.20.1-forge-1.1.0.jar",
+        jarBytes: 21081,
+        sha256: "4FCFA675DA07A172D359098B2D6F521730EAE54FB6B9FFB754B7AEEDE843C4FC",
+        tested: false
+      },
+      {
+        mc: "1.21.1",
+        loader: "NeoForge",
+        loaderVersion: "21.1.x",
+        modVersion: "1.0.0",
+        released: "2026-11-08",
+        file: "files/hyperponder/HyperlinkPonder-1.0.0-neoforge-1.21.1.zip.b64.txt",
+        fileName: "HyperlinkPonder-1.0.0-neoforge-1.21.1.zip",
+        zipBytes: 11844,
+        jar: "HyperlinkPonder-1.21.1-neoforge-1.0.0.jar",
+        jarBytes: 14023,
+        sha256: "969EB3766BEFDB74AB5BAC21405A50725D34E5C8A206FFD4625A490A88B33227",
+        tested: false
+      },
+      {
+        mc: "1.20.1",
+        loader: "Forge",
+        loaderVersion: "47.x",
+        modVersion: "1.0.0",
+        released: "2026-11-08",
+        file: "files/hyperponder/HyperlinkPonder-1.0.0-forge-1.20.1.zip.b64.txt",
+        fileName: "HyperlinkPonder-1.0.0-forge-1.20.1.zip",
+        zipBytes: 13137,
+        jar: "HyperlinkPonder-1.20.1-forge-1.0.0.jar",
+        jarBytes: 15893,
+        sha256: "9A8A06D8603B688D44E26519A7AD43FE7D2A2485EF15B41B1C05A88FDEB451DA",
+        tested: false
+      }
+    ]
+  }
+  ,
+  {
+    id: "layeredarmor",
+    name: "Layered Armor（重ね着防具）",
+    summary: "Curios API に「重ね着（頭・胴・脚・足）」の4つのスロットを追加し、バニラの防具欄と同じように防具を装備できるようにするMODです。バニラ欄の防具と重ね着の防具の両方の効果が乗ります。",
+    features: [
+      ["重ね着スロット", "Curios のインベントリに「重ね着（頭）」「重ね着（胴）」「重ね着（脚）」「重ね着（足）」が増えます。バニラの防具欄に入れられるアイテム（防具・エリトラ・カボチャ・頭など）を、同じ部位のスロットに入れられます。"],
+      ["効果は両方", "防御力・防具強度・ノックバック耐性（ネザライトなど）、防護・トゲ・水中呼吸・水中歩行・氷渡り・ソウルスピード・修繕などのエンチャント、束縛の呪い、カメの甲羅の水中呼吸、金の防具・革のブーツ・カボチャの効果、エリトラでの滑空が、重ね着でも効きます。"],
+      ["耐久値はバニラ優先", "バニラの防具欄に防具がある部位は、重ね着の防具は削れません。バニラ欄が空の部位だけ、重ね着の防具が削れます。"],
+      ["見た目もバニラ優先", "バニラ欄が空の部位だけ、重ね着の防具が表示されます。Curios の表示切り替えボタンで重ね着の見た目だけ隠すこともできます。"],
+      ["他MODの効果", "Apotheosis の接辞・宝石・エンチャント、Mekanism のジェットパックとメカスーツ、Create Stuff 'N Additions のジェットパックと外骨格、Advanced AE の量子アーマー、Cold Sweat の防寒・耐熱が重ね着でも効きます。"],
+      ["Cosmetic Armor と Corpse", "Cosmetic Armor Reworked で見た目が出ていればそれを表示し、透明にしている部位は重ね着の防具を表示します（重ね着スロットは Cosmetic Armor の設定の影響を受けません）。Corpse の死体にも同じルールで反映します。"]
+    ],
+    notes: [
+      "必須のMODは Curios API（5.8以降）だけです。Cold Sweat・Apotheosis・Mekanism・Create Stuff 'N Additions・Advanced AE・Cosmetic Armor Reworked・Corpse は、入っていれば自動で連携します。",
+      "サーバーとクライアントの両方に入れてください。",
+      "もともと Curios 用に作られているアイテムや、ほかのMODが Curios の機能を付けている防具は、そのMODの設定が優先されるため、重ね着スロットでは性能が乗らないことがあります。",
+      "上の対応MOD以外で「胴に着けているアイテムだけを見る」タイプの特殊効果は、重ね着では動かないことがあります。",
+      "サーバーでの動作（スロットの追加・防御力・エンチャント・耐久値の減り方）は確かめました。見た目と、対応MODの中での動きはまだゲームの中で確かめていません。おかしいところがあれば教えてください。"
+    ],
+    install: [
+      "{loader} {loaderVersion} を Minecraft {mc} に入れます。",
+      "Curios API を入れておきます。",
+      "ダウンロードしたZIPを展開し、中の <code>{jar}</code> を取り出します。",
+      "jar を <code>.minecraft/mods</code> フォルダに入れます。サーバーで遊ぶときはサーバーの mods フォルダにも入れてください。",
+      "ゲームを起動して Curios のインベントリを開くと、重ね着のスロットが増えています。"
+    ],
+    versions: [
+      {
+        mc: "1.20.1",
+        loader: "Forge",
+        loaderVersion: "47.x",
+        modVersion: "1.0.7",
+        released: "2026-11-18",
+        file: "files/layeredarmor/LayeredArmor-1.0.7-forge-1.20.1.zip.b64.txt",
+        fileName: "LayeredArmor-1.0.7-forge-1.20.1.zip",
+        zipBytes: 68914,
+        jar: "layeredarmor-forge-1.20.1-1.0.7.jar",
+        jarBytes: 82758,
+        sha256: "55CA52CFA69F0AE098713D5D2AF9F38DE2A14E89436275EC83751358C2AA6ADC",
+        tested: false
+      },
+      {
+        mc: "1.20.1",
+        loader: "Forge",
+        loaderVersion: "47.x",
+        modVersion: "1.0.6",
+        released: "2026-11-17",
+        file: "files/layeredarmor/LayeredArmor-1.0.6-forge-1.20.1.zip.b64.txt",
+        fileName: "LayeredArmor-1.0.6-forge-1.20.1.zip",
+        zipBytes: 65385,
+        jar: "layeredarmor-forge-1.20.1-1.0.6.jar",
+        jarBytes: 78673,
+        sha256: "9EC5AA2552E949D3FCDFD6A98486138DB53B2363A418A8878185E82F4AD69C2F",
+        tested: false
+      },
+      {
+        mc: "1.20.1",
+        loader: "Forge",
+        loaderVersion: "47.x",
+        modVersion: "1.0.5",
+        released: "2026-11-17",
+        file: "files/layeredarmor/LayeredArmor-1.0.5-forge-1.20.1.zip.b64.txt",
+        fileName: "LayeredArmor-1.0.5-forge-1.20.1.zip",
+        zipBytes: 65347,
+        jar: "layeredarmor-forge-1.20.1-1.0.5.jar",
+        jarBytes: 78635,
+        sha256: "6455849BD6610D3A303875DFE4A3D9424BF968719C3AA1F03038A024FA5FD109",
+        tested: false
+      },
+      {
+        mc: "1.20.1",
+        loader: "Forge",
+        loaderVersion: "47.x",
+        modVersion: "1.0.4",
+        released: "2026-11-17",
+        file: "files/layeredarmor/LayeredArmor-1.0.4-forge-1.20.1.zip.b64.txt",
+        fileName: "LayeredArmor-1.0.4-forge-1.20.1.zip",
+        zipBytes: 65341,
+        jar: "layeredarmor-forge-1.20.1-1.0.4.jar",
+        jarBytes: 78633,
+        sha256: "EBDCDBF9A694099BDCFACA182D53F7A8AE857CB33C7740C1879A8ABA89C43CEB",
+        tested: false
+      },
+      {
+        mc: "1.20.1",
+        loader: "Forge",
+        loaderVersion: "47.x",
+        modVersion: "1.0.3",
+        released: "2026-11-16",
+        file: "files/layeredarmor/LayeredArmor-1.0.3-forge-1.20.1.zip.b64.txt",
+        fileName: "LayeredArmor-1.0.3-forge-1.20.1.zip",
+        zipBytes: 64987,
+        jar: "layeredarmor-forge-1.20.1-1.0.3.jar",
+        jarBytes: 78243,
+        sha256: "17232B95E032D71AB64CF38CD77A74EE2BB942CCEF165829E687514F61683470",
+        tested: false
+      },
+      {
+        mc: "1.20.1",
+        loader: "Forge",
+        loaderVersion: "47.x",
+        modVersion: "1.0.2",
+        released: "2026-11-14",
+        file: "files/layeredarmor/LayeredArmor-1.0.2-forge-1.20.1.zip.b64.txt",
+        fileName: "LayeredArmor-1.0.2-forge-1.20.1.zip",
+        zipBytes: 64536,
+        jar: "layeredarmor-forge-1.20.1-1.0.2.jar",
+        jarBytes: 77818,
+        sha256: "21A4466F7AF54B7E4BF10E4845E6241ED69D569C2B3564DD951FCFFA00A288BA",
+        tested: false
+      },
+      {
+        mc: "1.20.1",
+        loader: "Forge",
+        loaderVersion: "47.x",
+        modVersion: "1.0.1",
+        released: "2026-11-11",
+        file: "files/layeredarmor/LayeredArmor-1.0.1-forge-1.20.1.zip.b64.txt",
+        fileName: "LayeredArmor-1.0.1-forge-1.20.1.zip",
+        zipBytes: 63515,
+        jar: "layeredarmor-forge-1.20.1-1.0.1.jar",
+        jarBytes: 76810,
+        sha256: "1893B8AF3E93953466760B905D0DEBD8F83F393DADE1DA1FF1A8BCACDBA15DD9",
+        tested: false
+      },
+      {
+        mc: "1.20.1",
+        loader: "Forge",
+        loaderVersion: "47.x",
+        modVersion: "1.0.0",
+        released: "2026-11-10",
+        file: "files/layeredarmor/LayeredArmor-1.0.0-forge-1.20.1.zip.b64.txt",
+        fileName: "LayeredArmor-1.0.0-forge-1.20.1.zip",
+        zipBytes: 60039,
+        jar: "layeredarmor-forge-1.20.1-1.0.0.jar",
+        jarBytes: 73063,
+        sha256: "9CDE145BD902FF24EAEB9A05918855359A8B50E6B61988D1CCB864BD04E287E4",
+        tested: false
+      }
+    ]
+  }
+  ,
+  {
+    id: "minecrafttweak",
+    name: "minEcraft twEEk",
+    summary: "Quark を前提MODにして、Quark にない小さな改善をたくさん詰め込んでいくためのMODです。機能は最初はすべてオフで、ひとつずつオンにできます。",
+    features: [
+      ["機能のオン/オフ", "MOD一覧の「設定」から専用の画面を開くと、「調整」「建築」「道具」「整理」「ワールド」「見た目・操作」のタブごとに、機能をひとつずつオン/オフできます。切り替えはすぐに反映されます。"],
+      ["詳細設定", "細かい設定がある機能には「詳細」ボタンが付きます。押すと詳細設定の画面が開き、数値は入力欄、オン/オフはボタンで変えられます。カーソルを合わせると説明と入れられる値が出て、「初期値に戻す」で元に戻せます。"],
+      ["設定コード", "設定画面の下の欄に設定コードを貼って「インポート」を押すと、まとめて設定できます。設定コードは「項目番号-値」を「,」でつないだもので、たとえば「1-t,1a-2」は「1番の機能をオン、1番の機能の1つ目の詳細設定を 2」という意味です。"],
+      ["2つのコード", "「MODのコード」はこのMODと Quark の設定、「描画のコード」はバニラ・Sodium・Sodium Extra の設定です。ボタンを押すと、初期値と違う設定だけがコードになってコピーされるので、短くて済みます。2つのコードは空白で区切って一緒に貼れます。"],
+      ["圧縮コード", "「圧縮」をオンにすると、コピーするコードが「MT1.」で始まる短い英数字になります。チャットや Discord の文字数の制限に引っかかりにくくなります（短いコードは圧縮すると逆に長くなるので、そのときはそのままです）。"],
+      ["初期化してから読み込む", "「初期化」をオンにしてインポートすると、コードに入っている側（MOD / 描画）の設定を先にすべて初期値に戻してから読み込みます。初期値と違う設定だけのコードを、そのとおりに再現できます。"],
+      ["Quark の設定", "Quark のオン/オフと数値の設定を「q」＋6けたの番号で変えられます（例: q123456-f）。番号は設定の場所から計算しているので、Quark のバージョンが変わっても、同じ設定の番号はほぼ変わりません。"],
+      ["バニラ・Sodium の設定", "バニラ（v）、Sodium / Embeddium（s）、Sodium Extra / Embeddium Extra（se）の設定も設定コードで変えられます。たとえば「v1-12,v10-f,s2-1」は「描画距離を12、VSyncをオフ、Sodium の葉の品質を描画優先」です。入っていないMODの設定は飛ばされます。設定画面の「ID一覧」で、番号と今の値を確かめられます。"],
+      ["コマンド", "「/minecrafttweak list」で番号つきの一覧と今の設定コード（クリックでコピー）、「/minecrafttweak import 1-t,1a-2」でインポートできます（OP権限が必要です）。このMODと Quark の設定を、サーバーで変えるときに使います。"],
+      ["経験値オーブの素早い吸収", "経験値オーブを1つ吸い込んでから次を吸い込むまでの待ち時間を短くします（バニラは2ティック、詳細設定 1a で 0〜2 を選べます）。"]
+    ],
+    notes: [
+      "Quark（と、Quark の前提MODの Zeta）が必要です。",
+      "Quark にある機能は入れません。1.0.0 の「腕付きの防具立て」は Quark にあるので、1.1.0 で外しました。",
+      "機能は最初はすべてオフです。使いたい機能をオンにしてください。",
+      "サーバーとクライアントの両方に入れてください。設定は config/minecrafttweak.toml に保存され、サーバーではサーバー側の設定が使われます。",
+      "バニラ・Sodium・Sodium Extra の設定（v / s / se）はクライアントの設定なので、設定画面の欄からインポートします。コマンドでは変えられません。",
+      "Quark の設定は、文字や一覧の設定には対応していません（オン/オフと数値だけです）。",
+      "まだゲームの中では確かめていません。おかしいところがあれば教えてください。"
+    ],
+    install: [
+      "{loader} {loaderVersion} を Minecraft {mc} に入れます。",
+      "Quark と Zeta を入れておきます。",
+      "ダウンロードしたZIPを展開し、中の <code>{jar}</code> を取り出します。",
+      "jar を <code>.minecraft/mods</code> フォルダに入れます。サーバーで遊ぶときはサーバーの mods フォルダにも入れてください。",
+      "ゲームを起動し、MOD一覧で minEcraft twEEk を選んで「設定」を押すと、機能の一覧と設定コードの欄が開きます。"
+    ],
+    versions: [
+      {
+        mc: "1.21.1",
+        loader: "NeoForge",
+        loaderVersion: "21.1.x",
+        modVersion: "1.5.0",
+        released: "2026-11-18",
+        file: "files/minecrafttweak/MinecraftTweak-1.5.0-neoforge-1.21.1.zip.b64.txt",
+        fileName: "MinecraftTweak-1.5.0-neoforge-1.21.1.zip",
+        zipBytes: 75295,
+        jar: "minecrafttweak-neoforge-1.21.1-1.5.0.jar",
+        jarBytes: 80936,
+        sha256: "1ACF304657514B2FBE0C7F1F94C4A8702065FFDA7ABE78BE890E8D68724085CA",
+        tested: false
+      },
+      {
+        mc: "1.20.1",
+        loader: "Forge",
+        loaderVersion: "47.x",
+        modVersion: "1.5.0",
+        released: "2026-11-18",
+        file: "files/minecrafttweak/MinecraftTweak-1.5.0-forge-1.20.1.zip.b64.txt",
+        fileName: "MinecraftTweak-1.5.0-forge-1.20.1.zip",
+        zipBytes: 76130,
+        jar: "minecrafttweak-forge-1.20.1-1.5.0.jar",
+        jarBytes: 82950,
+        sha256: "5950B730A9F567B4957783D67D4ECBAE586564AF8D975D792E1187777608994E",
+        tested: false
+      },
+      {
+        mc: "1.21.1",
+        loader: "NeoForge",
+        loaderVersion: "21.1.x",
+        modVersion: "1.4.0",
+        released: "2026-11-18",
+        file: "files/minecrafttweak/MinecraftTweak-1.4.0-neoforge-1.21.1.zip.b64.txt",
+        fileName: "MinecraftTweak-1.4.0-neoforge-1.21.1.zip",
+        zipBytes: 62794,
+        jar: "minecrafttweak-neoforge-1.21.1-1.4.0.jar",
+        jarBytes: 67832,
+        sha256: "4E3B46C69D23CD3C44267CD7D8F1F78C2B2090B564171BEE50A7C3976A08D6F8",
+        tested: false
+      },
+      {
+        mc: "1.20.1",
+        loader: "Forge",
+        loaderVersion: "47.x",
+        modVersion: "1.4.0",
+        released: "2026-11-18",
+        file: "files/minecrafttweak/MinecraftTweak-1.4.0-forge-1.20.1.zip.b64.txt",
+        fileName: "MinecraftTweak-1.4.0-forge-1.20.1.zip",
+        zipBytes: 63744,
+        jar: "minecrafttweak-forge-1.20.1-1.4.0.jar",
+        jarBytes: 69844,
+        sha256: "F8683FD98CE3C5A9243F4233560F9D010B4E824EE669CC3CFDC2266FD0A995C0",
+        tested: false
+      },
+      {
+        mc: "1.21.1",
+        loader: "NeoForge",
+        loaderVersion: "21.1.x",
+        modVersion: "1.3.0",
+        released: "2026-11-17",
+        file: "files/minecrafttweak/MinecraftTweak-1.3.0-neoforge-1.21.1.zip.b64.txt",
+        fileName: "MinecraftTweak-1.3.0-neoforge-1.21.1.zip",
+        zipBytes: 37377,
+        jar: "minecrafttweak-neoforge-1.21.1-1.3.0.jar",
+        jarBytes: 40927,
+        sha256: "FFB6B6E956AD564223D0669332EBD3FD449BDEE4CF61200554419CAEFA9E96D4",
+        tested: false
+      },
+      {
+        mc: "1.20.1",
+        loader: "Forge",
+        loaderVersion: "47.x",
+        modVersion: "1.3.0",
+        released: "2026-11-17",
+        file: "files/minecrafttweak/MinecraftTweak-1.3.0-forge-1.20.1.zip.b64.txt",
+        fileName: "MinecraftTweak-1.3.0-forge-1.20.1.zip",
+        zipBytes: 38444,
+        jar: "minecrafttweak-forge-1.20.1-1.3.0.jar",
+        jarBytes: 42819,
+        sha256: "88BDF29810832374378A02682DF9B630B04BAB862A6C793F2DC9382044377D10",
+        tested: false
+      },
+      {
+        mc: "1.21.1",
+        loader: "NeoForge",
+        loaderVersion: "21.1.x",
+        modVersion: "1.2.0",
+        released: "2026-11-17",
+        file: "files/minecrafttweak/MinecraftTweak-1.2.0-neoforge-1.21.1.zip.b64.txt",
+        fileName: "MinecraftTweak-1.2.0-neoforge-1.21.1.zip",
+        zipBytes: 29350,
+        jar: "minecrafttweak-neoforge-1.21.1-1.2.0.jar",
+        jarBytes: 32693,
+        sha256: "08546B85275A504DC422F93BF16D179FC165E6361F1C33F13D85CCBC53540789",
+        tested: false
+      },
+      {
+        mc: "1.20.1",
+        loader: "Forge",
+        loaderVersion: "47.x",
+        modVersion: "1.2.0",
+        released: "2026-11-17",
+        file: "files/minecrafttweak/MinecraftTweak-1.2.0-forge-1.20.1.zip.b64.txt",
+        fileName: "MinecraftTweak-1.2.0-forge-1.20.1.zip",
+        zipBytes: 30383,
+        jar: "minecrafttweak-forge-1.20.1-1.2.0.jar",
+        jarBytes: 34554,
+        sha256: "E85C276E6A7D19D0EEE6FFC04167D000092814B54CDD8E3B2765277B0C13192D",
+        tested: false
+      },
+      {
+        mc: "1.21.1",
+        loader: "NeoForge",
+        loaderVersion: "21.1.x",
+        modVersion: "1.1.0",
+        released: "2026-11-17",
+        file: "files/minecrafttweak/MinecraftTweak-1.1.0-neoforge-1.21.1.zip.b64.txt",
+        fileName: "MinecraftTweak-1.1.0-neoforge-1.21.1.zip",
+        zipBytes: 28490,
+        jar: "minecrafttweak-neoforge-1.21.1-1.1.0.jar",
+        jarBytes: 31838,
+        sha256: "A103D8DC002AF1BED3FEAD5AEF2120509D1981990493398ABECE4700087C56C5",
+        tested: false
+      },
+      {
+        mc: "1.20.1",
+        loader: "Forge",
+        loaderVersion: "47.x",
+        modVersion: "1.1.0",
+        released: "2026-11-17",
+        file: "files/minecrafttweak/MinecraftTweak-1.1.0-forge-1.20.1.zip.b64.txt",
+        fileName: "MinecraftTweak-1.1.0-forge-1.20.1.zip",
+        zipBytes: 29539,
+        jar: "minecrafttweak-forge-1.20.1-1.1.0.jar",
+        jarBytes: 33705,
+        sha256: "5B1C318F3A629B4203004C7783978CCEEA21AEE7745F1046893C111D92481CB2",
+        tested: false
+      },
+      {
+        mc: "1.21.1",
+        loader: "NeoForge",
+        loaderVersion: "21.1.x",
+        modVersion: "1.0.0",
+        released: "2026-11-17",
+        file: "files/minecrafttweak/MinecraftTweak-1.0.0-neoforge-1.21.1.zip.b64.txt",
+        fileName: "MinecraftTweak-1.0.0-neoforge-1.21.1.zip",
+        zipBytes: 14574,
+        jar: "minecrafttweak-neoforge-1.21.1-1.0.0.jar",
+        jarBytes: 17100,
+        sha256: "9BB5D8E77BF2F0C811975CF0F9D332F7FB6C96947BBF7E93EE5CD756308BE171",
+        tested: false
+      },
+      {
+        mc: "1.20.1",
+        loader: "Forge",
+        loaderVersion: "47.x",
+        modVersion: "1.0.0",
+        released: "2026-11-17",
+        file: "files/minecrafttweak/MinecraftTweak-1.0.0-forge-1.20.1.zip.b64.txt",
+        fileName: "MinecraftTweak-1.0.0-forge-1.20.1.zip",
+        zipBytes: 14999,
+        jar: "minecrafttweak-forge-1.20.1-1.0.0.jar",
+        jarBytes: 18091,
+        sha256: "FDB1283EE81396CA4E65C5195EA408B3BED64558D896E59D26E064A68BA22EBF",
+        tested: false
+      }
+    ]
+  }
+  ,
+  {
+    id: "other",
+    name: "その他",
+    summary: "統合版のアドオンやデータパック、ほかの人が作ったMODの移植版などをまとめています。",
+    children: [
+      {
+        id: "addons",
+        name: "アドオン",
+        summary: "Minecraft 統合版（スマホ・Switch・PC版など）用のアドオンです。.mcaddon ファイルを開くだけで取り込めます。",
+        children: [
+          {
+            id: "mekanism-bedrock",
+            name: "Mekanism（統合版）",
+            kind: "addon",
+            summary: "Java版のMOD「Mekanism」を統合版アドオンとして移植したもの。鉱石処理・発電・ケミカル・マルチブロック・装備まで、FE（電力）で動く機械を追加します。",
+            features: [
+              ["鉱石と素材", "オスミウム・錫・鉛・ウラン・蛍石の鉱石。粉砕から結晶化まで、鉱石を最大5倍に増やせる処理ラインを作れます。"],
+              ["機械", "粉砕機・濃縮室・冶金吹込機などの基本機械に加え、ファクトリー（同時処理）、ケミカル系の機械、デジタルマイナー、テレポーターなど。"],
+              ["発電", "ソーラー・風力・熱・バイオ燃料・ガス発電機に加え、核分裂炉・タービン・核融合炉などのマルチブロック。"],
+              ["電力と保管", "ユニバーサルケーブルとエネルギーキューブ、誘導マトリックス、ビン、液体・ケミカルタンク、パーソナルチェスト。"],
+              ["装備", "原子分解機、ジェットパック、スキューバ、フリーランナー、MekaSuit。Mekanism Tools の素材別ツール・防具・パクセルも入っています。"]
+            ],
+            notes: [
+              "機械をタップすると専用の画面が開きます。初めてワールドに入ったときに使い方が表示されます。",
+              "AE2（統合版）と一緒に入れると、AE2 の機器を Mekanism の電力で動かせます。",
+              "鉱石は新しく生成されるチャンクにだけ出ます。"
+            ],
+            install: [
+              "ダウンロードした <code>{fileName}</code> を開きます（iPhone・iPad は「ファイル」アプリでタップ、PC はダブルクリック）。Minecraft が起動して取り込まれます。",
+              "ワールドの設定 →「ビヘイビアーパック」で Mekanism を有効にします。リソースパックも自動で付きます。",
+              "前の版を入れていた場合、ワールドのフォルダ内の <code>behavior_packs</code>・<code>resource_packs</code> に古い版が残っていると更新されません。古いフォルダを消してから有効にし直してください。",
+              "ワールドに入って「[Mekanism 統合版 v{modVersion}]」と表示されれば導入完了です。"
+            ],
+            versions: [
+              {
+                mc: "1.26.50以降",
+                loader: "統合版",
+                loaderVersion: "",
+                modVersion: "1.9.5",
+                released: "2026-10-20",
+                file: "files/mekanism-bedrock/Mekanism_Bedrock_v1.9.5.mcaddon.b64.txt",
+                fileName: "Mekanism_Bedrock_v1.9.5.mcaddon",
+                fileBytes: 2670546,
+                sha256: "736BBBE4EBF1848EEA2145CBC3FDF8941174882041AB0B4626D9E53484A59721",
+                tested: false
+              }
+            ]
+          },
+          {
+            id: "ae2-bedrock",
+            name: "AE2（統合版）",
+            kind: "addon",
+            summary: "Java版のMOD「Applied Energistics 2」を統合版アドオンとして移植したもの。アイテムをデジタル化して保管するMEネットワークと、自動クラフトを追加します。",
+            features: [
+              ["隕石", "新しいチャンクを読み込んだときに一定の確率で隕石が落ちてきます。中心のキューブから刻印機の金型が手に入ります。確率は /scriptevent ae2:meteor_chance で変更できます。"],
+              ["MEネットワーク", "MEコントローラー・ケーブル・ドライブ・ストレージセル・ターミナル。大量のアイテムを一か所で検索・出し入れできます。"],
+              ["自動化", "インポート・エクスポート・ストレージバス、インターフェース、レベルエミッター、IOポート、形成・破壊プレーン。"],
+              ["自動クラフト", "パターンエンコーディングターミナルでパターンを作り、パターンプロバイダと分子組立機、クラフトCPUで自動クラフトします。"],
+              ["道具", "無線ターミナル、ポータブルセル、メモリーカード、ネットワークツール、エントロピーマニピュレーター、隕石コンパスなど。"]
+            ],
+            notes: [
+              "MEコントローラーの電力は、Mekanism（統合版）の発電機か、AE2 の振動室から送れます。",
+              "機器をタップすると専用の画面が開きます。初めてワールドに入ったときに使い方が表示されます。",
+              "/scriptevent ae2:meteor で目の前に隕石を落とせます（テスト用）。"
+            ],
+            install: [
+              "ダウンロードした <code>{fileName}</code> を開きます（iPhone・iPad は「ファイル」アプリでタップ、PC はダブルクリック）。Minecraft が起動して取り込まれます。",
+              "ワールドの設定 →「ビヘイビアーパック」で AE2 を有効にします。Mekanism と一緒に使う場合は、両方を有効にしてください。",
+              "前の版を入れていた場合、ワールドのフォルダ内の <code>behavior_packs</code>・<code>resource_packs</code> に古い版が残っていると更新されません。古いフォルダを消してから有効にし直してください。",
+              "ワールドに入って「[AE2 統合版 v{modVersion}]」と表示されれば導入完了です。"
+            ],
+            versions: [
+              {
+                mc: "1.26.50以降",
+                loader: "統合版",
+                loaderVersion: "",
+                modVersion: "2.7.4",
+                released: "2026-10-20",
+                file: "files/ae2-bedrock/AE2_Bedrock_v2.7.4.mcaddon.b64.txt",
+                fileName: "AE2_Bedrock_v2.7.4.mcaddon",
+                fileBytes: 371401,
+                sha256: "BE9DAC5DF86BE42E1235C524D0034B8AE9959BDFF1D00060B242A6190E4B751B",
+                tested: false
+              }
+            ]
+          }
+        ]
+      }
+      ,
+      {
+        id: "datapacks",
+        name: "データパック",
+        summary: "MODを入れずに使えるデータパック版です。ワールドの datapacks フォルダに入れるだけで使えます。",
+        children: [
+          {
+            id: "tonsofadv-datapack",
+            name: "進捗どっさり（データパック）",
+            kind: "datapack",
+            summary: "Tons of Advancements（進捗どっさり）のデータパック版。バニラの進捗約5000〜6000個を、MODなしで追加します。1つのZIPで 1.20.1・1.21.1・26.2 に対応しています。",
+            features: [
+              ["集める", "ほぼすべてのアイテム・ブロック（約1100種類）に「手に入れる」進捗があります。木材・石材・カラフル・鉱石・装備・レッドストーン・自然・食べ物・いろいろのタブに分かれています。"],
+              ["倒す", "すべてのモブの討伐に加えて、主なモブを10体・100体・1000体倒すやり込み進捗があります。"],
+              ["探検", "すべてのバイオーム・構造物・ディメンションに行く進捗と、Y-60より下・Y300より上・原点から1万ブロックなどの進捗があります。"],
+              ["やり込み", "歩いた距離・ジャンプ回数・遊んだ時間・釣った魚・取引回数などの統計と、ブロックの採掘数に段階つきの進捗があります。"],
+              ["グルメ・動物", "すべての食べ物を食べる、動物を繁殖させる・手なずける進捗があります。"],
+              ["ネタ", "かぼちゃ頭、成金（金の防具を全身）、はじめての死、ダイヤの山など、ちょっと変わった進捗も入っています。"],
+              ["報酬", "達成すると経験値がもらえます（ふつう5、目標20、挑戦50。やり込みは段階が上がるほど多くもらえます）。"]
+            ],
+            notes: [
+              "1つのZIPで Minecraft 1.20.1・1.21.1・26.2 に対応しています（それ以外のバージョンでは動きません）。",
+              "アイテム・モブ・バイオームの名前はゲームの言語に合わせて表示されます。タブの名前や説明文は日本語で表示されます。",
+              "v1.4.2 で、ふつうの進捗もチャットに流すようにし、Minecraft 本体に同じ条件の進捗があるものを消しました。",
+              "v1.4.1 で、同じことをすると同時に達成される進捗（「おやすみ」と「すやすや」、「泳いだ」と「クロール」など）を1つにまとめました。",
+              "v1.4.0 で「ちょっとした行動」タブ（歩いた・ジャンプした・チェストを開けたなど「はじめての○○」）を追加しました。右を向いた・上を見たなどの向きの進捗はMOD版だけです。",
+              "v1.3.0 から 26.2 にも対応しました（1つのZIPで 1.20.1・1.21.1・26.2 に使えます）。1.20.1 で鍛冶型の名前が正しく出ていなかったのも直しました。",
+              "v1.2.0 で、全部のブロックの設置・採掘、全部のアイテム作り、効果・醸造・エンチャント・釣り・取引などの進捗を足しました（約5000個）。説明も柔らかい言い方にしました。",
+              "v1.1.0 で、アイテムごとの作った数・使った回数・使いつぶした回数、やられた相手、死なずに過ごした日数などの進捗を追加しました（約2100個）。合計クラフト回数のように、MODで数える進捗はMOD版だけです。",
+              "MOD版と一緒に入れる必要はありません（どちらか片方で大丈夫です）。"
+            ],
+            install: [
+              "ダウンロードした <code>{fileName}</code> を、展開せずにそのまま使います。",
+              "新しいワールドなら、ワールド作成画面の「データパック」にZIPをドラッグして有効にします。",
+              "今あるワールドなら、<code>.minecraft/saves/（ワールド名）/datapacks</code> にZIPを入れて、ワールドに入ってから <code>/reload</code> を実行します。",
+              "<code>L</code> キー（進捗）を押すと、「どっさり：○○」のタブが並んでいます。"
+            ],
+            versions: [
+              {
+                mc: "1.20.1・1.21.1・26.2",
+                loader: "データパック",
+                loaderVersion: "",
+                modVersion: "1.4.2",
+                released: "2026-11-08",
+                file: "files/tonsofadv-datapack/TonsOfAdvancements-datapack-1.4.2.zip.b64.txt",
+                fileName: "TonsOfAdvancements-datapack-1.4.2.zip",
+                fileBytes: 9091166,
+                sha256: "6CB0C922E9F534042DE80B75622953656D851BB2F9EADA484D8CED1AE21AC200",
+                tested: false
+              },
+              {
+                mc: "1.20.1・1.21.1・26.2",
+                loader: "データパック",
+                loaderVersion: "",
+                modVersion: "1.4.1",
+                released: "2026-11-07",
+                file: "files/tonsofadv-datapack/TonsOfAdvancements-datapack-1.4.1.zip.b64.txt",
+                fileName: "TonsOfAdvancements-datapack-1.4.1.zip",
+                fileBytes: 9156032,
+                sha256: "6870F6125EF43CB9BA0A2D42BD82B5D82249CC4AA40C145B2C76EA4D4D71A558",
+                tested: false
+              },
+              {
+                mc: "1.20.1・1.21.1・26.2",
+                loader: "データパック",
+                loaderVersion: "",
+                modVersion: "1.4.0",
+                released: "2026-11-04",
+                file: "files/tonsofadv-datapack/TonsOfAdvancements-datapack-1.4.0.zip.b64.txt",
+                fileName: "TonsOfAdvancements-datapack-1.4.0.zip",
+                fileBytes: 10045317,
+                sha256: "8DA37C45352440E6C223B0FAD5AF7317058537157F93C4049DB4CC42C84B0A34",
+                tested: false
+              },
+              {
+                mc: "1.20.1・1.21.1",
+                loader: "データパック",
+                loaderVersion: "",
+                modVersion: "1.0.0",
+                released: "2026-11-03",
+                file: "files/tonsofadv-datapack/TonsOfAdvancements-datapack-1.0.0.zip.b64.txt",
+                fileName: "TonsOfAdvancements-datapack-1.0.0.zip",
+                fileBytes: 2037636,
+                sha256: "0AB2C9664BB95B7DE70DD7D638EA4C2D01890E8A30BAAC485616B8659195F07B",
+                tested: false
+              }
+            ]
+          }
+        ]
+      }
+      ,
+      {
+        id: "ports",
+        name: "移植",
+        summary: "ほかの人が作ったMODを、別のMinecraftバージョンやローダーに移植したものです。元のMODの作者の許可（ライセンス）の範囲で配布しています。",
+        children: [
+          {
+            id: "hyperlink-1211",
+            name: "Hyperlink-E（Hyperlink 1.21.1 移植版）",
+            summary: "Sakurafuld さんのMOD「Hyperlink」（Forge 1.20.1）の主要部分を NeoForge 1.21.1 に移植したもの。ムテキスター・ノベルカリバー・クロニクロック・ピックドクス・V.R.X.・フメツウィザー・ゲーマクラフター・Z-MAX マテリアライザーが使えます。",
+            features: [
+              ["ムテキスター", "ホットバーにある間、あなたはムテキになります。コマンドセレクタに選ばれず、アイテムも盗まれません。"],
+              ["ノベルカリバー", "左クリックで視線付近のエンティティを全て倒します。スニーク中は視線先の一体だけを倒します。"],
+              ["クロニクロック", "始点と終点を右クリックすると、その領域を保護します。保護領域を左クリックすると保護を解きます。"],
+              ["ピックドクス", "見ているブロックを即座に採掘します。右クリックで範囲を選ぶと「コンボチェイン」でまとめて採掘できます。"],
+              ["V.R.X.", "ブロックや自分に、アイテム・液体・エネルギーを無限に出し入れする設定を作れます。"],
+              ["フメツウィザー", "フメツドクロとボーンソウルを組み、神のしるしで召喚するボスです。"],
+              ["ゲーマクラフター", "9×9 の作業台です。ハイパーアイテムや素材（エッセンス・コア・ギスト）をクラフトします。"],
+              ["Z-MAX マテリアライザー", "v1.2.0 から。アイテムを置くと、そのアイテムのレシピの材料をひとつずつ取り出します。燃料は神のしるし（1個で64回）。ホッパーで、上から燃料、横からアイテムの出し入れができます。"],
+              ["連携", "JEI・EMI でゲーマクラフターのレシピを表示。Curios の専用スロットでもムテキスターが効きます。V.R.X. は Mekanism のケミカルと ProjectE の EMC にも対応。KubeJS でガシャット風のアイテムを作れます。Better Combat・Epic Fight を入れると、ノベルカリバーを剣のように振れます（少しリーチ長め）。"]
+            ],
+            notes: [
+              "元のMOD: Hyperlink（作者 Sakurafuld、MITライセンス）。これは非公式の移植版です。",
+              "v1.1.0 から、JEI・EMI・Curios・Mekanism・ProjectE・KubeJS との連携に対応しています（どれも入れなくても動きます）。Tinkers' Construct・Botania などとの連携は入っていません。",
+              "v1.1.1 で、ゲーマクラフターを開くとサーバーから切断されることがある不具合を直しました。ゲームオーブとハイパーアイテムは完成品スロットからは取り出せません。材料を並べたらゲーマクラフターをツルハシで壊すと、演出のあとに完成品が出てきます。",
+              "v1.1.2 で、Lithium と一緒に入れるとゲームが起動しない問題を直しました。Lithium を使う場合は v1.1.2 以降を選んでください。",
+              "v1.1.3 から、MOD一覧・クリエイティブタブ・JEI などに出るMOD名が「Hyperlink-E」になりました。",
+              "v1.1.4 で、Curios のスロットに入れた直後のムテキスターが効かないことがある不具合、ゲーマクラフターで完成品をシフトクリックしたときにインベントリに入りきらなかった分が消える不具合などを直しました。EMI から V.R.X. に Mekanism のケミカルをドラッグできるようにもなりました。",
+              "v1.2.0 で Z-MAX マテリアライザーを追加しました。置いたアイテムと同じ個数で完成するレシピから材料を探します（例: かまど1個 → 丸石など）。1回の処理には初期設定で6000ティック（5分）かかります。",
+              "v1.3.0 で Better Combat・Epic Fight と連携しました。どちらかを入れると、ノベルカリバーは視線先をまとめて倒す攻撃の代わりに、剣と同じモーションで振れるようになり、当たった相手を倒します。リーチは普通の剣より約1ブロック長めです。どちらも入れていなければ今までどおりです。",
+              "v1.1.1 以降は NeoForge 21.1.1 以降（Minecraft 1.21 では 21.0.143 以降）で起動できます。"
+            ],
+            install: [
+              "{loader} {loaderVersion} を Minecraft {mc} に入れます。",
+              "ダウンロードしたZIPを展開し、中の <code>{jar}</code> を取り出します。",
+              "jar を <code>.minecraft/mods</code> フォルダに入れます。",
+              "マルチプレイで使う場合は、サーバーの <code>mods</code> フォルダにも同じ jar を入れます（両方に必要です）。",
+              "ゲームを起動し、クリエイティブタブ「Hyperlink-E」と「Hyperlink-E-クラフト」にアイテムが入っています（v1.1.2 以前は「Hyperlink」と「Hyperlink-クラフト」）。"
+            ],
+            versions: [
+              {
+                mc: "1.21.1",
+                loader: "NeoForge",
+                loaderVersion: "21.1.1以降（MC 1.21 なら 21.0.143以降）",
+                modVersion: "1.3.0",
+                released: "2026-10-29",
+                file: "files/hyperlink-1211/Hyperlink-1.3.0-neoforge-1.21.1.zip.b64.txt",
+                fileName: "Hyperlink-1.3.0-neoforge-1.21.1.zip",
+                zipBytes: 1722858,
+                jar: "Hyperlink-1.21.1-1.3.0.jar",
+                jarBytes: 1854350,
+                sha256: "7AE39E0FBEF47DB4C56360ABEAD955F8F6F5CFB2950E918B30ACAC3EF83E7891",
+                tested: false
+              },
+              {
+                mc: "1.21.1",
+                loader: "NeoForge",
+                loaderVersion: "21.1.1以降（MC 1.21 なら 21.0.143以降）",
+                modVersion: "1.2.0",
+                released: "2026-10-24",
+                file: "files/hyperlink-1211/Hyperlink-1.2.0-neoforge-1.21.1.zip.b64.txt",
+                fileName: "Hyperlink-1.2.0-neoforge-1.21.1.zip",
+                zipBytes: 1716508,
+                jar: "Hyperlink-1.21.1-1.2.0.jar",
+                jarBytes: 1847439,
+                sha256: "C52C363CEE6546D08AC027181E9A07D6BC8B4CCB8CB3835D4687716D5D226511",
+                tested: false
+              },
+              {
+                mc: "1.21.1",
+                loader: "NeoForge",
+                loaderVersion: "21.1.1以降（MC 1.21 なら 21.0.143以降）",
+                modVersion: "1.1.4",
+                released: "2026-10-24",
+                file: "files/hyperlink-1211/Hyperlink-1.1.4-neoforge-1.21.1.zip.b64.txt",
+                fileName: "Hyperlink-1.1.4-neoforge-1.21.1.zip",
+                zipBytes: 1653652,
+                jar: "Hyperlink-1.21.1-1.1.4.jar",
+                jarBytes: 1778533,
+                sha256: "F895F3E87621B8E705F827AF720FF50CFB164B515634AFDD4813A3342351CBA6",
+                tested: false
+              },
+              {
+                mc: "1.21.1",
+                loader: "NeoForge",
+                loaderVersion: "21.1.1以降（MC 1.21 なら 21.0.143以降）",
+                modVersion: "1.1.3",
+                released: "2026-10-24",
+                file: "files/hyperlink-1211/Hyperlink-1.1.3-neoforge-1.21.1.zip.b64.txt",
+                fileName: "Hyperlink-1.1.3-neoforge-1.21.1.zip",
+                zipBytes: 1637908,
+                jar: "Hyperlink-1.21.1-1.1.3.jar",
+                jarBytes: 1762239,
+                sha256: "11548F17B4784DCE1776FDD21E8283C90F09813D45E0DA48CD93C1D818D82E50",
+                tested: false
+              },
+              {
+                mc: "1.21.1",
+                loader: "NeoForge",
+                loaderVersion: "21.1.1以降（MC 1.21 なら 21.0.143以降）",
+                modVersion: "1.1.2",
+                released: "2026-10-23",
+                file: "files/hyperlink-1211/Hyperlink-1.1.2-neoforge-1.21.1.zip.b64.txt",
+                fileName: "Hyperlink-1.1.2-neoforge-1.21.1.zip",
+                zipBytes: 1637901,
+                jar: "Hyperlink-1.21.1-1.1.2.jar",
+                jarBytes: 1762228,
+                sha256: "3C865BEC4DF0F0AB6FCF6D6932C19B0B0A924F7ED382F6A5F36C5FA86443A985",
+                tested: false
+              },
+              {
+                mc: "1.21.1",
+                loader: "NeoForge",
+                loaderVersion: "21.1.1以降（MC 1.21 なら 21.0.143以降）",
+                modVersion: "1.1.1",
+                released: "2026-10-23",
+                file: "files/hyperlink-1211/Hyperlink-1.1.1-neoforge-1.21.1.zip.b64.txt",
+                fileName: "Hyperlink-1.1.1-neoforge-1.21.1.zip",
+                zipBytes: 1637493,
+                jar: "Hyperlink-1.21.1-1.1.1.jar",
+                jarBytes: 1761783,
+                sha256: "8FDE087DBE0DF5D9FD7F8875A6E9D03A68B713DAB7F031CB76DD7E112041DFCE",
+                tested: false
+              },
+              {
+                mc: "1.21.1",
+                loader: "NeoForge",
+                loaderVersion: "21.1.264以降",
+                modVersion: "1.1.0",
+                released: "2026-10-23",
+                file: "files/hyperlink-1211/Hyperlink-1.1.0-neoforge-1.21.1.zip.b64.txt",
+                fileName: "Hyperlink-1.1.0-neoforge-1.21.1.zip",
+                zipBytes: 1632446,
+                jar: "Hyperlink-1.21.1-1.1.0.jar",
+                jarBytes: 1756630,
+                sha256: "B28673C84EFE2FAA0FE2252235044811254F90465CB88DE46D6F6638979FEB97",
+                tested: false
+              },
+              {
+                mc: "1.21.1",
+                loader: "NeoForge",
+                loaderVersion: "21.1.264以降",
+                modVersion: "1.0.1",
+                released: "2026-10-23",
+                file: "files/hyperlink-1211/Hyperlink-1211.3.0-port.1-neoforge-1.21.1.zip.b64.txt",
+                fileName: "Hyperlink-1.0.1-neoforge-1.21.1.zip",
+                zipBytes: 1532734,
+                jar: "Hyperlink-1.21.1-1211.3.0-port.1.jar",
+                jarBytes: 1647637,
+                sha256: "51607762CA0DF98C6914ACF8C0A425BBEEB629DE23C33CBE4C66B716052BA22A",
+                tested: false
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+];
+
+// ---------------------------------------------------------------------------
+const state = { folder: [], mod: null, mc: null, version: null }; // folder: path of open folders
+const crumbs = document.getElementById("crumbs");
+const stepTitle = document.getElementById("s1");
+const modList = document.getElementById("mod-list");
+const flow = document.getElementById("flow");
+
+const mcKey = v => v.mc + "|" + v.loader;
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const kb = n => (n / 1024).toFixed(0) + " KB";
+
+function cmpVersion(a, b) {
+  const pa = a.split(/[.-]/).map(x => parseInt(x, 10) || 0);
+  const pb = b.split(/[.-]/).map(x => parseInt(x, 10) || 0);
+  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+    const d = (pa[i] || 0) - (pb[i] || 0);
+    if (d) return d;
+  }
+  return 0;
+}
+
+function mcOptions(mod) {
+  const seen = new Map();
+  for (const v of mod.versions) if (!seen.has(mcKey(v))) seen.set(mcKey(v), v);
+  return [...seen.values()].sort((a, b) => cmpVersion(b.mc, a.mc));
+}
+
+function modVersions(mod, key) {
+  return mod.versions.filter(v => mcKey(v) === key).sort((a, b) => cmpVersion(b.modVersion, a.modVersion));
+}
+
+const isFolder = n => Array.isArray(n.children);
+function countItems(n) { return isFolder(n) ? n.children.reduce((a, c) => a + countItems(c), 0) : 1; }
+// every entry with the folders that lead to it
+function walk(nodes, path = [], out = []) {
+  for (const n of nodes) { out.push({ node: n, path }); if (isFolder(n)) walk(n.children, [...path, n], out); }
+  return out;
+}
+
+function renderMods() {
+  const here = state.folder[state.folder.length - 1];
+  const items = here ? here.children : CATALOG;
+  stepTitle.textContent = here ? `${here.name}から選ぶ` : "MODを選ぶ";
+  crumbs.hidden = !here;
+  crumbs.innerHTML = "";
+  if (here) {
+    const go = (depth, label) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.textContent = label;
+      b.addEventListener("click", () => openFolder(state.folder.slice(0, depth)));
+      crumbs.appendChild(b);
+      crumbs.appendChild(Object.assign(document.createElement("span"), { textContent: "/" }));
+    };
+    go(0, "MOD一覧");
+    state.folder.slice(0, -1).forEach((f, i) => go(i + 1, f.name));
+    crumbs.appendChild(Object.assign(document.createElement("span"), { className: "here", textContent: here.name }));
+  }
+  modList.innerHTML = "";
+  for (const mod of items) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    if (isFolder(mod)) {
+      btn.className = "mod-card folder";
+      btn.innerHTML = `<span class="name">${esc(mod.name)}</span><span class="sum">${esc(mod.summary)}</span><span class="chips"><span class="chip count">${countItems(mod)} 件</span></span>`;
+      btn.addEventListener("click", () => openFolder([...state.folder, mod]));
+      modList.appendChild(btn);
+      continue;
+    }
+    btn.className = "mod-card";
+    btn.setAttribute("aria-pressed", String(state.mod === mod));
+    const mcs = mcOptions(mod).map(v => `<span class="chip">${esc(v.mc)} · ${esc(v.loader)}</span>`).join("");
+    btn.innerHTML = `<span class="name">${esc(mod.name)}</span><span class="sum">${esc(mod.summary)}</span><span class="chips">${mcs}</span>`;
+    btn.addEventListener("click", () => selectMod(mod, true));
+    modList.appendChild(btn);
+  }
+}
+
+function openFolder(path) {
+  state.folder = path;
+  state.mod = state.mc = state.version = null;
+  const here = path[path.length - 1];
+  try { history.replaceState(null, "", here ? "#" + here.id : location.pathname + location.search); } catch (e) { /* ignore */ }
+  render();
+  document.getElementById("s1").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function selectMod(mod, scroll) {
+  state.mod = mod;
+  state.mc = null;
+  state.version = null;
+  try { history.replaceState(null, "", "#" + mod.id); } catch (e) { /* ignore */ }
+  render();
+  if (scroll) document.getElementById("s2")?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function clearSelection() {
+  state.mod = state.mc = state.version = null;
+  const here = state.folder[state.folder.length - 1];
+  try { history.replaceState(null, "", here ? "#" + here.id : location.pathname + location.search); } catch (e) { /* ignore */ }
+  render();
+  modList.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function render() {
+  renderMods();
+  flow.innerHTML = "";
+  const mod = state.mod;
+  if (!mod) return;
+
+  const wrap = document.createElement("div");
+  wrap.style.display = "grid";
+  wrap.style.gap = "28px";
+
+  // mod details + Minecraft version
+  const s2 = document.createElement("section");
+  s2.className = "step";
+  s2.setAttribute("aria-labelledby", "s2");
+  const features = mod.features.map(([k, v]) => `<div class="feature"><b>${esc(k)}</b><span>${esc(v)}</span></div>`).join("");
+  const notes = mod.notes.map(n => `<li>${esc(n)}</li>`).join("");
+  s2.innerHTML = `
+    <div class="details">
+      <button class="back" type="button">← ${esc(state.folder.length ? state.folder[state.folder.length - 1].name : "MOD")}一覧に戻る</button>
+      <h2 style="font-size:24px">${esc(mod.name)}</h2>
+      <p class="hint" style="font-size:14px">${esc(mod.summary)}</p>
+      <div style="display:grid;gap:8px">${features}</div>
+      <ul class="hint" style="margin:0;padding-left:1.2em;display:grid;gap:2px">${notes}</ul>
+    </div>
+    <div class="step-head"><span class="step-no">STEP 2</span><h2 id="s2">Minecraft のバージョンを選ぶ</h2></div>
+    <div class="options" id="mc-options"></div>`;
+  s2.querySelector(".back").addEventListener("click", clearSelection);
+  const mcBox = s2.querySelector("#mc-options");
+  for (const v of mcOptions(mod)) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "opt";
+    b.setAttribute("aria-pressed", String(state.mc === mcKey(v)));
+    b.innerHTML = `${esc(v.mc)} <span class="sub">${esc(v.loader)}${v.loaderVersion ? " " + esc(v.loaderVersion) : ""}</span>`;
+    b.addEventListener("click", () => {
+      state.mc = mcKey(v);
+      state.version = null;
+      render();
+      document.getElementById("s3")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    });
+    mcBox.appendChild(b);
+  }
+  wrap.appendChild(s2);
+
+  // mod version
+  if (state.mc) {
+    const versions = modVersions(mod, state.mc);
+    const s3 = document.createElement("section");
+    s3.className = "step";
+    s3.innerHTML = `
+      <div class="step-head"><span class="step-no">STEP 3</span><h2 id="s3">${mod.kind === "addon" ? "アドオン" : mod.kind === "datapack" ? "データパック" : "MOD"}の版を選ぶ</h2></div>
+      <div class="options" id="ver-options"></div>`;
+    const vBox = s3.querySelector("#ver-options");
+    versions.forEach((v, i) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "opt";
+      b.setAttribute("aria-pressed", String(state.version === v));
+      b.innerHTML = `v${esc(v.modVersion)} <span class="sub">${i === 0 ? "最新 · " : ""}${esc(v.released)}</span>`;
+      b.addEventListener("click", () => {
+        state.version = v;
+        render();
+        document.getElementById("s4")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      });
+      vBox.appendChild(b);
+    });
+    wrap.appendChild(s3);
+  }
+
+  // download
+  if (state.version) wrap.appendChild(downloadBlock(mod, state.version));
+
+  flow.appendChild(wrap);
+}
+
+// 配布ファイルの置き場所（このページと同じGitHubリポジトリ EeeeeeruKi/EC-mod の中）
+const DL = {"files/mcadminpanel/mcAdminPanel-1.2.0-neoforge-1.21.1.zip.b64.txt": "jars/mcadminpanel/1.21.1-neoforge/mcadminpanel-1.2.0.jar", "files/mcadminpanel/mcAdminPanel-1.2.0-forge-1.20.1.zip.b64.txt": "jars/mcadminpanel/1.20.1-forge/mcadminpanel-forge-1.20.1-1.2.0.jar", "files/mcadminpanel/mcAdminPanel-1.1.0-forge-1.20.1.zip.b64.txt": "jars/mcadminpanel/1.20.1-forge/mcadminpanel-forge-1.20.1-1.1.0.jar", "files/mcadminpanel/mcAdminPanel-1.1.0-neoforge-1.21.1.zip.b64.txt": "jars/mcadminpanel/1.21.1-neoforge/mcadminpanel-1.1.0.jar", "files/mcadminpanel/mcAdminPanel-1.0.0-neoforge-1.21.1.zip.b64.txt": "files/mcadminpanel/mcAdminPanel-1.0.0-neoforge-1.21.1.zip", "files/moremekaponder/MoreMekaPonder-1.0.2-neoforge-1.21.1.zip.b64.txt": "jars/moremekaponder/1.21.1-neoforge/moremekaponder-neoforge-1.21.1-1.0.2.jar", "files/moremekaponder/MoreMekaPonder-1.0.1-neoforge-1.21.1.zip.b64.txt": "jars/moremekaponder/1.21.1-neoforge/moremekaponder-neoforge-1.21.1-1.0.1.jar", "files/moremekaponder/MoreMekaPonder-1.0.0-neoforge-1.21.1.zip.b64.txt": "jars/moremekaponder/1.21.1-neoforge/moremekaponder-neoforge-1.21.1-1.0.0.jar", "files/ponderererer/Ponderererer-1.0.1-neoforge-1.21.1.zip.b64.txt": "jars/ponderererer/1.21.1-neoforge/ponderererer-neoforge-1.21.1-1.0.1.jar", "files/ponderererer/Ponderererer-1.0.0-neoforge-1.21.1.zip.b64.txt": "jars/ponderererer/1.21.1-neoforge/ponderererer-neoforge-1.21.1-1.0.0.jar", "files/recipecraft/RecipeCraft-0.2.2-neoforge-1.21.1.zip.b64.txt": "jars/recipecraft/1.21.1-neoforge/recipecraft-0.2.2.jar", "files/recipecraft/RecipeCraft-0.2.2-forge-1.20.1.zip.b64.txt": "jars/recipecraft/1.20.1-forge/recipecraft-0.2.2.jar", "files/recipecraft/RecipeCraft-0.2.1-neoforge-1.21.1.zip.b64.txt": "files/recipecraft/RecipeCraft-0.2.1-neoforge-1.21.1.zip", "files/recipecraft/RecipeCraft-0.2.1-forge-1.20.1.zip.b64.txt": "files/recipecraft/RecipeCraft-0.2.1-forge-1.20.1.zip", "files/recipecraft/RecipeCraft-0.2.0-neoforge-1.21.1.zip.b64.txt": "files/recipecraft/RecipeCraft-0.2.0-neoforge-1.21.1.zip", "files/recipecraft/RecipeCraft-0.2.0-forge-1.20.1.zip.b64.txt": "files/recipecraft/RecipeCraft-0.2.0-forge-1.20.1.zip", "files/recipecraft/RecipeCraft-0.1.0-neoforge-1.21.1.zip.b64.txt": "files/recipecraft/RecipeCraft-0.1.0-neoforge-1.21.1.zip", "files/recipecraft/RecipeCraft-0.1.0-forge-1.20.1.zip.b64.txt": "files/recipecraft/RecipeCraft-0.1.0-forge-1.20.1.zip", "files/emcgui/EMCEditorGUI-1.1.0-neoforge-1.21.1.zip.b64.txt": "jars/emcgui/1.21.1-neoforge/emcgui-neoforge-1.21.1-1.1.0.jar", "files/emcgui/EMCEditorGUI-1.1.0-neoforge-1.20.4.zip.b64.txt": "jars/emcgui/1.20.4-neoforge/emcgui-neoforge-1.20.4-1.1.0.jar", "files/emcgui/EMCEditorGUI-1.0.0-forge-1.20.1.zip.b64.txt": "jars/emcgui/1.20.1-forge/emcgui-1.0.0.jar", "files/hijiki-neoforge/HijikiMod-1.1.0-neoforge-1.21.1.zip.b64.txt": "jars/hijiki/1.21.1-neoforge/hijiki-neoforge-1.21.1-1.1.0-neoforge.jar", "files/hijiki-neoforge/HijikiMod-1.1.0-forge-1.20.1.zip.b64.txt": "jars/hijiki/1.20.1-forge/hijiki-forge-1.20.1-1.1.0-forge.jar", "files/hijiki-neoforge/HijikiMod-1.0.9-neoforge-1.21.1.zip.b64.txt": "jars/hijiki/1.21.1-neoforge/hijiki-neoforge-1.21.1-1.0.9-neoforge.jar", "files/hijiki-neoforge/HijikiMod-1.0.9-forge-1.20.1.zip.b64.txt": "jars/hijiki/1.20.1-forge/hijiki-forge-1.20.1-1.0.9-forge.jar", "files/hijiki-neoforge/HijikiMod-1.0.8-neoforge-1.21.1.zip.b64.txt": "jars/hijiki/1.21.1-neoforge/hijiki-neoforge-1.21.1-1.0.8-neoforge.jar", "files/hijiki-neoforge/HijikiMod-1.0.8-forge-1.20.1.zip.b64.txt": "jars/hijiki/1.20.1-forge/hijiki-forge-1.20.1-1.0.8-forge.jar", "files/hijiki-neoforge/HijikiMod-1.0.7-neoforge-1.21.1.zip.b64.txt": "jars/hijiki/1.21.1-neoforge/hijiki-neoforge-1.21.1-1.0.7-neoforge.jar", "files/hijiki-neoforge/HijikiMod-1.0.7-forge-1.20.1.zip.b64.txt": "jars/hijiki/1.20.1-forge/hijiki-forge-1.20.1-1.0.7-forge.jar", "files/hijiki-neoforge/HijikiMod-1.0.6-neoforge-1.21.1.zip.b64.txt": "files/hijiki-neoforge/HijikiMod-1.0.6-neoforge-1.21.1.zip", "files/hijiki-neoforge/HijikiMod-1.0.6-forge-1.20.1.zip.b64.txt": "files/hijiki-neoforge/HijikiMod-1.0.6-forge-1.20.1.zip", "files/hijiki-neoforge/HijikiMod-1.0.5-neoforge-1.21.1.zip.b64.txt": "files/hijiki-neoforge/HijikiMod-1.0.5-neoforge-1.21.1.zip", "files/hijiki-neoforge/HijikiMod-1.0.5-forge-1.20.1.zip.b64.txt": "files/hijiki-neoforge/HijikiMod-1.0.5-forge-1.20.1.zip", "files/hijiki-neoforge/HijikiMod-1.0.4-neoforge-1.21.1.zip.b64.txt": "jars/hijiki/1.21.1-neoforge/hijiki-neoforge-1.21.1-1.0.4-neoforge.jar", "files/hijiki-neoforge/HijikiMod-1.0.4-forge-1.20.1.zip.b64.txt": "jars/hijiki/1.20.1-forge/hijiki-forge-1.20.1-1.0.4-forge.jar", "files/hijiki-neoforge/HijikiMod-1.0.3-neoforge-1.21.1.zip.b64.txt": "files/hijiki-neoforge/HijikiMod-1.0.3-neoforge-1.21.1.zip", "files/hijiki-neoforge/HijikiMod-1.0.3-forge-1.20.1.zip.b64.txt": "files/hijiki-neoforge/HijikiMod-1.0.3-forge-1.20.1.zip", "files/hijiki-neoforge/HijikiMod-1.0.2-neoforge-1.21.1.zip.b64.txt": "files/hijiki-neoforge/HijikiMod-1.0.2-neoforge-1.21.1.zip", "files/hijiki-neoforge/HijikiMod-1.0.2-forge-1.20.1.zip.b64.txt": "files/hijiki-neoforge/HijikiMod-1.0.2-forge-1.20.1.zip", "files/hijiki-neoforge/HijikiMod-1.0.1-neoforge-1.21.1.zip.b64.txt": "files/hijiki-neoforge/HijikiMod-1.0.1-neoforge-1.21.1.zip", "files/mentionmod/MentionMod-1.5.0-neoforge-1.21.1.zip.b64.txt": "jars/mentionmod/1.21.1-neoforge/mentionmod-neoforge-1.21.1-1.5.0.jar", "files/mentionmod/MentionMod-1.5.0-forge-1.20.1.zip.b64.txt": "jars/mentionmod/1.20.1-forge/mentionmod-forge-1.20.1-1.5.0.jar", "files/mentionmod/MentionMod-1.4.1-neoforge-1.21.1.zip.b64.txt": "jars/mentionmod/1.21.1-neoforge/mentionmod-neoforge-1.21.1-1.4.1.jar", "files/mentionmod/MentionMod-1.4.1-forge-1.20.1.zip.b64.txt": "jars/mentionmod/1.20.1-forge/mentionmod-forge-1.20.1-1.4.1.jar", "files/mentionmod/MentionMod-1.4.0-neoforge-1.21.1.zip.b64.txt": "files/mentionmod/MentionMod-1.4.0-neoforge-1.21.1.zip", "files/mentionmod/MentionMod-1.4.0-forge-1.20.1.zip.b64.txt": "files/mentionmod/MentionMod-1.4.0-forge-1.20.1.zip", "files/mentionmod/MentionMod-1.3.0-neoforge-1.21.1.zip.b64.txt": "files/mentionmod/MentionMod-1.3.0-neoforge-1.21.1.zip", "files/mentionmod/MentionMod-1.3.0-forge-1.20.1.zip.b64.txt": "files/mentionmod/MentionMod-1.3.0-forge-1.20.1.zip", "files/mentionmod/MentionMod-1.2.0-neoforge-1.21.1.zip.b64.txt": "jars/mentionmod/1.21.1-neoforge/mentionmod-neoforge-1.21.1-1.2.0.jar", "files/mentionmod/MentionMod-1.2.0-forge-1.20.1.zip.b64.txt": "jars/mentionmod/1.20.1-forge/mentionmod-forge-1.20.1-1.2.0.jar", "files/mentionmod/MentionMod-1.1.0-neoforge-1.21.1.zip.b64.txt": "files/mentionmod/MentionMod-1.1.0-neoforge-1.21.1.zip", "files/mentionmod/MentionMod-1.1.0-forge-1.20.1.zip.b64.txt": "files/mentionmod/MentionMod-1.1.0-forge-1.20.1.zip", "files/mentionmod/MentionMod-1.0.0-neoforge-1.21.1.zip.b64.txt": "files/mentionmod/MentionMod-1.0.0-neoforge-1.21.1.zip", "files/mentionmod/MentionMod-1.0.0-forge-1.20.1.zip.b64.txt": "files/mentionmod/MentionMod-1.0.0-forge-1.20.1.zip", "files/callai/CallAI-2.2.1-neoforge-1.21.1.zip.b64.txt": "jars/callai/1.21.1-neoforge/callai-neoforge-1.21.1-2.2.1.jar", "files/callai/CallAI-2.2.1-forge-1.20.1.zip.b64.txt": "jars/callai/1.20.1-forge/callai-2.2.1.jar", "files/callai/CallAI-2.2.0-neoforge-1.21.1.zip.b64.txt": "jars/callai/1.21.1-neoforge/callai-neoforge-1.21.1-2.2.0.jar", "files/callai/CallAI-2.2.0-forge-1.20.1.zip.b64.txt": "jars/callai/1.20.1-forge/callai-2.2.0.jar", "files/callai/CallAI-2.1.1-neoforge-1.21.1.zip.b64.txt": "jars/callai/1.21.1-neoforge/callai-neoforge-1.21.1-2.1.1.jar", "files/callai/CallAI-2.1.1-forge-1.20.1.zip.b64.txt": "jars/callai/1.20.1-forge/callai-2.1.1.jar", "files/callai/CallAI-2.1.0-neoforge-1.21.1.zip.b64.txt": "jars/callai/1.21.1-neoforge/callai-neoforge-1.21.1-2.1.0.jar", "files/callai/CallAI-2.1.0-forge-1.20.1.zip.b64.txt": "jars/callai/1.20.1-forge/callai-2.1.0.jar", "files/callai/CallAI-2.0.0-neoforge-1.21.1.zip.b64.txt": "jars/callai/1.21.1-neoforge/callai-neoforge-1.21.1-2.0.0.jar", "files/callai/CallAI-2.0.0-forge-1.20.1.zip.b64.txt": "jars/callai/1.20.1-forge/callai-2.0.0.jar", "files/callai/CallAI-1.9.0-neoforge-1.21.1.zip.b64.txt": "jars/callai/1.21.1-neoforge/callai-neoforge-1.21.1-1.9.0.jar", "files/callai/CallAI-1.9.0-forge-1.20.1.zip.b64.txt": "jars/callai/1.20.1-forge/callai-1.9.0.jar", "files/callai/CallAI-1.8.0-neoforge-1.21.1.zip.b64.txt": "jars/callai/1.21.1-neoforge/callai-neoforge-1.21.1-1.8.0.jar", "files/callai/CallAI-1.8.0-forge-1.20.1.zip.b64.txt": "jars/callai/1.20.1-forge/callai-1.8.0.jar", "files/callai/CallAI-1.7.0-neoforge-1.21.1.zip.b64.txt": "files/callai/CallAI-1.7.0-neoforge-1.21.1.zip", "files/callai/CallAI-1.7.0-forge-1.20.1.zip.b64.txt": "files/callai/CallAI-1.7.0-forge-1.20.1.zip", "files/callai/CallAI-1.6.0-forge-1.20.1.zip.b64.txt": "files/callai/CallAI-1.6.0-forge-1.20.1.zip", "files/callai/CallAI-1.5.0-forge-1.20.1.zip.b64.txt": "files/callai/CallAI-1.5.0-forge-1.20.1.zip", "files/callai/CallAI-1.4.0-forge-1.20.1.zip.b64.txt": "files/callai/CallAI-1.4.0-forge-1.20.1.zip", "files/callai/CallAI-1.3.0-forge-1.20.1.zip.b64.txt": "files/callai/CallAI-1.3.0-forge-1.20.1.zip", "files/callai/CallAI-1.2.0-forge-1.20.1.zip.b64.txt": "jars/callai/1.20.1-forge/callai-1.2.0.jar", "files/geminitell/GeminiTell-1.1.0-forge-1.20.1.zip.b64.txt": "files/geminitell/GeminiTell-1.1.0-forge-1.20.1.zip", "files/claudeupdater/ClaudeUpdater-1.5.0-fabric-1.21.1.zip.b64.txt": "jars/claudeupdater/1.21.1-fabric/claudeupdater-1.5.0-fabric-1.21.1.jar", "files/claudeupdater/ClaudeUpdater-1.5.0-neoforge-1.21.1.zip.b64.txt": "jars/claudeupdater/1.21.1-neoforge/claudeupdater-1.5.0-neoforge-1.21.1.jar", "files/claudeupdater/ClaudeUpdater-1.5.0-forge-1.20.1.zip.b64.txt": "jars/claudeupdater/1.20.1-forge/claudeupdater-1.5.0-forge-1.20.1.jar", "files/claudeupdater/ClaudeUpdater-1.4.1-fabric-1.21.1.zip.b64.txt": "jars/claudeupdater/1.21.1-fabric/claudeupdater-1.4.1-fabric-1.21.1.jar", "files/claudeupdater/ClaudeUpdater-1.4.1-neoforge-1.21.1.zip.b64.txt": "jars/claudeupdater/1.21.1-neoforge/claudeupdater-1.4.1-neoforge-1.21.1.jar", "files/claudeupdater/ClaudeUpdater-1.4.1-forge-1.20.1.zip.b64.txt": "jars/claudeupdater/1.20.1-forge/claudeupdater-1.4.1-forge-1.20.1.jar", "files/claudeupdater/ClaudeUpdater-1.4.0-fabric-1.21.1.zip.b64.txt": "jars/claudeupdater/1.21.1-fabric/claudeupdater-1.4.0-fabric-1.21.1.jar", "files/claudeupdater/ClaudeUpdater-1.4.0-neoforge-1.21.1.zip.b64.txt": "jars/claudeupdater/1.21.1-neoforge/claudeupdater-1.4.0-neoforge-1.21.1.jar", "files/claudeupdater/ClaudeUpdater-1.4.0-forge-1.20.1.zip.b64.txt": "jars/claudeupdater/1.20.1-forge/claudeupdater-1.4.0-forge-1.20.1.jar", "files/claudeupdater/ClaudeUpdater-1.3.0-fabric-1.21.1.zip.b64.txt": "jars/claudeupdater/1.21.1-fabric/claudeupdater-1.3.0-fabric-1.21.1.jar", "files/claudeupdater/ClaudeUpdater-1.3.0-neoforge-1.21.1.zip.b64.txt": "jars/claudeupdater/1.21.1-neoforge/claudeupdater-1.3.0-neoforge-1.21.1.jar", "files/claudeupdater/ClaudeUpdater-1.3.0-forge-1.20.1.zip.b64.txt": "jars/claudeupdater/1.20.1-forge/claudeupdater-1.3.0-forge-1.20.1.jar", "files/claudeupdater/ClaudeUpdater-1.2.2-neoforge-1.21.1.zip.b64.txt": "jars/claudeupdater/1.21.1-neoforge/claudeupdater-1.2.2-neoforge-1.21.1.jar", "files/claudeupdater/ClaudeUpdater-1.2.2-forge-1.20.1.zip.b64.txt": "jars/claudeupdater/1.20.1-forge/claudeupdater-1.2.2-forge-1.20.1.jar", "files/claudeupdater/ClaudeUpdater-1.2.1-neoforge-1.21.1.zip.b64.txt": "jars/claudeupdater/1.21.1-neoforge/claudeupdater-1.2.1-neoforge-1.21.1.jar", "files/claudeupdater/ClaudeUpdater-1.2.1-forge-1.20.1.zip.b64.txt": "jars/claudeupdater/1.20.1-forge/claudeupdater-1.2.1-forge-1.20.1.jar", "files/claudeupdater/ClaudeUpdater-1.2.0-neoforge-1.21.1.zip.b64.txt": "jars/claudeupdater/1.21.1-neoforge/claudeupdater-1.2.0-neoforge-1.21.1.jar", "files/claudeupdater/ClaudeUpdater-1.2.0-forge-1.20.1.zip.b64.txt": "jars/claudeupdater/1.20.1-forge/claudeupdater-1.2.0-forge-1.20.1.jar", "files/claudeupdater/ClaudeUpdater-1.1.0-neoforge-1.21.1.zip.b64.txt": "jars/claudeupdater/1.21.1-neoforge/claudeupdater-1.1.0-neoforge-1.21.1.jar", "files/claudeupdater/ClaudeUpdater-1.1.0-forge-1.20.1.zip.b64.txt": "jars/claudeupdater/1.20.1-forge/claudeupdater-1.1.0-forge-1.20.1.jar", "files/claudeupdater/ClaudeUpdater-1.0.0-neoforge-1.21.1.zip.b64.txt": "jars/claudeupdater/claudeupdater-1.0.0-neoforge-1.21.1.jar", "files/claudeupdater/ClaudeUpdater-1.0.0-forge-1.20.1.zip.b64.txt": "jars/claudeupdater/claudeupdater-1.0.0-forge-1.20.1.jar", "files/tonsofadv/TonsOfAdvancements-1.8.5-forge-1.20.1.zip.b64.txt": "jars/tonsofadv/1.20.1-forge/tonsofadv-forge-1.20.1-1.8.5.jar", "files/tonsofadv/TonsOfAdvancements-1.8.5-neoforge-1.21.1.zip.b64.txt": "jars/tonsofadv/1.21.1-neoforge/tonsofadv-neoforge-1.21.1-1.8.5.jar", "files/tonsofadv/TonsOfAdvancements-1.8.5-fabric-1.21.1.zip.b64.txt": "jars/tonsofadv/1.21.1-fabric/tonsofadv-fabric-1.21.1-1.8.5.jar", "files/tonsofadv/TonsOfAdvancements-1.8.5-neoforge-26.2.zip.b64.txt": "jars/tonsofadv/26.2-neoforge/tonsofadv-neoforge-26.2-1.8.5.jar", "files/tonsofadv/TonsOfAdvancements-1.8.5-fabric-26.2.zip.b64.txt": "jars/tonsofadv/26.2-fabric/tonsofadv-fabric-26.2-1.8.5.jar", "files/tonsofadv/TonsOfAdvancements-1.8.4-forge-1.20.1.zip.b64.txt": "jars/tonsofadv/1.20.1-forge/tonsofadv-forge-1.20.1-1.8.4.jar", "files/tonsofadv/TonsOfAdvancements-1.8.4-neoforge-1.21.1.zip.b64.txt": "jars/tonsofadv/1.21.1-neoforge/tonsofadv-neoforge-1.21.1-1.8.4.jar", "files/tonsofadv/TonsOfAdvancements-1.8.4-fabric-1.21.1.zip.b64.txt": "jars/tonsofadv/1.21.1-fabric/tonsofadv-fabric-1.21.1-1.8.4.jar", "files/tonsofadv/TonsOfAdvancements-1.8.4-neoforge-26.2.zip.b64.txt": "jars/tonsofadv/26.2-neoforge/tonsofadv-neoforge-26.2-1.8.4.jar", "files/tonsofadv/TonsOfAdvancements-1.8.4-fabric-26.2.zip.b64.txt": "jars/tonsofadv/26.2-fabric/tonsofadv-fabric-26.2-1.8.4.jar", "files/tonsofadv/TonsOfAdvancements-1.8.3-forge-1.20.1.zip.b64.txt": "jars/tonsofadv/1.20.1-forge/tonsofadv-forge-1.20.1-1.8.3.jar", "files/tonsofadv/TonsOfAdvancements-1.8.3-neoforge-1.21.1.zip.b64.txt": "jars/tonsofadv/1.21.1-neoforge/tonsofadv-neoforge-1.21.1-1.8.3.jar", "files/tonsofadv/TonsOfAdvancements-1.8.3-fabric-1.21.1.zip.b64.txt": "jars/tonsofadv/1.21.1-fabric/tonsofadv-fabric-1.21.1-1.8.3.jar", "files/tonsofadv/TonsOfAdvancements-1.8.3-neoforge-26.2.zip.b64.txt": "jars/tonsofadv/26.2-neoforge/tonsofadv-neoforge-26.2-1.8.3.jar", "files/tonsofadv/TonsOfAdvancements-1.8.3-fabric-26.2.zip.b64.txt": "jars/tonsofadv/26.2-fabric/tonsofadv-fabric-26.2-1.8.3.jar", "files/compacttoasts/CompactToasts-1.2.0-fabric-1.21.1.zip.b64.txt": "jars/compacttoasts/1.21.1-fabric/compacttoasts-fabric-1.21.1-1.2.0.jar", "files/compacttoasts/CompactToasts-1.2.0-neoforge-1.21.1.zip.b64.txt": "jars/compacttoasts/1.21.1-neoforge/compacttoasts-neoforge-1.21.1-1.2.0.jar", "files/compacttoasts/CompactToasts-1.2.0-forge-1.20.1.zip.b64.txt": "jars/compacttoasts/1.20.1-forge/compacttoasts-forge-1.20.1-1.2.0.jar", "files/compacttoasts/CompactToasts-1.1.0-fabric-1.21.1.zip.b64.txt": "jars/compacttoasts/1.21.1-fabric/compacttoasts-fabric-1.21.1-1.1.0.jar", "files/compacttoasts/CompactToasts-1.1.0-neoforge-1.21.1.zip.b64.txt": "jars/compacttoasts/1.21.1-neoforge/compacttoasts-neoforge-1.21.1-1.1.0.jar", "files/compacttoasts/CompactToasts-1.1.0-forge-1.20.1.zip.b64.txt": "jars/compacttoasts/1.20.1-forge/compacttoasts-forge-1.20.1-1.1.0.jar", "files/compacttoasts/CompactToasts-1.0.0-fabric-1.21.1.zip.b64.txt": "jars/compacttoasts/1.21.1-fabric/compacttoasts-fabric-1.21.1-1.0.0.jar", "files/compacttoasts/CompactToasts-1.0.0-neoforge-1.21.1.zip.b64.txt": "jars/compacttoasts/1.21.1-neoforge/compacttoasts-neoforge-1.21.1-1.0.0.jar", "files/compacttoasts/CompactToasts-1.0.0-forge-1.20.1.zip.b64.txt": "jars/compacttoasts/1.20.1-forge/compacttoasts-forge-1.20.1-1.0.0.jar", "files/hyperponder/HyperlinkPonder-1.1.1-neoforge-1.21.1.zip.b64.txt": "jars/hyperponder/1.21.1-neoforge/HyperlinkPonder-1.21.1-neoforge-1.1.1.jar", "files/hyperponder/HyperlinkPonder-1.1.1-forge-1.20.1.zip.b64.txt": "jars/hyperponder/1.20.1-forge/HyperlinkPonder-1.20.1-forge-1.1.1.jar", "files/hyperponder/HyperlinkPonder-1.1.0-neoforge-1.21.1.zip.b64.txt": "jars/hyperponder/1.21.1-neoforge/HyperlinkPonder-1.21.1-neoforge-1.1.0.jar", "files/hyperponder/HyperlinkPonder-1.1.0-forge-1.20.1.zip.b64.txt": "jars/hyperponder/1.20.1-forge/HyperlinkPonder-1.20.1-forge-1.1.0.jar", "files/hyperponder/HyperlinkPonder-1.0.0-neoforge-1.21.1.zip.b64.txt": "jars/hyperponder/1.21.1-neoforge/HyperlinkPonder-1.21.1-neoforge-1.0.0.jar", "files/hyperponder/HyperlinkPonder-1.0.0-forge-1.20.1.zip.b64.txt": "jars/hyperponder/1.20.1-forge/HyperlinkPonder-1.20.1-forge-1.0.0.jar", "files/layeredarmor/LayeredArmor-1.0.7-forge-1.20.1.zip.b64.txt": "jars/layeredarmor/1.20.1-forge/layeredarmor-forge-1.20.1-1.0.7.jar", "files/layeredarmor/LayeredArmor-1.0.6-forge-1.20.1.zip.b64.txt": "jars/layeredarmor/1.20.1-forge/layeredarmor-forge-1.20.1-1.0.6.jar", "files/layeredarmor/LayeredArmor-1.0.5-forge-1.20.1.zip.b64.txt": "jars/layeredarmor/1.20.1-forge/layeredarmor-forge-1.20.1-1.0.5.jar", "files/layeredarmor/LayeredArmor-1.0.4-forge-1.20.1.zip.b64.txt": "jars/layeredarmor/1.20.1-forge/layeredarmor-forge-1.20.1-1.0.4.jar", "files/layeredarmor/LayeredArmor-1.0.3-forge-1.20.1.zip.b64.txt": "jars/layeredarmor/1.20.1-forge/layeredarmor-forge-1.20.1-1.0.3.jar", "files/layeredarmor/LayeredArmor-1.0.2-forge-1.20.1.zip.b64.txt": "jars/layeredarmor/1.20.1-forge/layeredarmor-forge-1.20.1-1.0.2.jar", "files/layeredarmor/LayeredArmor-1.0.1-forge-1.20.1.zip.b64.txt": "jars/layeredarmor/1.20.1-forge/layeredarmor-forge-1.20.1-1.0.1.jar", "files/layeredarmor/LayeredArmor-1.0.0-forge-1.20.1.zip.b64.txt": "jars/layeredarmor/1.20.1-forge/layeredarmor-forge-1.20.1-1.0.0.jar", "files/minecrafttweak/MinecraftTweak-1.5.0-neoforge-1.21.1.zip.b64.txt": "jars/minecrafttweak/1.21.1-neoforge/minecrafttweak-neoforge-1.21.1-1.5.0.jar", "files/minecrafttweak/MinecraftTweak-1.5.0-forge-1.20.1.zip.b64.txt": "jars/minecrafttweak/1.20.1-forge/minecrafttweak-forge-1.20.1-1.5.0.jar", "files/minecrafttweak/MinecraftTweak-1.4.0-neoforge-1.21.1.zip.b64.txt": "jars/minecrafttweak/1.21.1-neoforge/minecrafttweak-neoforge-1.21.1-1.4.0.jar", "files/minecrafttweak/MinecraftTweak-1.4.0-forge-1.20.1.zip.b64.txt": "jars/minecrafttweak/1.20.1-forge/minecrafttweak-forge-1.20.1-1.4.0.jar", "files/minecrafttweak/MinecraftTweak-1.3.0-neoforge-1.21.1.zip.b64.txt": "jars/minecrafttweak/1.21.1-neoforge/minecrafttweak-neoforge-1.21.1-1.3.0.jar", "files/minecrafttweak/MinecraftTweak-1.3.0-forge-1.20.1.zip.b64.txt": "jars/minecrafttweak/1.20.1-forge/minecrafttweak-forge-1.20.1-1.3.0.jar", "files/minecrafttweak/MinecraftTweak-1.2.0-neoforge-1.21.1.zip.b64.txt": "jars/minecrafttweak/1.21.1-neoforge/minecrafttweak-neoforge-1.21.1-1.2.0.jar", "files/minecrafttweak/MinecraftTweak-1.2.0-forge-1.20.1.zip.b64.txt": "jars/minecrafttweak/1.20.1-forge/minecrafttweak-forge-1.20.1-1.2.0.jar", "files/minecrafttweak/MinecraftTweak-1.1.0-neoforge-1.21.1.zip.b64.txt": "jars/minecrafttweak/1.21.1-neoforge/minecrafttweak-neoforge-1.21.1-1.1.0.jar", "files/minecrafttweak/MinecraftTweak-1.1.0-forge-1.20.1.zip.b64.txt": "jars/minecrafttweak/1.20.1-forge/minecrafttweak-forge-1.20.1-1.1.0.jar", "files/minecrafttweak/MinecraftTweak-1.0.0-neoforge-1.21.1.zip.b64.txt": "jars/minecrafttweak/1.21.1-neoforge/minecrafttweak-neoforge-1.21.1-1.0.0.jar", "files/minecrafttweak/MinecraftTweak-1.0.0-forge-1.20.1.zip.b64.txt": "jars/minecrafttweak/1.20.1-forge/minecrafttweak-forge-1.20.1-1.0.0.jar", "files/mekanism-bedrock/Mekanism_Bedrock_v1.9.5.mcaddon.b64.txt": "files/mekanism-bedrock/Mekanism_Bedrock_v1.9.5.mcaddon", "files/ae2-bedrock/AE2_Bedrock_v2.7.4.mcaddon.b64.txt": "files/ae2-bedrock/AE2_Bedrock_v2.7.4.mcaddon", "files/tonsofadv-datapack/TonsOfAdvancements-datapack-1.0.0.zip.b64.txt": "files/tonsofadv-datapack/TonsOfAdvancements-datapack-1.0.0.zip", "files/hyperlink-1211/Hyperlink-1.3.0-neoforge-1.21.1.zip.b64.txt": "jars/hyperdaimc/1.21.1-neoforge/Hyperlink-1.21.1-1.3.0.jar", "files/hyperlink-1211/Hyperlink-1.2.0-neoforge-1.21.1.zip.b64.txt": "jars/hyperdaimc/1.21.1-neoforge/Hyperlink-1.21.1-1.2.0.jar", "files/hyperlink-1211/Hyperlink-1.1.4-neoforge-1.21.1.zip.b64.txt": "files/hyperlink-1211/Hyperlink-1.1.4-neoforge-1.21.1.zip", "files/hyperlink-1211/Hyperlink-1.1.3-neoforge-1.21.1.zip.b64.txt": "files/hyperlink-1211/Hyperlink-1.1.3-neoforge-1.21.1.zip", "files/hyperlink-1211/Hyperlink-1.1.2-neoforge-1.21.1.zip.b64.txt": "files/hyperlink-1211/Hyperlink-1.1.2-neoforge-1.21.1.zip", "files/hyperlink-1211/Hyperlink-1.1.1-neoforge-1.21.1.zip.b64.txt": "files/hyperlink-1211/Hyperlink-1.1.1-neoforge-1.21.1.zip", "files/hyperlink-1211/Hyperlink-1.1.0-neoforge-1.21.1.zip.b64.txt": "files/hyperlink-1211/Hyperlink-1.1.0-neoforge-1.21.1.zip", "files/hyperlink-1211/Hyperlink-1211.3.0-port.1-neoforge-1.21.1.zip.b64.txt": "files/hyperlink-1211/Hyperlink-1.0.1-neoforge-1.21.1.zip"};
+
+function downloadBlock(mod, v) {
+  const fill = s => s.replace(/\{(\w+)\}/g, (_, k) => esc(v[k] ?? ""));
+  const steps = mod.install.map(s => `<li>${fill(s)}</li>`).join("");
+  const url = DL[v.file] || "";
+  const saveName = url ? url.split("/").pop() : v.fileName;
+  const isJar = /\.jar$/i.test(saveName);
+  const renameNote = isJar
+    ? `<p class="hint" style="margin:0;font-size:14px">ダウンロードされるのは jar ファイル（<code>${esc(saveName)}</code>）です。ZIPの展開は不要で、そのまま mods フォルダに入れてください。</p>`
+    : "";
+  const sec = document.createElement("section");
+  sec.className = "step";
+  sec.innerHTML = `
+    <div class="step-head"><span class="step-no">STEP 4</span><h2 id="s4">ダウンロード</h2></div>
+    <div class="download">
+      <div class="row">
+        ${url ? `<a class="dl" href="${esc(url)}" download="${esc(saveName)}">${esc(mod.name)} v${esc(v.modVersion)} をダウンロード</a>`
+              : `<button class="dl" type="button" disabled>${esc(mod.name)} v${esc(v.modVersion)} をダウンロード</button>`}
+        <span class="msg" aria-live="polite">${url ? "" : "この版のファイルは準備中です。"}</span>
+      </div>
+      <dl class="file">${mod.kind ? `
+        <dt>対応</dt><dd>Minecraft ${mod.kind === "datapack" ? esc(v.mc) + "（データパック）" : esc(v.loader) + " " + esc(v.mc)}</dd>
+        <dt>ファイル</dt><dd>${esc(v.fileName)}（${kb(v.fileBytes)}）</dd>
+        <dt>SHA-256</dt><dd>${esc(v.sha256)}</dd>` : `
+        <dt>対応</dt><dd>Minecraft ${esc(v.mc)} / ${esc(v.loader)} ${esc(v.loaderVersion)}</dd>
+        <dt>ファイル</dt><dd>${esc(v.fileName)}（${kb(v.zipBytes)}）</dd>
+        <dt>中身</dt><dd>${esc(v.jar)}（${v.jarBytes.toLocaleString("ja-JP")} バイト）</dd>
+        <dt>jar の SHA-256</dt><dd>${esc(v.sha256)}</dd>`}
+      </dl>
+      ${renameNote}
+      <h3 style="margin:0;font-size:15px">導入手順</h3>
+      <ol class="steps">${steps}</ol>
+    </div>`;
+  return sec;
+}
+
+// open a mod or folder directly from #id
+const initial = walk(CATALOG).find(e => "#" + e.node.id === location.hash);
+if (!initial) render();
+else if (isFolder(initial.node)) { state.folder = [...initial.path, initial.node]; render(); }
+else { state.folder = initial.path; selectMod(initial.node, false); }
+</script>
+
+</body></html>
