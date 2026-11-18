@@ -1374,6 +1374,16 @@
       "summary": "Curios API に「重ね着（頭・胴・脚・足）」の4つのスロットを追加し、バニラの防具欄と同じように防具を装備できるようにするMODです。バニラ欄の防具と重ね着の防具の両方の効果が乗ります。",
       "versions": [
         {
+          "version": "1.0.7",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/layeredarmor/1.20.1-forge/layeredarmor-forge-1.20.1-1.0.7.jar",
+          "fileName": "layeredarmor-forge-1.20.1-1.0.7.jar",
+          "sha256": "55ca52cfa69f0ae098713d5d2af9f38de2a14e89436275ec83751358c2aa6adc",
+          "changelog": "クリエイティブのアイテム検索などで「Duplicate Capability Key: curios:item」が出てクラッシュする不具合を修正しました。他のMODが同じ防具に Curios の機能を付けている場合は、そちらを優先します。",
+          "released": "2026-11-18"
+        },
+        {
           "version": "1.0.6",
           "mc": "1.20.1",
           "loader": "forge",

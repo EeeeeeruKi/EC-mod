@@ -10,6 +10,8 @@
     "InventoryMixin",
     "LivingEntityMixin",
     "PlayerMixin",
+    "AttachCapabilitiesEventMixin",
+    "CuriosEventHandlerMixin",
     "compat.ColdSweatEntityTempManagerMixin",
     "compat.CorpseDeathMixin",
     "compat.MekanismCommonPlayerTickHandlerMixin",
