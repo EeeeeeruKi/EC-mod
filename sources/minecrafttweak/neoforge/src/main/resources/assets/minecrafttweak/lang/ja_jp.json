@@ -180,5 +180,7 @@
   "minecrafttweak.config.browse.filter": "音楽ファイル（%s）",
   "minecrafttweak.system_language.entry": "システムの言語",
   "minecrafttweak.quark_menu.button": "minEcraft twEEk",
-  "minecrafttweak.quark_menu.tooltip": "minEcraft twEEk の設定を開きます。"
+  "minecrafttweak.quark_menu.tooltip": "minEcraft twEEk の設定を開きます。",
+  "minecrafttweak.feature.english_search": "英語でも検索",
+  "minecrafttweak.feature.english_search.desc": "いまの言語の名前に加えて、英語の名前でもアイテムを検索できるようにします。クリエイティブのインベントリ・レシピ本・JEI・EMI・AE2 の端末の検索に使えます。オン・オフを変えたあとは、ワールドに入り直すと JEI と EMI にも反映されます。"
 }

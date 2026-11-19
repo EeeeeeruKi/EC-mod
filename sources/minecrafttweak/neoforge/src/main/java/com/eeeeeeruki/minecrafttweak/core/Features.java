@@ -1,6 +1,7 @@
 package com.eeeeeeruki.minecrafttweak.core;
 
 import com.eeeeeeruki.minecrafttweak.feature.client.MenuMusicFeature;
+import com.eeeeeeruki.minecrafttweak.feature.client.EnglishSearchFeature;
 import com.eeeeeeruki.minecrafttweak.feature.client.PauseMusicFeature;
 import com.eeeeeeruki.minecrafttweak.feature.client.SystemLanguageFeature;
 import com.eeeeeeruki.minecrafttweak.feature.tweaks.XpPickupFeature;
@@ -25,6 +26,8 @@ public final class Features {
         add(new MenuMusicFeature());
         // 4
         add(new PauseMusicFeature());
+        // 5
+        add(new EnglishSearchFeature());
     }
 
     private Features() {

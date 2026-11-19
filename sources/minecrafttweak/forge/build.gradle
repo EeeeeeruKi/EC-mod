@@ -40,6 +40,8 @@ repositories {
 
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+    // 英語でも検索: JEI と EMI の API（別名の登録）。ゲームに入っていなければ使われない
+    compileOnly files('libs/jei-forge.jar', 'libs/emi-forge.jar')
 }
 
 tasks.named('processResources', ProcessResources).configure {
@@ -65,6 +67,7 @@ tasks.named('jar', Jar).configure {
                 'Implementation-Title'    : project.name,
                 'Implementation-Version'  : project.jar.archiveVersion,
                 'Implementation-Vendor'   : 'EeeeeeruKi',
+                'MixinConfigs'            : 'minecrafttweak.mixins.json',
         ])
     }
     finalizedBy 'reobfJar'

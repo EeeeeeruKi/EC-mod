@@ -116,6 +116,8 @@ configurations {
 }
 
 dependencies {
+    // 英語でも検索: JEI と EMI の API（別名の登録）。ゲームに入っていなければ使われない
+    compileOnly files('libs/jei-neoforge.jar', 'libs/emi-neoforge.jar')
     // Example optional mod dependency with JEI
     // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
     // compileOnly "mezz.jei:jei-${mc_version}-common-api:${jei_version}"
