@@ -137,14 +137,43 @@ def powered(rid):
     if any(k in p for k in ('bin','tank','energy_cube','cable','pipe','tube','transporter','conductor')): return False
     return is_machine(rid) or p in ('chargepad','laser','seismic_vibrator','dimensional_stabilizer','digital_miner','electric_pump',
                                     'fluidic_plenisher','formulaic_assemblicator','modification_station','resistive_heater')
+MAT_NAMES = [('オスミウム','osmium'),('青銅','bronze'),('ラピスラズリ','lapis_lazuli'),('精製グロウストーン','refined_glowstone'),('精製黒曜石','refined_obsidian'),('鋼鉄','steel')]
+TOOL_WORDS = ('分解機','Tool','ツルハシ','パクセル','斧','オノ','シャベル','ドリル')
+def mine_op(e, text, found, main, state):
+    """A player breaking blocks with a tool. Returns None when the text is not about breaking blocks by hand."""
+    tool = None
+    for p, n, rid in found:
+        if any(w in n for w in TOOL_WORDS) and rid not in blocks: tool = rid
+    if tool is None and e['id'] not in blocks and any(w in names_rev.get(e['id'], '') for w in TOOL_WORDS): tool = e['id']
+    targets = [rid for p, n, rid in found if rid in blocks or rid.startswith('minecraft:')]
+    mentions_main = main in [rid for _, _, rid in found]
+    targets = [t for t in targets if t != tool and t != main]
+    if main and (mentions_main or not targets) and not targets:
+        # the scene's own block (a tank): broken where it stands, and it drops as an item that keeps its contents
+        if not state.get('placed'): return None
+        return {'op':'mine','tool':tool or 'minecraft:iron_pickaxe','place':[],'targets':[[3,1,3]],'mode':'one',
+                'stand':[2.2,1,3.5],'yaw':-90,'drop':main}
+    if not targets: return None
+    if 'つながった' in text or '一括' in text:   # vein mining: one break takes the whole cluster
+        cells = [[2,1,1],[3,1,1],[4,1,1],[3,2,1],[2,1,0],[4,2,1]]
+        return {'op':'mine','tool':tool or 'minecraft:iron_pickaxe','place':[[c, targets[0]] for c in cells],'targets':cells,'mode':'vein',
+                'stand':[3.5,1,2.4],'yaw':180,'drop':None}
+    if 'まとめて' in text or '壁' in text:          # a wall broken all at once
+        cells = [[x,y,1] for y in (1,2) for x in (2,3,4)]
+        return {'op':'mine','tool':tool or 'minecraft:iron_pickaxe','place':[[c, targets[0]] for c in cells],'targets':cells,'mode':'all',
+                'stand':[3.5,1,2.4],'yaw':180,'drop':None}
+    cells = [[1+i,1,1] for i in range(min(4, len(targets)))]
+    return {'op':'mine','tool':tool or 'minecraft:iron_pickaxe','place':[[c, t] for c, t in zip(cells, targets)],'targets':cells,
+            'mode':'fast' if 'すばやく' in text or '速' in text else 'each','stand':[1.5,1,2.4],'yaw':180,'drop':None}
+
 def compile_action(e, text, state):
     ops = []
     main = e['id'] if e['id'] in blocks else None
     cfound = find_all(text, chems)
     cspans = [(p, p+len(n)) for p, n, _ in cfound]
-    found = [f for f in find_all(text, names) if not any(a <= f[0] < b for a, b in cspans)]
+    found = [f for f in find_all(text, names) if not any(a <= f[0] and f[0]+len(f[1]) <= b and (b-a) > len(f[1]) for a, b in cspans)]
     ispans = [(p, p+len(n)) for p, n, _ in found]
-    cfound = [c for c in cfound if not any(a <= c[0] and c[0]+len(c[1]) <= b and (b-a) > len(c[1]) for a, b in ispans)]
+    cfound = [c for c in cfound if not any(a <= c[0] and c[0]+len(c[1]) <= b and (b-a) >= len(c[1]) for a, b in ispans)]
     # infrastructure
     def place_main():
         if main and not state.get('placed'):
@@ -202,6 +231,15 @@ def compile_action(e, text, state):
         ops.append({'op':'laser','from':[3.5,1.5,3.0],'to':[3.5,1.5,0.5],'width':0.12 if '太い' in text else 0.06})
     if '稲妻' in text: ops.append({'op':'lightning'})
     if '爆発' in text: ops.append({'op':'explode','r':2.5 if '大きな' in text else 1.5,'break':'壊れずに' not in text})
+    mats = [m for n, m in MAT_NAMES if n in text]
+    if '防具' in text and '着' in text and len(mats) > 1:
+        sets = [[[sl, f'mekanismtools:{m}_{pc}'] for sl, pc in (('HEAD','helmet'),('CHEST','chestplate'),('LEGS','leggings'),('FEET','boots'))] for m in mats]
+        ops.append({'op':'player','pose':'STAND','equip':[],'sets':sets,'move':False,'rise':False,'at':[3.5,1,3.5]})
+        return ops
+    if '壊' in text and 'レーザー' not in text and '爆発' not in text and '壊れずに' not in text:
+        mo = mine_op(e, text, found, main, state)
+        if mo:
+            ops.append(mo); return ops
     if 'プレイヤー' in text or '着た' in text or '履いた' in text:
         pose = 'STAND'
         for k, p in [('飛び回','FLY'),('上昇','FLY'),('浮か','FLY'),('とどまる','FLY'),('速く走','SPRINT'),('走','SPRINT'),('歩','WALK'),('登','WALK'),('飛び降','WALK'),
@@ -224,8 +262,13 @@ def compile_action(e, text, state):
         ops.append(po)
         return ops
     if 'クラフト' in text:
-        ins = [[rid, count_after(text, p+len(n))] for p, n, rid in found if p < (text.rfind('クラフト'))]
-        outs = [[rid, 1] for p, n, rid in found if p > text.rfind('クラフト')]
+        cut = text.rfind('で、') if 'で、' in text else -1
+        if cut > 0:
+            ins = [[rid, count_after(text, p+len(n))] for p, n, rid in found if p < cut]
+            outs = [[rid, 1] for p, n, rid in found if cut < p < text.rfind('クラフト')]
+        else:
+            ins = [[rid, count_after(text, p+len(n))] for p, n, rid in found if p < (text.rfind('クラフト'))]
+            outs = [[rid, 1] for p, n, rid in found if p > text.rfind('クラフト')]
         if not outs and ins: outs = [ins.pop()]
         if not outs: outs = [[e['items'][0], 1]]
         ops.append({'op':'panel','title':'minecraft:crafting_table','in':ins[:9],'out':outs[:2],'gauge':None})

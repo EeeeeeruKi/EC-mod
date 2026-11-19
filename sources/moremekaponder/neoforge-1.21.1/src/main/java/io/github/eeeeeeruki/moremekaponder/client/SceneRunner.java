@@ -30,7 +30,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.Item;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
@@ -50,6 +52,8 @@ final class SceneRunner {
     private boolean placed;
     private ElementLink<BeamElement> laser;
     private ElementLink<PlayerElement> player;
+    private Vec3 playerAt = Vec3.ZERO;
+    private final java.util.Map<EquipmentSlot, ItemStack> worn = new java.util.EnumMap<>(EquipmentSlot.class);
     private ElementLink<EntityElement> mob;
     private Vec3 mobPos = Vec3.ZERO;
     private final List<ElementLink<? extends PonderElement>> transient_ = new ArrayList<>();
@@ -218,6 +222,7 @@ final class SceneRunner {
                 scene.idle(20);
             }
             case "player" -> player(o);
+            case "mine" -> mine(o);
             case "click" -> {
                 Vec3 at = o.has("at") ? vec(o.getAsJsonArray("at")) : TOP;
                 InputElementBuilder in = scene.overlay().showControls(at, Pointing.DOWN, 40);
@@ -334,26 +339,68 @@ final class SceneRunner {
         }
     }
 
+    /** The player figure, made once per scene; later steps move it instead of making a new one. */
+    private void ensurePlayer(Vec3 feet, float yaw) {
+        if (player == null) {
+            player = fx.player(feet, yaw);
+            playerAt = feet;
+            scene.idle(10);
+        } else if (!feet.equals(playerAt)) {
+            fx.playerPose(player, PlayerElement.PlayerPose.WALK);
+            fx.playerMove(player, feet, 20);
+            scene.idle(22);
+            fx.playerPose(player, PlayerElement.PlayerPose.STAND);
+            playerAt = feet;
+        }
+        fx.playerTurn(player, yaw, 5);
+    }
+
+    /** Puts gear on piece by piece, the way a player dresses: a swing and the equip sound for each piece. */
+    private void wear(JsonArray equip) {
+        for (JsonElement e : equip) {
+            JsonArray a = e.getAsJsonArray();
+            EquipmentSlot slot = EquipmentSlot.valueOf(a.get(0).getAsString());
+            ItemStack s = stack(a.get(1).getAsString(), 1);
+            if (s.isEmpty() || ItemStack.isSameItem(s, worn.getOrDefault(slot, ItemStack.EMPTY))) continue;
+            worn.put(slot, s);
+            if (slot == EquipmentSlot.MAINHAND || slot == EquipmentSlot.OFFHAND) {
+                fx.playerEquip(player, slot, s);
+                continue;
+            }
+            fx.playerSwing(player);
+            fx.playerEquip(player, slot, s);
+            fx.sound(s.getItem() instanceof ArmorItem armor ? armor.getMaterial().value().equipSound() : SoundEvents.ARMOR_EQUIP_GENERIC, 1f, 1f);
+            scene.idle(8);
+        }
+    }
+
     private void player(JsonObject o) {
         Vec3 feet = o.has("at") ? vec(o.getAsJsonArray("at")) : new Vec3(0.5, 1, 5.5);
-        if (player == null) {
-            player = fx.player(feet, 135);
-            scene.idle(10);
+        ensurePlayer(feet, 135);
+        fx.playerPose(player, PlayerElement.PlayerPose.STAND);
+        if (o.has("sets")) {
+            // several armor sets: the player changes from one set into the next
+            for (JsonElement set : o.getAsJsonArray("sets")) {
+                wear(set.getAsJsonArray());
+                fx.playerTurn(player, 135 + 180, 20);
+                scene.idle(22);
+                fx.playerTurn(player, 135 + 360, 20);
+                scene.idle(25);
+            }
+            return;
         }
-        for (JsonElement e : o.getAsJsonArray("equip")) {
-            JsonArray a = e.getAsJsonArray();
-            ItemStack s = stack(a.get(1).getAsString(), 1);
-            if (!s.isEmpty()) fx.playerEquip(player, EquipmentSlot.valueOf(a.get(0).getAsString()), s);
-        }
+        wear(o.getAsJsonArray("equip"));
         PlayerElement.PlayerPose pose = PlayerElement.PlayerPose.valueOf(o.get("pose").getAsString());
         fx.playerPose(player, pose);
         scene.idle(10);
         if (o.get("move").getAsBoolean()) {
             fx.playerTurn(player, -90, 5);
             fx.playerMove(player, feet.add(2, 0, 0), pose == PlayerElement.PlayerPose.SPRINT ? 20 : 40);
+            playerAt = feet.add(2, 0, 0);
             scene.idle(45);
         } else if (o.get("rise").getAsBoolean()) {
             fx.playerMove(player, feet.add(0, 2.5, 0), 40);
+            playerAt = feet.add(0, 2.5, 0);
             fx.particleLine(ParticleTypes.FLAME, feet.add(0, 0.6, 0), feet.add(0, 2.2, 0), 10);
             scene.idle(45);
         } else if (pose == PlayerElement.PlayerPose.USE_ITEM) {
@@ -362,6 +409,108 @@ final class SceneRunner {
         } else {
             scene.idle(30);
         }
+    }
+
+    /**
+     * A player breaking blocks with a tool: swings while the crack grows, then the block breaks.
+     * mode: each (one by one), fast (one by one, quickly), all (every block at once), vein (one break takes the whole cluster), one.
+     */
+    private void mine(JsonObject o) {
+        for (JsonElement e : o.getAsJsonArray("place")) {
+            JsonArray a = e.getAsJsonArray();
+            BlockState st = block(a.get(1).getAsString());
+            if (st == null) continue;
+            place(pos(a.get(0).getAsJsonArray()), st);
+            scene.idle(3);
+        }
+        scene.idle(10);
+        List<BlockPos> targets = new ArrayList<>();
+        for (JsonElement e : o.getAsJsonArray("targets")) targets.add(pos(e.getAsJsonArray()));
+        if (targets.isEmpty()) return;
+        Vec3 stand = vec(o.getAsJsonArray("stand"));
+        float yaw = o.get("yaw").getAsFloat();
+        ensurePlayer(stand, yaw);
+        fx.playerPose(player, PlayerElement.PlayerPose.STAND);
+        ItemStack tool = stack(o.get("tool").getAsString(), 1);
+        JsonArray hand = new JsonArray();
+        JsonArray pair = new JsonArray();
+        pair.add("MAINHAND");
+        pair.add(o.get("tool").getAsString());
+        hand.add(pair);
+        wear(hand);
+        fx.playerLook(player, 35);
+        scene.idle(10);
+        String mode = o.get("mode").getAsString();
+        int step = mode.equals("fast") || mode.equals("all") || mode.equals("vein") ? 1 : 3;
+        boolean sideways = yaw == 180 || yaw == 0;
+        switch (mode) {
+            case "all" -> {
+                breakTogether(targets, step);
+                scene.idle(10);
+            }
+            case "vein" -> {
+                BlockPos first = targets.get(0);
+                dig(first, step);
+                scene.idle(3);
+                for (BlockPos p : targets.subList(1, targets.size())) {
+                    breakNow(p);
+                    scene.idle(2);
+                }
+                scene.idle(10);
+            }
+            default -> {
+                for (BlockPos p : targets) {
+                    if (sideways && player != null) {
+                        Vec3 to = new Vec3(p.getX() + 0.5, stand.y, stand.z);
+                        if (!to.equals(playerAt)) {
+                            fx.playerMove(player, to, 6);
+                            playerAt = to;
+                            scene.idle(7);
+                        }
+                    }
+                    dig(p, step);
+                    scene.idle(mode.equals("fast") ? 3 : 8);
+                }
+            }
+        }
+        if (o.has("drop") && !o.get("drop").isJsonNull()) {
+            ItemStack s = stack(o.get("drop").getAsString(), 1);
+            if (!s.isEmpty()) drops.add(scene.world().createItemEntity(Vec3.atCenterOf(targets.get(0)), new Vec3(0, 0.15, 0), s));
+            if (targets.get(0).equals(CENTER)) placed = false;
+        }
+        fx.playerLook(player, 0);
+        scene.idle(20);
+    }
+
+    /** Swings at one block until the crack is full and it breaks (the 10th step breaks it and clears the crack). */
+    private void dig(BlockPos pos, int ticksPerStage) {
+        for (int stage = 0; stage < 10; stage++) {
+            if (stage % 2 == 0) fx.playerSwing(player);
+            if (stage == 9) breakSound(pos);
+            scene.world().incrementBlockBreakingProgress(pos);
+            scene.idle(ticksPerStage);
+        }
+    }
+
+    private void breakTogether(List<BlockPos> targets, int ticksPerStage) {
+        for (int stage = 0; stage < 10; stage++) {
+            if (stage % 2 == 0) fx.playerSwing(player);
+            if (stage == 9) breakSound(targets.get(0));
+            for (BlockPos p : targets) scene.world().incrementBlockBreakingProgress(p);
+            scene.idle(ticksPerStage);
+        }
+    }
+
+    private void breakSound(BlockPos pos) {
+        scene.addInstruction(ps -> {
+            BlockState st = ps.getWorld().getBlockState(pos);
+            if (!st.isAir()) ps.addElement(new io.github.eeeeeeruki.ponderererer.element.SoundElement(st.getSoundType().getBreakSound(), 1f, 0.8f));
+        });
+    }
+
+    private void breakNow(BlockPos pos) {
+        breakSound(pos);
+        scene.world().destroyBlock(pos);
     }
 
     private void mobAct(String kind) {

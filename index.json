@@ -1566,6 +1566,16 @@
       "summary": "Mekanism の機械・ケーブル・アイテム・道具・防具の使い方を、思案画面（Ponder）で解説するMODです。公式アドオン（Generators・Additions・Tools）にも対応しています。",
       "versions": [
         {
+          "version": "1.0.7",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/moremekaponder/1.21.1-neoforge/moremekaponder-neoforge-1.21.1-1.0.7.jar",
+          "fileName": "moremekaponder-neoforge-1.21.1-1.0.7.jar",
+          "sha256": "1dc3e0a8719c0809cfb5c276e5041180c4487f676addd913d56832d38f595cff",
+          "changelog": "ツールでブロックを掘る場面と、防具を着る場面をプレイヤーで見せるようにしました。掘るときはひびが入ってから壊れます。Mekanism Tools のクラフトの場面の不具合も直しました。",
+          "released": "2026-11-20"
+        },
+        {
           "version": "1.0.6",
           "mc": "1.21.1",
           "loader": "neoforge",
