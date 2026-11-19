@@ -1,0 +1,13 @@
+{
+ "ponderererer.ponder.ponderererer_demo_beams.header": "Ponderererer: Lasers, Lightning and Explosions",
+ "ponderererer.ponder.ponderererer_demo_beams.text_1": "A laser beam drawn with FX.laser",
+ "ponderererer.ponder.ponderererer_demo_beams.text_2": "An electric arc drawn with FX.lightning",
+ "ponderererer.ponder.ponderererer_demo_beams.text_3": "FX.explosion: particles, flash, sound and broken blocks",
+ "ponderererer.ponder.ponderererer_demo_gauges.header": "Ponderererer: Gauges and Machine Screens",
+ "ponderererer.ponder.ponderererer_demo_gauges.text_1": "FX.gauge shows an animated bar next to a block",
+ "ponderererer.ponder.ponderererer_demo_gauges.text_2": "FX.panel draws a fake machine window with slots",
+ "ponderererer.ponder.ponderererer_demo_gauges.text_3": "FX.tint darkens the view, e.g. for night",
+ "ponderererer.ponder.ponderererer_demo_players.header": "Ponderererer: Player Figures",
+ "ponderererer.ponder.ponderererer_demo_players.text_1": "FX.player places a posable player",
+ "ponderererer.ponder.ponderererer_demo_players.text_2": "It can wear armor (mod armor too) and move around"
+}

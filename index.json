@@ -1460,6 +1460,16 @@
       "summary": "Ponder（思案画面）に、レーザー・稲妻・爆発・ゲージ・機械の画面・プレイヤーなどの描画を追加するライブラリMODです。思案画面を作るMODから使います。",
       "versions": [
         {
+          "version": "1.1.1",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/ponderererer/1.21.1-neoforge/ponderererer-neoforge-1.21.1-1.1.1.jar",
+          "fileName": "ponderererer-neoforge-1.21.1-1.1.1.jar",
+          "sha256": "94d4a10128dbe28dd04cf48b185b2e6c10c86d6c682c2ea2f6321644d1f5c433",
+          "changelog": "見本の思案画面の文字が「ponderererer.ponder.…」のまま表示される不具合、画面を暗くする演出で思案画面のボタンが隠れる不具合、エリトラで滑空するプレイヤーの体が立ったままになる不具合を直しました。",
+          "released": "2026-11-19"
+        },
+        {
           "version": "1.1.0",
           "mc": "1.21.1",
           "loader": "neoforge",

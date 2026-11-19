@@ -35,6 +35,7 @@ public class PlayerElement extends FxElement {
     private PlayerPose pose = PlayerPose.STAND;
     private final Map<EquipmentSlot, ItemStack> equipment = new EnumMap<>(EquipmentSlot.class);
     private boolean swingQueued;
+    private int glideTicks;
     private FxPlayer entity;
     private final UUID skin;
 
@@ -129,6 +130,14 @@ public class PlayerElement extends FxElement {
         };
         e.walkAnimation.update(pose == PlayerPose.FLY || pose == PlayerPose.ELYTRA ? 0f : speed, 0.4f);
         e.setDeltaMovement(pose == PlayerPose.ELYTRA ? Vec3.directionFromRotation(0, yaw).scale(0.5) : delta);
+        if (pose == PlayerPose.ELYTRA) {
+            glideTicks++;
+            e.setFallFlyTicks(glideTicks);
+            if (!e.isFallFlying()) e.startFallFlying();
+        } else {
+            glideTicks = 0;
+            e.setFallFlyTicks(0);
+        }
         if (swingQueued) {
             swingQueued = false;
             e.swing(InteractionHand.MAIN_HAND);

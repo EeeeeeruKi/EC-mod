@@ -76,7 +76,7 @@ public class PanelBuilder {
     PanelElement build() {
         PanelElement e = new PanelElement(anchor, title, width, height);
         if (offsetX != null) e.setOffset(offsetX, offsetY);
-        else if (anchor == null) e.setOffset(0, 0);
+        else if (anchor == null) e.setOffset(-width / 2, -height / 2 - 20); // centred, a little above the middle
         steps.forEach(s -> s.accept(e));
         return e;
     }

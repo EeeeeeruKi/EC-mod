@@ -1,0 +1,13 @@
+{
+ "ponderererer.ponder.ponderererer_demo_beams.header": "Ponderererer: レーザー・稲妻・爆発",
+ "ponderererer.ponder.ponderererer_demo_beams.text_1": "FX.laser でレーザー光線を描けます。",
+ "ponderererer.ponder.ponderererer_demo_beams.text_2": "FX.lightning で電気の線を描けます。",
+ "ponderererer.ponder.ponderererer_demo_beams.text_3": "FX.explosion は、パーティクル・光・音を出し、ブロックを壊すこともできます。",
+ "ponderererer.ponder.ponderererer_demo_gauges.header": "Ponderererer: ゲージと機械の画面",
+ "ponderererer.ponder.ponderererer_demo_gauges.text_1": "FX.gauge で、ブロックの横に動くゲージを出せます。",
+ "ponderererer.ponder.ponderererer_demo_gauges.text_2": "FX.panel で、スロットのある機械の画面のような表示を出せます。",
+ "ponderererer.ponder.ponderererer_demo_gauges.text_3": "FX.tint で、夜のように画面を暗くできます。",
+ "ponderererer.ponder.ponderererer_demo_players.header": "Ponderererer: プレイヤー",
+ "ponderererer.ponder.ponderererer_demo_players.text_1": "FX.player で、動きを付けられるプレイヤーを置けます。",
+ "ponderererer.ponder.ponderererer_demo_players.text_2": "防具（MODの防具も）を着せたり、動かしたりできます。"
+}

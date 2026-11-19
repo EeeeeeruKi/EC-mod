@@ -62,8 +62,8 @@ public abstract class FxOverlay extends PonderElementBase implements PonderOverl
             x = (int) p.x + offsetX;
             y = (int) p.y + offsetY;
         } else {
-            x = offsetX;
-            y = offsetY;
+            x = screen.width / 2 + offsetX;
+            y = screen.height / 2 + offsetY;
         }
         graphics.pose().pushPose();
         graphics.pose().translate(0, 0, 400);

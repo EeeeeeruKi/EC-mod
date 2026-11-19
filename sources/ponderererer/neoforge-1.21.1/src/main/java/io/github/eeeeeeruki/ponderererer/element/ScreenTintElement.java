@@ -2,6 +2,7 @@ package io.github.eeeeeeruki.ponderererer.element;
 
 import net.createmod.ponder.foundation.PonderScene;
 import net.createmod.ponder.foundation.ui.PonderUI;
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.GuiGraphics;
 
 /**
@@ -26,6 +27,12 @@ public class ScreenTintElement extends FxOverlay {
 
     @Override
     protected void draw(PonderScene scene, PonderUI screen, GuiGraphics g, float pt, float a, int x, int y) {
+        // Draw without writing depth: the tint darkens the scene but the Ponder buttons
+        // and text drawn after it must stay on top.
+        g.flush();
+        RenderSystem.depthMask(false);
         g.fill(0, 0, screen.width, screen.height, withAlpha(color, a));
+        g.flush();
+        RenderSystem.depthMask(true);
     }
 }
