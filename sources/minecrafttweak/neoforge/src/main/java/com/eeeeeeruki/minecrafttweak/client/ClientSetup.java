@@ -19,6 +19,7 @@ public final class ClientSetup {
             feature.registerClient(modBus);
         }
         QuarkMenuButton.register();
+        TitleScreenButton.register();
         TextSettings.registerProvider(new VanillaCodes());
         TextSettings.registerProvider(ModCodes.sodium());
         TextSettings.registerProvider(ModCodes.sodiumExtra());

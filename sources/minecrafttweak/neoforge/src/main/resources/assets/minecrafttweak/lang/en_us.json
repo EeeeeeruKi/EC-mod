@@ -182,5 +182,9 @@
   "minecrafttweak.quark_menu.button": "minEcraft twEEk",
   "minecrafttweak.quark_menu.tooltip": "Opens the minEcraft twEEk settings.",
   "minecrafttweak.feature.english_search": "Search in English too",
-  "minecrafttweak.feature.english_search.desc": "Lets you search items by their English names as well as the names in your language. Works in the creative inventory, the recipe book, JEI, EMI and AE2 terminals. After turning it on or off, rejoin the world for JEI and EMI to pick it up."
+  "minecrafttweak.feature.english_search.desc": "Lets you search items by their English names as well as the names in your language. Works in the creative inventory, the recipe book, JEI, EMI and AE2 terminals. After turning it on or off, rejoin the world for JEI and EMI to pick it up.",
+  "minecrafttweak.config.code_screen": "Setting Codes",
+  "minecrafttweak.config.code_screen.tooltip": "Import or copy setting codes, and open the ID list.",
+  "minecrafttweak.config.home_help": "Pick a category to turn its features on or off.",
+  "minecrafttweak.title_button": "Open the minEcraft twEEk settings."
 }

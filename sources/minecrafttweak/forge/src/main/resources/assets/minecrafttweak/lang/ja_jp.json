@@ -182,5 +182,9 @@
   "minecrafttweak.quark_menu.button": "minEcraft twEEk",
   "minecrafttweak.quark_menu.tooltip": "minEcraft twEEk の設定を開きます。",
   "minecrafttweak.feature.english_search": "英語でも検索",
-  "minecrafttweak.feature.english_search.desc": "いまの言語の名前に加えて、英語の名前でもアイテムを検索できるようにします。クリエイティブのインベントリ・レシピ本・JEI・EMI・AE2 の端末の検索に使えます。オン・オフを変えたあとは、ワールドに入り直すと JEI と EMI にも反映されます。"
+  "minecrafttweak.feature.english_search.desc": "いまの言語の名前に加えて、英語の名前でもアイテムを検索できるようにします。クリエイティブのインベントリ・レシピ本・JEI・EMI・AE2 の端末の検索に使えます。オン・オフを変えたあとは、ワールドに入り直すと JEI と EMI にも反映されます。",
+  "minecrafttweak.config.code_screen": "設定コード",
+  "minecrafttweak.config.code_screen.tooltip": "設定コードの読み込み・コピーと、ID一覧を開きます。",
+  "minecrafttweak.config.home_help": "分類を選ぶと、その分類の機能をオン・オフできます。",
+  "minecrafttweak.title_button": "minEcraft twEEk の設定を開きます。"
 }
