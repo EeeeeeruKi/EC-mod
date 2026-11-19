@@ -141,6 +141,9 @@ public final class FX {
                     if (Vec3.atCenterOf(pos).distanceTo(center) > radius) continue;
                     BlockState state = world.getBlockState(pos);
                     if (state.isAir()) continue;
+                    // keep the base plate and unbreakable blocks (barriers, bedrock) intact
+                    if (pos.getY() <= world.getBounds().minY()) continue;
+                    if (state.getDestroySpeed(world, pos) < 0) continue;
                     world.addBlockDestroyEffects(pos.immutable(), state);
                     world.setBlock(pos.immutable(), air, 3);
                 }

@@ -10,6 +10,7 @@ import java.util.UUID;
 public class FxPlayer extends RemotePlayer {
     public FxPlayer(ClientLevel level, UUID id, String name) {
         super(level, new GameProfile(id, name));
+        setSilent(true); // no equip sounds when the figure is dressed
     }
 
     public void stepSwing() {

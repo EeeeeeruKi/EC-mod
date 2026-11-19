@@ -143,9 +143,9 @@ def compile_action(e, text, state):
         if kind in state: return
         state[kind] = True
         P = {'power':('mekanism:basic_energy_cube','mekanism:basic_universal_cable',[0,1,3],[[1,1,3],[2,1,3]]),
-             'tube':('mekanism:basic_chemical_tank','mekanism:basic_pressurized_tube',[3,1,0],[[3,1,1],[3,1,2]]),
+             'tube':('mekanism:basic_chemical_tank','mekanism:basic_pressurized_tube',[3,1,6],[[3,1,5],[3,1,4]]),
              'pipe':('mekanism:basic_fluid_tank','mekanism:basic_mechanical_pipe',[6,1,3],[[5,1,3],[4,1,3]]),
-             'item':('minecraft:chest','mekanism:basic_logistical_transporter',[3,1,6],[[3,1,5],[3,1,4]])}[kind]
+             'item':('minecraft:chest','mekanism:basic_logistical_transporter',[3,1,0],[[3,1,1],[3,1,2]])}[kind]
         ops.append({'op':'block','pos':P[2],'id':P[0]})
         ops.append({'op':'line','id':P[1],'cells':P[3]})
     focus = None
@@ -170,11 +170,11 @@ def compile_action(e, text, state):
         ops.append({'op':'laseroff'}); return ops
     for mob, et in [('ブタ','pig'),('ニワトリ','chicken'),('ロビット','mekanism:robit')]:
         if mob in text and ('召喚' in text or '射線' in text or 'ニワトリを' in text):
-            ops.append({'op':'mob','type':et})
+            ops.append({'op':'mob','type':et,'pos':[3.5,1,1.5] if 'レーザー' in text or 'ブタ' in text else [5.5,1,1.5]})
     if 'ブタが死亡' in text or '浮かび上が' in text or 'ロビットが' in text:
         ops.append({'op':'mobact','kind':'kill' if '死亡' in text else ('float' if '浮か' in text else 'move')})
     if 'レーザー' in text:
-        ops.append({'op':'laser','from':[3.5,1.5,3.5],'to':[6.5,1.5,3.5],'width':0.12 if '太い' in text else 0.06})
+        ops.append({'op':'laser','from':[3.5,1.5,3.0],'to':[3.5,1.5,0.5],'width':0.12 if '太い' in text else 0.06})
     if '稲妻' in text: ops.append({'op':'lightning'})
     if '爆発' in text: ops.append({'op':'explode','r':2.5 if '大きな' in text else 1.5,'break':'壊れずに' not in text})
     if 'プレイヤー' in text or '着た' in text or '履いた' in text:
@@ -194,7 +194,9 @@ def compile_action(e, text, state):
             equip = [['HEAD','mekanism:hazmat_mask'],['CHEST','mekanism:hazmat_gown'],['LEGS','mekanism:hazmat_pants'],['FEET','mekanism:hazmat_boots']]
         if 'スキューバマスク' in text: equip = [['HEAD','mekanism:scuba_mask'],['CHEST','mekanism:scuba_tank']]
         move = pose in ('WALK','SPRINT')
-        ops.append({'op':'player','pose':pose,'equip':equip,'move':move,'rise':pose == 'FLY'})
+        po = {'op':'player','pose':pose,'equip':equip,'move':move,'rise':pose == 'FLY'}
+        if '上に乗' in text or 'そばに立' in text: po['at'] = [3.5,1.1,3.5] if '上に乗' in text else [2.5,1,4.5]
+        ops.append(po)
         return ops
     if 'クラフト' in text:
         ins = [[rid, count_after(text, p+len(n))] for p, n, rid in found if p < (text.rfind('クラフト'))]
@@ -243,6 +245,14 @@ def compile_action(e, text, state):
             if text[p+len(n):p+len(n)+2] in ('で右','で右','でス','でし') or text[p+len(n):p+len(n)+1] == 'で':
                 held = rid
         if held is None and e['id'] not in blocks: held = e['id']
+        m = re.search(r'(\S*?ケーブル)を.*?、(\S*?ケーブル)に変わる', text)
+        if m and 'ユニバーサル' in text:
+            a = find_all(m.group(1), names); b = find_all(m.group(2), names)
+            if a and b:
+                ops.append({'op':'line','id':a[-1][2],'cells':[[4,1,5],[5,1,5],[6,1,5]]})
+                ops.append({'op':'click','left':False,'sneak':False,'item':held,'at':[5.5,2,5.5]})
+                ops.append({'op':'swapcells','id':b[-1][2],'cells':[[4,1,5],[5,1,5],[6,1,5]]})
+                return ops
         ops.append({'op':'click','left':'左クリック' in text,'sneak':'スニーク' in text or 'しゃがみ' in text,'item':held})
         # tier upgrades / transformations
         m = re.search(r'([^、。を]+?)に変わる', text)
@@ -252,7 +262,7 @@ def compile_action(e, text, state):
         return ops
     # show / place things mentioned
     if 'レーザーの先' in text:
-        ops.append({'op':'block','pos':[6,1,3],'id':'minecraft:stone'}); ops.append({'op':'breakat','pos':[6,1,3]}); return ops
+        ops.append({'op':'block','pos':[3,1,0],'id':'minecraft:stone'}); ops.append({'op':'breakat','pos':[3,1,0]}); return ops
     if any(o['op'] in ('mob','mobact') for o in ops): return ops
     INFRA = {'mekanism:basic_universal_cable','mekanism:basic_pressurized_tube','mekanism:basic_mechanical_pipe','mekanism:basic_logistical_transporter'}
     shown = [rid for p, n, rid in found if rid != focus and rid not in INFRA and not (state.get('machine') == rid)]

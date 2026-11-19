@@ -50,6 +50,7 @@ final class SceneRunner {
     private ElementLink<BeamElement> laser;
     private ElementLink<PlayerElement> player;
     private ElementLink<EntityElement> mob;
+    private Vec3 mobPos = Vec3.ZERO;
     private final List<ElementLink<? extends PonderElement>> transient_ = new ArrayList<>();
     private final List<ElementLink<EntityElement>> drops = new ArrayList<>();
     private BlockPos crafter;
@@ -73,7 +74,7 @@ final class SceneRunner {
         scene.world().showSection(util.select().fromTo(0, 1, 0, 6, 3, 6), Direction.DOWN);
         if (data.get("main").isJsonNull()) {
             ItemStack hero = stack(data.get("item").getAsString(), 1);
-            if (!hero.isEmpty()) scene.world().createItemEntity(new Vec3(1.5, 1.6, 1.5), Vec3.ZERO, hero);
+            if (!hero.isEmpty()) scene.world().createItemEntity(new Vec3(0.5, 1.3, 0.5), Vec3.ZERO, hero);
             scene.idle(10);
         }
         for (JsonElement el : data.getAsJsonArray("steps")) {
@@ -121,8 +122,9 @@ final class SceneRunner {
 
     private static BlockState face(BlockState state) {
         for (Property<?> p : state.getProperties()) {
-            if (p instanceof DirectionProperty dp && p.getName().equals("facing") && dp.getPossibleValues().contains(Direction.SOUTH)) {
-                return state.setValue(dp, Direction.SOUTH);
+            if (p instanceof DirectionProperty dp && p.getName().equals("facing") && dp.getPossibleValues().contains(Direction.NORTH)) {
+                // Ponder's default camera looks at the north and west faces, so the front faces north
+                return state.setValue(dp, Direction.NORTH);
             }
         }
         return state;
@@ -164,6 +166,12 @@ final class SceneRunner {
                 place(CENTER, state);
                 scene.idle(15);
             }
+            case "swapcells" -> {
+                BlockState state = block(o.get("id").getAsString());
+                if (state == null) return;
+                for (JsonElement c : o.getAsJsonArray("cells")) scene.world().setBlock(pos(c.getAsJsonArray()), state, true);
+                scene.idle(15);
+            }
             case "breakat" -> {
                 scene.idle(25);
                 scene.world().destroyBlock(pos(o.getAsJsonArray("pos")));
@@ -200,7 +208,8 @@ final class SceneRunner {
             }
             case "player" -> player(o);
             case "click" -> {
-                InputElementBuilder in = scene.overlay().showControls(TOP, Pointing.DOWN, 40);
+                Vec3 at = o.has("at") ? vec(o.getAsJsonArray("at")) : TOP;
+                InputElementBuilder in = scene.overlay().showControls(at, Pointing.DOWN, 40);
                 in = o.get("left").getAsBoolean() ? in.leftClick() : in.rightClick();
                 if (o.get("sneak").getAsBoolean()) in = in.whileSneaking();
                 if (o.has("item") && !o.get("item").isJsonNull()) {
@@ -210,19 +219,24 @@ final class SceneRunner {
                 scene.idle(45);
             }
             case "mob" -> {
-                EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.get(rl(o.get("type").getAsString()));
-                mob = scene.world().createEntity(level -> {
-                    Entity e;
-                    try {
-                        e = type.create(level);
-                    } catch (RuntimeException ex) {
-                        e = null;
-                    }
-                    if (e == null) e = EntityType.PIG.create(level);
-                    e.setPos(5.5, 1, 3.5);
-                    e.setYRot(90);
-                    return e;
-                });
+                Vec3 at = o.has("pos") ? vec(o.getAsJsonArray("pos")) : new Vec3(5.5, 1, 1.5);
+                mobPos = at;
+                String type = o.get("type").getAsString();
+                if (type.contains(":") && !type.startsWith("minecraft:")) {
+                    // modded mobs (the Robit) need data a Ponder world can't give them: show the item instead
+                    ItemStack s = stack(type, 1);
+                    if (s.isEmpty()) return;
+                    mob = scene.world().createItemEntity(at.add(0, 0.3, 0), Vec3.ZERO, s);
+                } else {
+                    EntityType<?> et = BuiltInRegistries.ENTITY_TYPE.get(rl(type));
+                    mob = scene.world().createEntity(level -> {
+                        Entity e = et.create(level);
+                        if (e == null) e = EntityType.PIG.create(level);
+                        e.setPos(at.x, at.y, at.z);
+                        e.setYRot(180);
+                        return e;
+                    });
+                }
                 scene.idle(20);
             }
             case "mobact" -> mobAct(o.get("kind").getAsString());
@@ -254,7 +268,7 @@ final class SceneRunner {
         String title = o.get("title").isJsonNull() ? null : o.get("title").getAsString();
         if ("minecraft:crafting_table".equals(title)) {
             if (crafter == null) {
-                crafter = new BlockPos(5, 1, 5);
+                crafter = new BlockPos(5, 1, 1);
                 place(crafter, Blocks.CRAFTING_TABLE.defaultBlockState());
                 scene.idle(10);
             }
@@ -281,12 +295,12 @@ final class SceneRunner {
         setActive(target, true);
         scene.idle(40);
         setActive(target, false);
-        Vec3 front = Vec3.atCenterOf(target).add(0, -0.1, 0.65);
+        Vec3 front = Vec3.atCenterOf(target).add(0, -0.1, -0.65);
         for (JsonElement e : o.getAsJsonArray("out")) {
             JsonArray a = e.getAsJsonArray();
             ItemStack s = stack(a.get(0).getAsString(), a.get(1).getAsInt());
             if (s.isEmpty()) continue;
-            drops.add(scene.world().createItemEntity(front, new Vec3(0, 0.18, 0.12), s));
+            drops.add(scene.world().createItemEntity(front, new Vec3(0, 0.18, -0.12), s));
             scene.idle(6);
         }
         scene.idle(25);
@@ -295,7 +309,7 @@ final class SceneRunner {
     /** Chemicals and fluids: coloured particles running through the tube or pipe into the machine. */
     private void flow(List<Integer> colors, boolean out) {
         Vec3 c = Vec3.atCenterOf(CENTER);
-        Vec3 tube = new Vec3(3.5, 1.5, 0.5);
+        Vec3 tube = new Vec3(3.5, 1.5, 6.5);
         for (int col : colors) {
             Vector3f rgb = new Vector3f(((col >> 16) & 255) / 255f, ((col >> 8) & 255) / 255f, (col & 255) / 255f);
             DustParticleOptions dust = new DustParticleOptions(rgb, 1.2f);
@@ -308,9 +322,9 @@ final class SceneRunner {
     }
 
     private void player(JsonObject o) {
-        Vec3 feet = new Vec3(1.5, 1, 5.5);
+        Vec3 feet = o.has("at") ? vec(o.getAsJsonArray("at")) : new Vec3(0.5, 1, 5.5);
         if (player == null) {
-            player = fx.player(feet, 200);
+            player = fx.player(feet, 135);
             scene.idle(10);
         }
         for (JsonElement e : o.getAsJsonArray("equip")) {
@@ -323,7 +337,7 @@ final class SceneRunner {
         scene.idle(10);
         if (o.get("move").getAsBoolean()) {
             fx.playerTurn(player, -90, 5);
-            fx.playerMove(player, new Vec3(5.5, 1, 5.5), pose == PlayerElement.PlayerPose.SPRINT ? 20 : 40);
+            fx.playerMove(player, feet.add(2, 0, 0), pose == PlayerElement.PlayerPose.SPRINT ? 20 : 40);
             scene.idle(45);
         } else if (o.get("rise").getAsBoolean()) {
             fx.playerMove(player, feet.add(0, 2.5, 0), 40);
@@ -344,7 +358,7 @@ final class SceneRunner {
             case "kill" -> {
                 scene.idle(20);
                 scene.world().modifyEntity(m, Entity::discard);
-                fx.particleLine(ParticleTypes.POOF, new Vec3(5.5, 1.2, 3.5), new Vec3(5.5, 1.8, 3.5), 8);
+                fx.particleLine(ParticleTypes.POOF, mobPos.add(0, 0.2, 0), mobPos.add(0, 0.8, 0), 8);
                 mob = null;
                 scene.idle(20);
             }
@@ -355,8 +369,9 @@ final class SceneRunner {
                 }
             }
             default -> { // move to the center
+                double dx = (3.5 - mobPos.x) / 20, dz = (3.5 - mobPos.z) / 20;
                 for (int i = 0; i < 20; i++) {
-                    scene.world().modifyEntity(m, e -> e.setPos(e.getX() - 0.1, e.getY(), e.getZ()));
+                    scene.world().modifyEntity(m, e -> e.setPos(e.getX() + dx, e.getY() + (e.getY() < 1.15 ? 0.01 : 0), e.getZ() + dz));
                     scene.idle(2);
                 }
             }
@@ -365,8 +380,9 @@ final class SceneRunner {
     }
 
     private Vec3 nextSpot() {
-        Vec3[] spots = {new Vec3(1.5, 1.6, 1.5), new Vec3(5.5, 1.6, 1.5), new Vec3(1.5, 1.6, 5.5), new Vec3(5.5, 1.6, 5.5),
-                new Vec3(3.5, 1.6, 0.8), new Vec3(0.8, 1.6, 3.5)};
+        // free cells in front of the machine, away from cables, pipes, the crafting table and the player
+        Vec3[] spots = {new Vec3(1.5, 1.3, 1.5), new Vec3(2.5, 1.3, 1.5), new Vec3(1.5, 1.3, 0.5), new Vec3(2.5, 1.3, 0.5),
+                new Vec3(0.5, 1.3, 1.5), new Vec3(4.5, 1.3, 0.5)};
         return spots[itemSpot++ % spots.length];
     }
 
