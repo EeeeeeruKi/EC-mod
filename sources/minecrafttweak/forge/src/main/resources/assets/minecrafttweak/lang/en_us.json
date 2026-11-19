@@ -178,5 +178,7 @@
   "minecrafttweak.config.browse.tooltip": "Pick a music file on your computer.",
   "minecrafttweak.config.browse.title": "Choose a music file",
   "minecrafttweak.config.browse.filter": "Music files (%s)",
-  "minecrafttweak.system_language.entry": "System language"
+  "minecrafttweak.system_language.entry": "System language",
+  "minecrafttweak.quark_menu.button": "minEcraft twEEk",
+  "minecrafttweak.quark_menu.tooltip": "Opens the minEcraft twEEk settings."
 }

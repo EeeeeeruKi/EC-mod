@@ -1602,6 +1602,26 @@
       "summary": "Quark を前提MODにして、Quark にない小さな改善をたくさん詰め込んでいくためのMODです。機能は最初はすべてオフで、ひとつずつオンにできます。このMOD・Quark・バニラ・Sodium の設定を、短い設定コードでまとめてやりとりできます。",
       "versions": [
         {
+          "version": "1.7.2",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/minecrafttweak/1.21.1-neoforge/minecrafttweak-neoforge-1.21.1-1.7.2.jar",
+          "fileName": "minecrafttweak-neoforge-1.21.1-1.7.2.jar",
+          "sha256": "a7c7c234aebdc4d3dc43962704bdf7be4507cf4c1a62644854364fe11864dc2c",
+          "changelog": "Quark の設定画面（Q メニュー）の分類の並びのいちばん下に「minEcraft twEEk」のボタンを足しました。押すと、このMODの設定画面が開きます。",
+          "released": "2026-11-19"
+        },
+        {
+          "version": "1.7.2",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/minecrafttweak/1.20.1-forge/minecrafttweak-forge-1.20.1-1.7.2.jar",
+          "fileName": "minecrafttweak-forge-1.20.1-1.7.2.jar",
+          "sha256": "bd50cb12d03b51793216230231d2ea89b95498ace45235f7cfb05f0e663fb0a9",
+          "changelog": "Quark の設定画面（Q メニュー）の分類の並びのいちばん下に「minEcraft twEEk」のボタンを足しました。押すと、このMODの設定画面が開きます。",
+          "released": "2026-11-19"
+        },
+        {
           "version": "1.7.1",
           "mc": "1.21.1",
           "loader": "neoforge",

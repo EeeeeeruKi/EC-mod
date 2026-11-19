@@ -18,6 +18,7 @@ public final class ClientSetup {
         for (Feature feature : Features.all()) {
             feature.registerClient(modBus);
         }
+        QuarkMenuButton.register();
         TextSettings.registerProvider(new VanillaCodes());
         TextSettings.registerProvider(ModCodes.sodium());
         TextSettings.registerProvider(ModCodes.sodiumExtra());

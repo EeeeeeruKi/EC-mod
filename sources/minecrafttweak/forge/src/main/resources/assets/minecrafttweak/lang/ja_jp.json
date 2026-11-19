@@ -178,5 +178,7 @@
   "minecrafttweak.config.browse.tooltip": "パソコンの中の曲のファイルを選びます。",
   "minecrafttweak.config.browse.title": "曲のファイルを選んでください",
   "minecrafttweak.config.browse.filter": "音楽ファイル（%s）",
-  "minecrafttweak.system_language.entry": "システムの言語"
+  "minecrafttweak.system_language.entry": "システムの言語",
+  "minecrafttweak.quark_menu.button": "minEcraft twEEk",
+  "minecrafttweak.quark_menu.tooltip": "minEcraft twEEk の設定を開きます。"
 }
