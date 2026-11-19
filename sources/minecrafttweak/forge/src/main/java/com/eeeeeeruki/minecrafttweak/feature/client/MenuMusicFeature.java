@@ -14,13 +14,13 @@ public class MenuMusicFeature extends Feature {
 
     public MenuMusicFeature() {
         super("custom_menu_music", FeatureCategory.CLIENT,
-                "Plays your own music (an .ogg or .wav URL or file path) on the menu screens.");
+                "Plays your own music (an .ogg, .mp3 or .wav URL or file path) on the menu screens.");
         INSTANCE = this;
     }
 
     @Override
     protected void addOptions(ForgeConfigSpec.Builder builder) {
-        url = stringOption(builder, "url", "URL or file path of an .ogg / .wav file.", "");
+        url = fileOption(builder, "url", "URL or file path of an .ogg / .mp3 / .wav file.", "", "*.ogg", "*.mp3", "*.wav");
         volume = intOption(builder, "volume", "Volume in percent (multiplied by the music volume).", 100, 0, 100);
         loop = boolOption(builder, "loop", "Play the music again when it ends.", true);
     }

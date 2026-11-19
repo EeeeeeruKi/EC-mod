@@ -13,6 +13,7 @@ public final class FeatureOption {
     private final ForgeConfigSpec.ConfigValue<?> value;
     private final double min;
     private final double max;
+    private String[] filePatterns;
 
     FeatureOption(Feature feature, String id, Type type, ForgeConfigSpec.ConfigValue<?> value, double min, double max) {
         this.feature = feature;
@@ -21,6 +22,15 @@ public final class FeatureOption {
         this.value = value;
         this.min = min;
         this.max = max;
+    }
+
+    /** ファイルを選ぶ「参照」ボタンを出すときのファイルの種類（例: *.ogg）。null なら出さない。 */
+    public String[] filePatterns() {
+        return filePatterns;
+    }
+
+    void setFilePatterns(String[] patterns) {
+        this.filePatterns = patterns;
     }
 
     public Feature feature() {

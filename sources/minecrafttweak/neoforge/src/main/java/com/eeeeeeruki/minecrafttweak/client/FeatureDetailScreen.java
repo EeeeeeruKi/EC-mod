@@ -99,15 +99,31 @@ public class FeatureDetailScreen extends Screen {
                 }).bounds(left + rowWidth - 80, rowY, 80, 20).tooltip(tooltip).build());
             } else {
                 boolean text = option.type() == FeatureOption.Type.STRING;
+                boolean browse = text && option.filePatterns() != null;
                 int labelWidth = font.width(labels.get(labels.size() - 1).text());
-                int boxWidth = text ? Math.max(120, rowWidth - labelWidth - 10) : 78;
-                EditBox box = new EditBox(font, left + rowWidth - boxWidth - 1, rowY + 1, boxWidth, 18,
+                int boxWidth = text ? Math.max(120, rowWidth - labelWidth - 10 - (browse ? 46 : 0)) : 78;
+                int boxRight = left + rowWidth - (browse ? 46 : 0);
+                EditBox box = new EditBox(font, boxRight - boxWidth - 1, rowY + 1, boxWidth, 18,
                         Component.translatable(option.nameKey()));
                 box.setMaxLength(text ? 2048 : 32);
                 box.setValue(pendingText.getOrDefault(option, option.editText()));
                 box.setTooltip(tooltip);
                 addRenderableWidget(box);
                 boxes.put(option, box);
+                if (browse) {
+                    addRenderableWidget(Button.builder(Component.translatable("minecrafttweak.config.browse"),
+                                    b -> FilePicker.open(option.filePatterns(), box.getValue(), path -> {
+                                        if (minecraft != null && minecraft.screen == this) {
+                                            EditBox current = boxes.get(option);
+                                            if (current != null) {
+                                                current.setValue(path);
+                                            }
+                                        }
+                                    }))
+                            .bounds(left + rowWidth - 44, rowY, 44, 20)
+                            .tooltip(Tooltip.create(Component.translatable("minecrafttweak.config.browse.tooltip")))
+                            .build());
+                }
             }
         }
         pendingText.clear();

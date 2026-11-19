@@ -29,7 +29,8 @@ import java.util.Locale;
 
 /**
  * 曲の読み込み。URL ならダウンロードして（同じURLは2回目からファイルを使う）、ファイルならそのまま読み、
- * PCM（16ビット）にする。対応は .ogg（Ogg Vorbis）と .wav。
+ * PCM（16ビット）にする。対応は .ogg（Ogg Vorbis）・.mp3・.wav。
+ * MP3 は JavaMP3（MIT ライセンス、thirdparty/javamp3）で読む。
  */
 public final class AudioLoader {
     /** これより大きいファイルは読まない（50MB）。 */
@@ -77,11 +78,23 @@ public final class AudioLoader {
         String lower = source.toLowerCase(Locale.ROOT);
         boolean ogg = data.length >= 4 && data[0] == 'O' && data[1] == 'g' && data[2] == 'g' && data[3] == 'S';
         boolean wav = data.length >= 4 && data[0] == 'R' && data[1] == 'I' && data[2] == 'F' && data[3] == 'F';
-        if (ogg || (!wav && lower.contains(".ogg"))) {
+        boolean id3 = data.length >= 3 && data[0] == 'I' && data[1] == 'D' && data[2] == '3';
+        boolean frameSync = data.length >= 2 && (data[0] & 0xFF) == 0xFF && (data[1] & 0xE0) == 0xE0;
+        if (ogg) {
             return decodeOgg(data);
         }
         if (wav) {
             return decodeWav(data);
+        }
+        if (id3 || frameSync) {
+            return decodeMp3(data);
+        }
+        // 中身で分からなければ、名前で決める
+        if (lower.contains(".ogg")) {
+            return decodeOgg(data);
+        }
+        if (lower.contains(".mp3")) {
+            return decodeMp3(data);
         }
         throw new LoadException("minecrafttweak.menu_music.error.format", "");
     }
@@ -176,6 +189,43 @@ public final class AudioLoader {
         } finally {
             MemoryUtil.memFree(mem);
         }
+    }
+
+    private static Audio decodeMp3(byte[] data) throws LoadException {
+        try (com.eeeeeeruki.minecrafttweak.thirdparty.javamp3.Sound sound =
+                     new com.eeeeeeruki.minecrafttweak.thirdparty.javamp3.Sound(
+                             new BufferedInputStream(new ByteArrayInputStream(skipId3(data))))) {
+            int channels = sound.isStereo() ? 2 : 1;
+            int rate = sound.getSamplingFrequency();
+            java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream((int) Math.min(64L << 20, Math.max(1L << 20, data.length * 8L)));
+            sound.decodeFullyInto(out);
+            byte[] bytes = out.toByteArray();
+            if (bytes.length == 0 || rate <= 0) {
+                throw new LoadException("minecrafttweak.menu_music.error.decode", "mp3");
+            }
+            ShortBuffer pcm = MemoryUtil.memAllocShort(bytes.length / 2);
+            pcm.put(ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).asShortBuffer()).flip();
+            return new Audio(pcm, channels, rate, false);
+        } catch (LoadException e) {
+            throw e;
+        } catch (Throwable e) {
+            throw new LoadException("minecrafttweak.menu_music.error.decode", "mp3: " + e.getMessage());
+        }
+    }
+
+    /** 先頭の ID3 タグ（曲名や画像が入っている部分）を飛ばす。 */
+    private static byte[] skipId3(byte[] data) {
+        int pos = 0;
+        while (data.length - pos >= 10 && data[pos] == 'I' && data[pos + 1] == 'D' && data[pos + 2] == '3') {
+            int size = ((data[pos + 6] & 0x7F) << 21) | ((data[pos + 7] & 0x7F) << 14)
+                    | ((data[pos + 8] & 0x7F) << 7) | (data[pos + 9] & 0x7F);
+            boolean footer = (data[pos + 5] & 0x10) != 0;
+            pos += 10 + size + (footer ? 10 : 0);
+        }
+        if (pos == 0 || pos >= data.length) {
+            return data;
+        }
+        return java.util.Arrays.copyOfRange(data, pos, data.length);
     }
 
     private static Audio decodeWav(byte[] data) throws LoadException {

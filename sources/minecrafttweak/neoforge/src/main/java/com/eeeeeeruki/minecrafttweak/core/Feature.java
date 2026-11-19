@@ -102,6 +102,14 @@ public abstract class Feature {
         return value;
     }
 
+    /** 文字の設定で、詳細設定の画面に「参照」ボタン（ファイルを選ぶ）を付けるもの。 */
+    protected final ModConfigSpec.ConfigValue<String> fileOption(ModConfigSpec.Builder builder, String optionId,
+                                                                 String comment, String def, String... patterns) {
+        ModConfigSpec.ConfigValue<String> value = stringOption(builder, optionId, comment, def);
+        options.get(options.size() - 1).setFilePatterns(patterns);
+        return value;
+    }
+
     /** イベントの登録など（必要なときだけ上書き）。 */
     public void register(IEventBus modBus) {
     }
