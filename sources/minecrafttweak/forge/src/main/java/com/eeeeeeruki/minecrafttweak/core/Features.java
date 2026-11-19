@@ -1,5 +1,8 @@
 package com.eeeeeeruki.minecrafttweak.core;
 
+import com.eeeeeeruki.minecrafttweak.feature.client.MenuMusicFeature;
+import com.eeeeeeruki.minecrafttweak.feature.client.PauseMusicFeature;
+import com.eeeeeeruki.minecrafttweak.feature.client.SystemLanguageFeature;
 import com.eeeeeeruki.minecrafttweak.feature.tweaks.XpPickupFeature;
 
 import java.util.ArrayList;
@@ -16,6 +19,12 @@ public final class Features {
     static {
         // 1
         add(new XpPickupFeature());
+        // 2
+        add(new SystemLanguageFeature());
+        // 3
+        add(new MenuMusicFeature());
+        // 4
+        add(new PauseMusicFeature());
     }
 
     private Features() {

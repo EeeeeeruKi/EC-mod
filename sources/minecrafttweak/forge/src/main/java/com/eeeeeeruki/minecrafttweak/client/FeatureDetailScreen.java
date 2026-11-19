@@ -98,9 +98,13 @@ public class FeatureDetailScreen extends Screen {
                     rebuildWidgets();
                 }).bounds(left + rowWidth - 80, rowY, 80, 20).tooltip(tooltip).build());
             } else {
-                EditBox box = new EditBox(font, left + rowWidth - 79, rowY + 1, 78, 18, Component.translatable(option.nameKey()));
-                box.setMaxLength(32);
-                box.setValue(pendingText.getOrDefault(option, option.textValue()));
+                boolean text = option.type() == FeatureOption.Type.STRING;
+                int labelWidth = font.width(labels.get(labels.size() - 1).text());
+                int boxWidth = text ? Math.max(120, rowWidth - labelWidth - 10) : 78;
+                EditBox box = new EditBox(font, left + rowWidth - boxWidth - 1, rowY + 1, boxWidth, 18,
+                        Component.translatable(option.nameKey()));
+                box.setMaxLength(text ? 2048 : 32);
+                box.setValue(pendingText.getOrDefault(option, option.editText()));
                 box.setTooltip(tooltip);
                 addRenderableWidget(box);
                 boxes.put(option, box);
@@ -141,6 +145,9 @@ public class FeatureDetailScreen extends Screen {
     }
 
     private static Component rangeLine(FeatureOption option) {
+        if (option.type() == FeatureOption.Type.STRING) {
+            return Component.translatable("minecrafttweak.config.details.text").withStyle(ChatFormatting.GRAY);
+        }
         return Component.translatable("minecrafttweak.config.details.range", option.rangeText())
                 .withStyle(ChatFormatting.GRAY);
     }
@@ -150,10 +157,10 @@ public class FeatureDetailScreen extends Screen {
         Component firstError = null;
         for (Map.Entry<FeatureOption, EditBox> e : boxes.entrySet()) {
             String text = e.getValue().getValue().trim();
-            if (text.equals(e.getKey().textValue())) {
+            if (text.equals(e.getKey().editText())) {
                 continue;
             }
-            Component error = e.getKey().apply(text);
+            Component error = e.getKey().applyEdit(text);
             if (error != null && firstError == null) {
                 firstError = error;
             }

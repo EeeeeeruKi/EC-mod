@@ -80,6 +80,47 @@ public final class CodeValues {
         return null;
     }
 
+    /** 文字の設定を設定コードに入れられる形にする（空は「~」）。 */
+    public static String encodeText(String text) {
+        if (text.isEmpty()) {
+            return "~";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (byte b : text.getBytes(java.nio.charset.StandardCharsets.UTF_8)) {
+            int c = b & 0xFF;
+            boolean plain = (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9')
+                    || ":/.?&=_-#@!$*()'+[]".indexOf(c) >= 0;
+            if (plain) {
+                sb.append((char) c);
+            } else {
+                sb.append('%').append(String.format("%02X", c));
+            }
+        }
+        return sb.toString();
+    }
+
+    public static String decodeText(String code) {
+        if (code.equals("~")) {
+            return "";
+        }
+        java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+        for (int i = 0; i < code.length(); i++) {
+            char c = code.charAt(i);
+            if (c == '%' && i + 2 < code.length()) {
+                try {
+                    out.write(Integer.parseInt(code.substring(i + 1, i + 3), 16));
+                    i += 2;
+                    continue;
+                } catch (NumberFormatException ignored) {
+                    // そのまま
+                }
+            }
+            byte[] bytes = String.valueOf(c).getBytes(java.nio.charset.StandardCharsets.UTF_8);
+            out.write(bytes, 0, bytes.length);
+        }
+        return out.toString(java.nio.charset.StandardCharsets.UTF_8);
+    }
+
     /** 選択肢の一覧（「0=fast 1=fancy」のような説明用）。 */
     public static String choices(Class<?> enumType) {
         StringBuilder sb = new StringBuilder();

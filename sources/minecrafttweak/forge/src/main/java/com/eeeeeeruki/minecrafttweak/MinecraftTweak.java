@@ -40,7 +40,7 @@ public class MinecraftTweak {
         MinecraftForge.EVENT_BUS.addListener((RegisterCommandsEvent e) -> TweakCommand.register(e.getDispatcher()));
 
         if (FMLEnvironment.dist == Dist.CLIENT) {
-            com.eeeeeeruki.minecrafttweak.client.ClientSetup.init();
+            com.eeeeeeruki.minecrafttweak.client.ClientSetup.init(modBus);
         }
 
         LOGGER.info("minEcraft twEEk: {} feature(s) loaded", Features.all().size());

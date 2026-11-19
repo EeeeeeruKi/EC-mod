@@ -11,7 +11,7 @@ import java.util.List;
  * 1つの改善機能。これを継承して feature パッケージに作り、Features に登録する。
  *
  * - Quark にある機能は作らない（Quark は前提MOD）。
- * - 機能はすべて最初はオフ。
+ * - 機能は最初はオフ（ゑるきが「デフォルトで有効」と言ったものだけオン）。
  * - イベントは register() で登録する。処理の最初で isEnabled() を確認すれば、
  *   設定でオフにした瞬間から止まる。
  * - 機能ごとの追加設定は addOptions() の中で intOption / doubleOption / boolOption を使って作る。
@@ -24,12 +24,19 @@ public abstract class Feature {
     private final String id;
     private final FeatureCategory category;
     private final String comment;
+    private final boolean enabledByDefault;
     private final List<FeatureOption> options = new ArrayList<>();
     private ForgeConfigSpec.BooleanValue enabled;
 
     protected Feature(String id, FeatureCategory category, String comment) {
+        this(id, category, false, comment);
+    }
+
+    /** 最初からオンにしたい機能だけ（ゑるきが指定したもの）。 */
+    protected Feature(String id, FeatureCategory category, boolean enabledByDefault, String comment) {
         this.id = id;
         this.category = category;
+        this.enabledByDefault = enabledByDefault;
         this.comment = comment;
     }
 
@@ -59,7 +66,7 @@ public abstract class Feature {
     }
 
     final void buildConfig(ForgeConfigSpec.Builder builder) {
-        enabled = builder.comment(comment).define("enabled", false);
+        enabled = builder.comment(comment).define("enabled", enabledByDefault);
         addOptions(builder);
     }
 
@@ -88,8 +95,23 @@ public abstract class Feature {
         return value;
     }
 
+    protected final ForgeConfigSpec.ConfigValue<String> stringOption(ForgeConfigSpec.Builder builder, String optionId,
+                                                                   String comment, String def) {
+        ForgeConfigSpec.ConfigValue<String> value = builder.comment(comment).define(optionId, def);
+        options.add(new FeatureOption(this, optionId, FeatureOption.Type.STRING, value, 0, 0));
+        return value;
+    }
+
     /** イベントの登録など（必要なときだけ上書き）。 */
     public void register(IEventBus modBus) {
+    }
+
+    /** クライアントだけで動く処理の登録（ClientSetup から呼ばれる）。 */
+    public void registerClient(IEventBus modBus) {
+    }
+
+    public final boolean enabledByDefault() {
+        return enabledByDefault;
     }
 
     public final boolean isEnabled() {

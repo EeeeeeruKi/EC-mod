@@ -5,7 +5,7 @@ import net.minecraftforge.common.ForgeConfigSpec;
 
 /** 機能の追加設定1つ分（数値やオン/オフ）。 */
 public final class FeatureOption {
-    public enum Type { BOOLEAN, INT, DOUBLE }
+    public enum Type { BOOLEAN, INT, DOUBLE, STRING }
 
     private final Feature feature;
     private final String id;
@@ -75,6 +75,7 @@ public final class FeatureOption {
             case INT -> (int) min + " ~ " + (int) max;
             case DOUBLE -> min + " ~ " + max;
             case BOOLEAN -> "t / f";
+            case STRING -> "";
         };
     }
 
@@ -97,7 +98,7 @@ public final class FeatureOption {
         return TweakConfig.SPEC.isLoaded();
     }
 
-    /** テキスト設定に書くときの値（t / f / 数値）。 */
+    /** 設定コードに書くときの値（t / f / 数値 / 文字）。文字は「,」などを %XX にして入れる。 */
     public String textValue() {
         if (!loaded()) {
             return "?";
@@ -106,7 +107,32 @@ public final class FeatureOption {
         if (v instanceof Boolean b) {
             return b ? "t" : "f";
         }
+        if (type == Type.STRING) {
+            return CodeValues.encodeText(String.valueOf(v));
+        }
         return String.valueOf(v);
+    }
+
+    /** 詳細設定の入力欄に出す文字（文字の設定は %XX にしない）。 */
+    public String editText() {
+        if (type == Type.STRING) {
+            return loaded() ? String.valueOf(value.get()) : "";
+        }
+        return textValue();
+    }
+
+    /** 詳細設定の入力欄から値を入れる。 */
+    @SuppressWarnings("unchecked")
+    public Component applyEdit(String text) {
+        if (type == Type.STRING) {
+            if (!loaded()) {
+                return Component.translatable("minecrafttweak.text.error.not_loaded");
+            }
+            ((ForgeConfigSpec.ConfigValue<String>) value).set(text.trim());
+            value.save();
+            return null;
+        }
+        return apply(text);
     }
 
     /** 初期値（設定コードの形）。 */
@@ -114,6 +140,9 @@ public final class FeatureOption {
         Object d = value.getDefault();
         if (d instanceof Boolean b) {
             return b ? "t" : "f";
+        }
+        if (type == Type.STRING) {
+            return CodeValues.encodeText(String.valueOf(d));
         }
         return String.valueOf(d);
     }
@@ -123,15 +152,26 @@ public final class FeatureOption {
         if (loaded() && value.get() instanceof Boolean b) {
             return TextSettings.onOff(b);
         }
+        if (type == Type.STRING) {
+            String t = editText();
+            if (t.isEmpty()) {
+                return Component.translatable("minecrafttweak.config.empty_text");
+            }
+            return Component.literal(t.length() > 40 ? t.substring(0, 37) + "..." : t);
+        }
         return Component.literal(textValue());
     }
 
-    /** 文字列から値を入れる。うまくいけば null、だめならエラーの文を返す。 */
+    /** 設定コードの文字から値を入れる。うまくいけば null、だめならエラーの文を返す。 */
+    @SuppressWarnings("unchecked")
     public Component apply(String raw) {
         if (!loaded()) {
             return Component.translatable("minecrafttweak.text.error.not_loaded");
         }
         switch (type) {
+            case STRING -> {
+                ((ForgeConfigSpec.ConfigValue<String>) value).set(CodeValues.decodeText(raw));
+            }
             case BOOLEAN -> {
                 Boolean b = TextSettings.parseBool(raw);
                 if (b == null) {
