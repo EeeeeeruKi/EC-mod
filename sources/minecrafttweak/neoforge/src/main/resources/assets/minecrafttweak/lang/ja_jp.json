@@ -153,11 +153,7 @@
   "minecrafttweak.config.empty_text": "（なし）",
   "minecrafttweak.config.details.text": "文字で入力します。",
   "minecrafttweak.feature.system_language": "システムの言語",
-  "minecrafttweak.feature.system_language.desc": "言語の画面の右上に「システムの言語」のボタンを足します。オンにすると、パソコンの言語に合わせて言語が切り替わり、パソコンの言語を変えたときも次に起動したときに合わせ直します。",
-  "minecrafttweak.feature.system_language.follow": "システムの言語に合わせる",
-  "minecrafttweak.feature.system_language.follow.desc": "言語の画面の「システムの言語」ボタンと同じです。ほかの言語を選ぶと、自動でオフになります。",
-  "minecrafttweak.system_language.button": "システムの言語",
-  "minecrafttweak.system_language.tooltip": "パソコンの言語（%s）に合わせます。オンにしてから「完了」を押すと切り替わります。ほかの言語を選ぶとオフになります。",
+  "minecrafttweak.feature.system_language.desc": "言語の画面の一覧のいちばん上に「システムの言語」を足します。選ぶと、パソコンの言語に合わせて言語が切り替わり、パソコンの言語を変えたときも次に起動したときに合わせ直します。ほかの言語を選ぶと、合わせるのをやめます。",
   "minecrafttweak.feature.custom_menu_music": "カスタムメニューBGM",
   "minecrafttweak.feature.custom_menu_music.desc": "タイトル画面などのメニューで、URL かファイルの曲を流します（.ogg・.mp3・.wav に対応）。詳細設定で曲の場所を入れるか、「参照」でファイルを選んでください。",
   "minecrafttweak.feature.custom_menu_music.url": "曲のURL・ファイル",
@@ -181,5 +177,6 @@
   "minecrafttweak.config.browse": "参照",
   "minecrafttweak.config.browse.tooltip": "パソコンの中の曲のファイルを選びます。",
   "minecrafttweak.config.browse.title": "曲のファイルを選んでください",
-  "minecrafttweak.config.browse.filter": "音楽ファイル（%s）"
+  "minecrafttweak.config.browse.filter": "音楽ファイル（%s）",
+  "minecrafttweak.system_language.entry": "システムの言語"
 }

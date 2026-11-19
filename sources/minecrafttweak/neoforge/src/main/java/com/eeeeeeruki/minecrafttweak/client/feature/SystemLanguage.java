@@ -1,41 +1,45 @@
 package com.eeeeeeruki.minecrafttweak.client.feature;
 
 import com.eeeeeeruki.minecrafttweak.MinecraftTweak;
-import com.eeeeeeruki.minecrafttweak.core.TextSettings;
 import com.eeeeeeruki.minecrafttweak.feature.client.SystemLanguageFeature;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.components.events.GuiEventListener;
-import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.client.gui.screens.options.LanguageSelectScreen;
 import net.minecraft.client.resources.language.LanguageInfo;
 import net.minecraft.client.resources.language.LanguageManager;
 import net.minecraft.network.chat.Component;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.ScreenEvent;
 import net.neoforged.neoforge.common.NeoForge;
 
+import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
 import java.util.Locale;
 
 /**
  * 「システムの言語」。
- * 言語の画面の右上にボタンを足し、オンにするとパソコンの言語に合わせる。
- * オンのあいだは、起動したときにパソコンの言語が変わっていれば合わせ直す。
- * 言語の画面でほかの言語を選んだら、自動でオフになる。
+ * 機能がオンのとき、言語の画面の一覧のいちばん上に「システムの言語」を足す。
+ * それを選ぶとパソコンの言語に合わせ、次に起動したときもパソコンの言語が変わっていれば合わせ直す。
+ * 一覧でほかの言語を選ぶと、合わせるのをやめる。
  */
 public final class SystemLanguage {
-    private static String appliedCode;
     private static boolean checkedAtStart;
+    /** いま開いている言語の画面に足した「システムの言語」の項目。 */
+    private static Object addedEntry;
+    private static ObjectSelectionList<?> addedList;
 
     private SystemLanguage() {
     }
 
     public static void register() {
         NeoForge.EVENT_BUS.addListener(SystemLanguage::onScreenInit);
-        NeoForge.EVENT_BUS.addListener(SystemLanguage::onTick);
+        NeoForge.EVENT_BUS.addListener(SystemLanguage::onScreenClosing);
     }
 
     private static boolean enabled() {
@@ -43,14 +47,33 @@ public final class SystemLanguage {
         return f != null && f.isEnabled();
     }
 
+    // ------------------------------------------------------------------ 「合わせる」の保存
+
+    private static Path stateFile() {
+        return Minecraft.getInstance().gameDirectory.toPath().resolve("config").resolve("minecrafttweak-system-language.txt");
+    }
+
     private static boolean following() {
-        return enabled() && SystemLanguageFeature.INSTANCE.follow.get();
+        if (!enabled()) return false;
+        try {
+            Path f = stateFile();
+            return Files.exists(f) && Files.readString(f, StandardCharsets.UTF_8).trim().equals("true");
+        } catch (IOException e) {
+            return false;
+        }
     }
 
     private static void setFollowing(boolean value) {
-        SystemLanguageFeature.INSTANCE.follow.set(value);
-        SystemLanguageFeature.INSTANCE.follow.save();
+        try {
+            Path f = stateFile();
+            Files.createDirectories(f.getParent());
+            Files.writeString(f, value ? "true" : "false", StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            MinecraftTweak.LOGGER.warn("minEcraft twEEk: could not save the system language setting", e);
+        }
     }
+
+    // ------------------------------------------------------------------ パソコンの言語
 
     /** パソコンの言語に一番近い、マイクラにある言語のコード（例: ja_jp）。 */
     public static String systemCode(LanguageManager languages) {
@@ -75,93 +98,124 @@ public final class SystemLanguage {
         return "en_us";
     }
 
-    private static void applySystemLanguage(boolean reload) {
+    private static void applySystemLanguage() {
         Minecraft mc = Minecraft.getInstance();
         LanguageManager languages = mc.getLanguageManager();
         String code = systemCode(languages);
-        appliedCode = code;
         if (!code.equals(languages.getSelected())) {
             MinecraftTweak.LOGGER.info("minEcraft twEEk: switching to the system language {}", code);
             languages.setSelected(code);
             mc.options.languageCode = code;
             mc.options.save();
-            if (reload) {
-                mc.reloadResourcePacks();
-            }
+            mc.reloadResourcePacks();
         }
     }
+
+    // ------------------------------------------------------------------ 画面
 
     private static void onScreenInit(ScreenEvent.Init.Post event) {
         Screen screen = event.getScreen();
         if (screen instanceof TitleScreen && !checkedAtStart) {
             checkedAtStart = true;
             if (following()) {
-                applySystemLanguage(true);
+                applySystemLanguage();
             }
         }
         if (!(screen instanceof LanguageSelectScreen) || !enabled()) {
             return;
         }
-        Minecraft mc = Minecraft.getInstance();
-        if (following() && appliedCode == null) {
-            appliedCode = systemCode(mc.getLanguageManager());
-        }
-        LanguageInfo info = mc.getLanguageManager().getLanguage(systemCode(mc.getLanguageManager()));
-        Component name = info != null ? info.toComponent() : Component.literal("?");
-        Button button = Button.builder(label(), b -> {
-                    if (following()) {
-                        setFollowing(false);
-                        b.setMessage(label());
-                    } else {
-                        setFollowing(true);
-                        b.setMessage(label());
-                        String code = systemCode(mc.getLanguageManager());
-                        appliedCode = code;
-                        // 一覧でその言語を選んだ状態にする（「完了」で切り替わる）。見つからなければすぐ切り替える
-                        if (!selectInList(screen, name)) {
-                            applySystemLanguage(true);
-                        }
-                    }
-                }).bounds(screen.width - 155, 6, 150, 20)
-                .tooltip(Tooltip.create(Component.translatable("minecrafttweak.system_language.tooltip", name)))
-                .build();
-        event.addListener(button);
-    }
-
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    private static boolean selectInList(Screen screen, Component name) {
-        String wanted = name.getString();
-        for (GuiEventListener child : screen.children()) {
-            if (child instanceof ObjectSelectionList list) {
-                for (Object e : list.children()) {
-                    if (e instanceof ObjectSelectionList.Entry entry
-                            && entry.getNarration().getString().contains(wanted)) {
-                        list.setSelected(entry);
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
-    private static Component label() {
-        return Component.translatable("minecrafttweak.system_language.button")
-                .append(": ").append(TextSettings.onOff(following()));
-    }
-
-    private static void onTick(ClientTickEvent.Post event) {
-        if (appliedCode == null || !following()) {
+        addedEntry = null;
+        addedList = null;
+        ObjectSelectionList<?> list = languageList(screen);
+        if (list == null || list.children().isEmpty()) {
             return;
         }
-        if (Minecraft.getInstance().screen instanceof LanguageSelectScreen) {
-            return; // 言語の画面を開いているあいだは、まだ決まっていない
+        Minecraft mc = Minecraft.getInstance();
+        String code = systemCode(mc.getLanguageManager());
+        LanguageInfo real = mc.getLanguageManager().getLanguage(code);
+        String nameOfLanguage = real != null ? real.name() : code;
+        // 表示は「システムの言語 (日本語)」になる（LanguageInfo の表示は「名前 (地域)」の形）
+        LanguageInfo shown = new LanguageInfo(nameOfLanguage,
+                Component.translatable("minecrafttweak.system_language.entry").getString(),
+                real != null && real.bidirectional());
+        Object entry = newEntry(list, code, shown);
+        if (entry == null) {
+            return;
         }
-        // 言語の画面でほかの言語を選んだら、追いかけるのをやめる
-        String now = Minecraft.getInstance().options.languageCode;
-        if (!appliedCode.equals(now)) {
-            appliedCode = null;
+        addFirst(list, entry);
+        addedEntry = entry;
+        addedList = list;
+        if (following()) {
+            select(list, entry);
+        }
+    }
+
+    /** 言語の画面を閉じるとき、どれを選んで閉じたかで「合わせる」を決める。 */
+    private static void onScreenClosing(ScreenEvent.Closing event) {
+        if (!(event.getScreen() instanceof LanguageSelectScreen) || addedList == null) {
+            return;
+        }
+        Object selected = addedList.getSelected();
+        Minecraft mc = Minecraft.getInstance();
+        if (selected == addedEntry) {
+            // 「完了」で決めたときだけ（Esc で閉じたときは言語が変わっていない）
+            if (systemCode(mc.getLanguageManager()).equals(mc.options.languageCode)) {
+                setFollowing(true);
+            }
+        } else if (selected != null) {
             setFollowing(false);
         }
+        addedEntry = null;
+        addedList = null;
+    }
+
+    // ------------------------------------------------------------------ バニラの一覧を触るところ
+
+    private static ObjectSelectionList<?> languageList(Screen screen) {
+        for (GuiEventListener child : screen.children()) {
+            if (child instanceof ObjectSelectionList<?> list) {
+                return list;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * バニラの一覧の項目と同じ種類の項目を作る。項目のクラスは外から見えないので、
+     * 既存の項目のクラスからコンストラクタ（一覧, 言語コード, 言語の情報）を探して使う。
+     */
+    private static Object newEntry(ObjectSelectionList<?> list, String code, LanguageInfo info) {
+        Class<?> entryClass = list.children().get(0).getClass();
+        for (Constructor<?> c : entryClass.getDeclaredConstructors()) {
+            Class<?>[] p = c.getParameterTypes();
+            try {
+                c.setAccessible(true);
+                if (p.length == 3 && p[0].isInstance(list) && p[1] == String.class && p[2] == LanguageInfo.class) {
+                    return c.newInstance(list, code, info);
+                }
+                if (p.length == 3 && p[0].isInstance(list) && p[1] == String.class && Component.class.isAssignableFrom(p[2])) {
+                    return c.newInstance(list, code, info.toComponent());
+                }
+                if (p.length == 2 && p[0] == String.class && p[1] == LanguageInfo.class) {
+                    return c.newInstance(code, info);
+                }
+            } catch (ReflectiveOperationException | RuntimeException e) {
+                MinecraftTweak.LOGGER.warn("minEcraft twEEk: could not add the system language entry", e);
+                return null;
+            }
+        }
+        MinecraftTweak.LOGGER.warn("minEcraft twEEk: no usable constructor in {}", entryClass.getName());
+        return null;
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static void addFirst(ObjectSelectionList<?> list, Object entry) {
+        ((List) list.children()).add(0, entry);
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static void select(ObjectSelectionList<?> list, Object entry) {
+        ((ObjectSelectionList) list).setSelected((ObjectSelectionList.Entry) entry);
+        list.setScrollAmount(0);
     }
 }

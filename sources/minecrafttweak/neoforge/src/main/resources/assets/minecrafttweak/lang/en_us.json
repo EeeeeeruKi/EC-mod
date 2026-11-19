@@ -153,11 +153,7 @@
   "minecrafttweak.config.empty_text": "(none)",
   "minecrafttweak.config.details.text": "Enter text.",
   "minecrafttweak.feature.system_language": "System Language",
-  "minecrafttweak.feature.system_language.desc": "Adds a \"System language\" button to the language screen. When on, the game follows the language of your computer, and catches up the next time you start the game if it changes.",
-  "minecrafttweak.feature.system_language.follow": "Follow the system language",
-  "minecrafttweak.feature.system_language.follow.desc": "Same as the \"System language\" button on the language screen. Turns off when you pick another language.",
-  "minecrafttweak.system_language.button": "System language",
-  "minecrafttweak.system_language.tooltip": "Follow your computer's language (%s). Turn it on and press Done to switch. Picking another language turns it off.",
+  "minecrafttweak.feature.system_language.desc": "Adds \"System language\" to the top of the language list. Picking it makes the game follow the language of your computer, and catch up the next time you start the game if it changes. Picking another language stops following it.",
   "minecrafttweak.feature.custom_menu_music": "Custom Menu Music",
   "minecrafttweak.feature.custom_menu_music.desc": "Plays your own music (.ogg, .mp3 or .wav, from a URL or a file) on the menu screens. Set the location in the details, or press Browse to pick a file.",
   "minecrafttweak.feature.custom_menu_music.url": "Music URL / file",
@@ -181,5 +177,6 @@
   "minecrafttweak.config.browse": "Browse",
   "minecrafttweak.config.browse.tooltip": "Pick a music file on your computer.",
   "minecrafttweak.config.browse.title": "Choose a music file",
-  "minecrafttweak.config.browse.filter": "Music files (%s)"
+  "minecrafttweak.config.browse.filter": "Music files (%s)",
+  "minecrafttweak.system_language.entry": "System language"
 }
