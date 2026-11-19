@@ -19,6 +19,7 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
+import net.neoforged.neoforge.common.ModConfigSpec;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.CommandEvent;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
@@ -64,7 +65,9 @@ public class CallAI {
 
         CommandSourceStack src = event.getParseResults().getContext().getSource();
         if (!(src.getEntity() instanceof ServerPlayer player)) {
-            src.sendFailure(Component.literal("AIにささやけるのはプレイヤーだけです。"));
+            // コンソール・コマンドブロック・ファンクションから
+            String msg = m.group(1) == null ? "" : m.group(1).trim();
+            if (!msg.isEmpty()) GeminiChat.askConsole(src, msg);
             return;
         }
 
@@ -294,6 +297,17 @@ public class CallAI {
                 .then(Reactions.command())
                 // 覚えていること
                 .then(Memory.command())
+                // クールダウン（見るのは誰でも、変えるのはOP）
+                .then(Commands.literal("cooldown")
+                        .executes(ctx -> {
+                            ctx.getSource().sendSuccess(() -> Component.literal("AIのクールダウン（プレイヤーごと）/ tell: "
+                                    + GeminiConfig.COOLDOWN_TELL.get() + "秒 / チャット: " + GeminiConfig.COOLDOWN_CHAT.get()
+                                    + "秒 / コンソール: " + GeminiConfig.COOLDOWN_CONSOLE.get() + "秒（OPは /ai cooldown <tell|chat|console> <秒> で変えられます）"), false);
+                            return 1;
+                        })
+                        .then(cooldown("tell", GeminiConfig.COOLDOWN_TELL, "/tell @ai"))
+                        .then(cooldown("chat", GeminiConfig.COOLDOWN_CHAT, "チャットの @ai"))
+                        .then(cooldown("console", GeminiConfig.COOLDOWN_CONSOLE, "コンソール・コマンドブロックからの呼びかけ")))
                 // OP: チャットに出るAIの名前
                 .then(Commands.literal("name")
                         .requires(s -> s.hasPermission(2))
@@ -441,6 +455,19 @@ public class CallAI {
             ctx.getSource().sendSuccess(() -> Component.literal("コマンドの実行を " + mode + " にしました。" + detail), true);
             return 1;
         });
+    }
+
+    private static LiteralArgumentBuilder<CommandSourceStack> cooldown(String name, ModConfigSpec.IntValue value, String label) {
+        return Commands.literal(name)
+                .requires(s -> s.hasPermission(2))
+                .then(Commands.argument("seconds", IntegerArgumentType.integer(0, 3600))
+                        .executes(ctx -> {
+                            int sec = IntegerArgumentType.getInteger(ctx, "seconds");
+                            value.set(sec);
+                            value.save();
+                            ctx.getSource().sendSuccess(() -> Component.literal(label + " のクールダウンを " + sec + "秒にしました。"), true);
+                            return 1;
+                        }));
     }
 
     private static LiteralArgumentBuilder<CommandSourceStack> provider(String type) {

@@ -13,7 +13,9 @@ public final class GeminiConfig {
     public static final ForgeConfigSpec.ConfigValue<String> BOT_NAME;
     public static final ForgeConfigSpec.ConfigValue<String> SYSTEM_PROMPT;
     public static final ForgeConfigSpec.IntValue HISTORY_TURNS;
-    public static final ForgeConfigSpec.IntValue COOLDOWN_SECONDS;
+    public static final ForgeConfigSpec.IntValue COOLDOWN_TELL;
+    public static final ForgeConfigSpec.IntValue COOLDOWN_CHAT;
+    public static final ForgeConfigSpec.IntValue COOLDOWN_CONSOLE;
     public static final ForgeConfigSpec.IntValue MAX_REPLY_CHARS;
     public static final ForgeConfigSpec.IntValue TIMEOUT_SECONDS;
     public static final ForgeConfigSpec.ConfigValue<String> THINKING_LEVEL;
@@ -56,8 +58,6 @@ public final class GeminiConfig {
                                 + "相手と同じ言語で返事してください。");
         HISTORY_TURNS = b.comment("プレイヤーごとに覚えておく会話の往復数です。0にすると毎回1回きりの返事になります。")
                 .defineInRange("historyTurns", 10, 0, 50);
-        COOLDOWN_SECONDS = b.comment("同じプレイヤーが次に話しかけられるまでの秒数です。")
-                .defineInRange("cooldownSeconds", 3, 0, 3600);
         MAX_REPLY_CHARS = b.comment("返事の最大文字数です。これより長いと切り詰めます。")
                 .defineInRange("maxReplyChars", 600, 50, 4000);
         TIMEOUT_SECONDS = b.comment("AIの返事を待つ最大秒数です。考える時間が長いモデルは長めにしてください。/ai timeout <秒> でも変えられます。")
@@ -76,6 +76,16 @@ public final class GeminiConfig {
                 .define("openaiModel", "");
         OPENAI_API_KEY = b.comment("OpenAI互換APIのキーです。いらないサーバー（Ollama など）なら空のままで大丈夫です。プレイヤーが /ai key set で設定したGeminiのキーは、OpenAI互換のサーバーには送りません。/ai openai key <キー> でも設定できます。")
                 .define("openaiApiKey", "");
+
+        b.pop();
+        b.push("cooldown");
+
+        COOLDOWN_TELL = b.comment("/tell @ai で同じプレイヤーが次に話しかけられるまでの秒数です。クールダウン中は「クールダウン中です。」とささやき返します。/ai cooldown tell <秒> でも変えられます。")
+                .defineInRange("tellSeconds", 10, 0, 3600);
+        COOLDOWN_CHAT = b.comment("チャットの @ai（Mention Mod）で同じプレイヤーが次に話しかけられるまでの秒数です。クールダウン中に話しかけられても、AIは何も返しません。/ai cooldown chat <秒> でも変えられます。")
+                .defineInRange("chatSeconds", 5, 0, 3600);
+        COOLDOWN_CONSOLE = b.comment("コンソール・コマンドブロック・ファンクションから /tell @ai した時に、次に話しかけられるまでの秒数です（呼んだところごと）。クールダウン中は何も返しません。/ai cooldown console <秒> でも変えられます。")
+                .defineInRange("consoleSeconds", 0, 0, 3600);
 
         b.pop();
         b.push("reactions");

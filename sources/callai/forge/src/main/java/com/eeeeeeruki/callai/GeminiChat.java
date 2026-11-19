@@ -27,7 +27,8 @@ public final class GeminiChat {
     static final class Session {
         final Deque<GeminiClient.Turn> history = new ArrayDeque<>();
         boolean busy;
-        long lastSentMs;
+        long lastTellMs;
+        long lastChatMs;
     }
 
     private static final Map<UUID, Session> SESSIONS = new ConcurrentHashMap<>();
@@ -56,7 +57,7 @@ public final class GeminiChat {
     }
 
     private static void whisper(ServerPlayer player, String shown, String message, boolean viaDo) {
-        Session s = begin(player);
+        Session s = begin(player, true);
         if (s == null) return;
         String botName = GeminiConfig.BOT_NAME.get();
         MinecraftServer server = player.getServer();
@@ -93,7 +94,7 @@ public final class GeminiChat {
 
     /** Mention Mod から、チャットの @ai で話しかけられた時 */
     public static boolean askPublic(ServerPlayer player, String message, BiConsumer<String, String> callback) {
-        Session s = begin(player);
+        Session s = begin(player, false);
         if (s == null) return false;
         request(player, s, message, false, (reply, err) -> {
             synchronized (s) {
@@ -120,6 +121,46 @@ public final class GeminiChat {
                 .thenApply(t -> cleanup(Memory.TAG.matcher(t).replaceAll("").trim()));
     }
 
+    private static final Map<String, Long> CONSOLE_LAST = new ConcurrentHashMap<>();
+
+    /** コンソール・コマンドブロック・ファンクションからの /tell @ai。返事はチャットで全員に見せます */
+    public static void askConsole(net.minecraft.commands.CommandSourceStack src, String message) {
+        MinecraftServer server = src.getServer();
+        String who = src.getTextName();
+        long now = System.currentTimeMillis();
+        Long last = CONSOLE_LAST.get(who);
+        if (last != null && now - last < GeminiConfig.COOLDOWN_CONSOLE.get() * 1000L) return;
+        String apiKey = useOpenAI() ? GeminiConfig.OPENAI_API_KEY.get().trim() : KeyStore.defaultKey();
+        if (apiKey.isEmpty() && !useOpenAI()) {
+            src.sendFailure(Component.literal("デフォルトのキーが設定されていないので、コンソールからはAIに話しかけられません（/ai default_key set <APIキー>）。"));
+            return;
+        }
+        CONSOLE_LAST.put(who, now);
+        String bot = GeminiConfig.BOT_NAME.get();
+        String system = "あなたはMinecraftのサーバーにいるAIアシスタント「" + bot + "」です。"
+                + "今あなたは、サーバーのコンソールやコマンド（" + who + "）から話しかけられています。"
+                + "返事はサーバーのチャットで全員に見えるので、短く（3文くらいまで）してください。"
+                + "マークダウン（**や#や箇条書き）は使わず、普通の文章で書いてください。相手と同じ言語で返事してください。";
+        List<String> shared = Memory.server(server);
+        if (!shared.isEmpty()) system = system + "\n\n【あなたの記憶】\n- " + String.join("\n- ", shared);
+        JsonObject body = GeminiClient.buildBody(system, List.of(new GeminiClient.Turn(true, message)), null,
+                GeminiConfig.THINKING_LEVEL.get(), null);
+        int timeout = GeminiConfig.TIMEOUT_SECONDS.get();
+        CompletableFuture<JsonObject> sent = useOpenAI()
+                ? OpenAIClient.call(GeminiConfig.OPENAI_BASE_URL.get(), apiKey, GeminiConfig.OPENAI_MODEL.get(), body, timeout)
+                : GeminiClient.call(apiKey, GeminiConfig.MODEL.get(), body, timeout);
+        sent.thenApply(GeminiClient::requireText)
+                .thenApply(t -> cleanup(Memory.TAG.matcher(t).replaceAll("").trim()))
+                .whenComplete((text, err) -> server.execute(() -> {
+                    if (err != null) {
+                        CallAI.LOGGER.warn("AI request from {} failed: {}", who, describe(err));
+                        return;
+                    }
+                    if (text.isEmpty()) return;
+                    server.getPlayerList().broadcastSystemMessage(Component.literal("<" + bot + "> " + text), false);
+                }));
+    }
+
     /** つなぐ先が OpenAI互換API なら true */
     public static boolean useOpenAI() {
         return "openai".equalsIgnoreCase(GeminiConfig.PROVIDER.get().trim());
@@ -134,7 +175,8 @@ public final class GeminiChat {
         return Math.max(REPLY_DELAY_MIN_MS, Math.min(REPLY_DELAY_MAX_MS, 400L + reply.length() * 35L));
     }
 
-    private static Session begin(ServerPlayer player) {
+    /** tell が true なら /tell @ai、false ならチャットの @ai。クールダウン中のチャットには何も返しません */
+    private static Session begin(ServerPlayer player, boolean tell) {
         String apiKey = KeyStore.keyFor(player);
         if (apiKey.isEmpty() && !useOpenAI()) {
             player.sendSystemMessage(Component.literal(
@@ -145,19 +187,26 @@ public final class GeminiChat {
         Session s = SESSIONS.computeIfAbsent(player.getUUID(), k -> new Session());
         synchronized (s) {
             if (s.busy) {
-                player.sendSystemMessage(Component.literal("AIが前のメッセージに返事を考えています。少し待ってください。")
-                        .withStyle(ChatFormatting.YELLOW));
+                if (tell) {
+                    player.sendSystemMessage(Component.literal("AIが前のメッセージに返事を考えています。少し待ってください。")
+                            .withStyle(ChatFormatting.YELLOW));
+                }
                 return null;
             }
             long now = System.currentTimeMillis();
-            long waitMs = GeminiConfig.COOLDOWN_SECONDS.get() * 1000L - (now - s.lastSentMs);
-            if (waitMs > 0) {
-                player.sendSystemMessage(Component.literal("あと" + ((waitMs + 999) / 1000) + "秒待ってから話しかけてください。")
-                        .withStyle(ChatFormatting.YELLOW));
+            long last = tell ? s.lastTellMs : s.lastChatMs;
+            int cd = tell ? GeminiConfig.COOLDOWN_TELL.get() : GeminiConfig.COOLDOWN_CHAT.get();
+            if (now - last < cd * 1000L) {
+                if (tell) {
+                    player.sendSystemMessage(Component.translatable("commands.message.display.incoming",
+                                    Component.literal(GeminiConfig.BOT_NAME.get()), Component.literal("クールダウン中です。"))
+                            .withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC));
+                }
                 return null;
             }
             s.busy = true;
-            s.lastSentMs = now;
+            if (tell) s.lastTellMs = now;
+            else s.lastChatMs = now;
         }
         return s;
     }
@@ -319,6 +368,7 @@ public final class GeminiChat {
 
     public static void clearAll() {
         SESSIONS.clear();
+        CONSOLE_LAST.clear();
     }
 
     private static String cleanup(String text) {

@@ -512,6 +512,26 @@
       "summary": "/tell @ai でささやくと、AI（Google の Gemini か、OpenAI・Ollama・LM Studio などの OpenAI互換API）がささやき返してくれるMOD。頼めばコマンドも実行してくれます。",
       "versions": [
         {
+          "version": "2.4.0",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/callai/1.20.1-forge/callai-2.4.0.jar",
+          "fileName": "callai-2.4.0.jar",
+          "sha256": "ed035cc03a2a216ec1b84bc1156f01dd2723fd14da98cadc04eeaba011296c47",
+          "changelog": "話しかけ方ごと（/tell・チャット・コンソール）のクールダウンを追加しました（/ai cooldown）。コンソールやコマンドブロックからも /tell @ai で話しかけられるようになりました。",
+          "released": "2026-11-19"
+        },
+        {
+          "version": "2.4.0",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/callai/1.21.1-neoforge/callai-neoforge-1.21.1-2.4.0.jar",
+          "fileName": "callai-neoforge-1.21.1-2.4.0.jar",
+          "sha256": "1c26ce5fe14ecfd4305e0655d93f119969062bff62db0241ec52734d0a9c1d8d",
+          "changelog": "話しかけ方ごと（/tell・チャット・コンソール）のクールダウンを追加しました（/ai cooldown）。コンソールやコマンドブロックからも /tell @ai で話しかけられるようになりました。",
+          "released": "2026-11-19"
+        },
+        {
           "version": "2.3.0",
           "mc": "1.20.1",
           "loader": "forge",
