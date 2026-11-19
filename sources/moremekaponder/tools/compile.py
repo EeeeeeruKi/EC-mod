@@ -135,6 +135,8 @@ def compile_action(e, text, state):
     cfound = find_all(text, chems)
     cspans = [(p, p+len(n)) for p, n, _ in cfound]
     found = [f for f in find_all(text, names) if not any(a <= f[0] < b for a, b in cspans)]
+    ispans = [(p, p+len(n)) for p, n, _ in found]
+    cfound = [c for c in cfound if not any(a <= c[0] and c[0]+len(c[1]) <= b and (b-a) > len(c[1]) for a, b in ispans)]
     # infrastructure
     def place_main():
         if main and not state.get('placed'):
@@ -142,7 +144,8 @@ def compile_action(e, text, state):
     def infra(kind):
         if kind in state: return
         state[kind] = True
-        P = {'power':('mekanism:basic_energy_cube','mekanism:basic_universal_cable',[0,1,3],[[1,1,3],[2,1,3]]),
+        src = 'mekanismgenerators:heat_generator' if (kind == 'power' and '発電機から' in text) else None
+        P = {'power':(src or 'mekanism:basic_energy_cube','mekanism:basic_universal_cable',[0,1,3],[[1,1,3],[2,1,3]]),
              'tube':('mekanism:basic_chemical_tank','mekanism:basic_pressurized_tube',[3,1,6],[[3,1,5],[3,1,4]]),
              'pipe':('mekanism:basic_fluid_tank','mekanism:basic_mechanical_pipe',[6,1,3],[[5,1,3],[4,1,3]]),
              'item':('minecraft:chest','mekanism:basic_logistical_transporter',[3,1,0],[[3,1,1],[3,1,2]])}[kind]
@@ -161,6 +164,15 @@ def compile_action(e, text, state):
     if '加圧チューブ' in text: infra('tube')
     if 'メカニカルパイプ' in text: infra('pipe')
     if '物流トランスポーター' in text or 'トランスポーター' in text: infra('item')
+    if main and main.endswith('energy_cube') and '正面' in text and '機械' in text and 'front' not in state:
+        state['front'] = True
+        ops.append({'op':'line','id':'mekanism:basic_universal_cable','cells':[[3,1,2],[3,1,1]]})
+        ops.append({'op':'block','pos':[3,1,0],'id':'mekanism:energized_smelter'})
+        ops.append({'op':'machineon','pos':[3,1,0]})
+        return ops
+    if 'コンダクター' in text and main and 'conductor' not in main and 'heat' not in state:
+        state['heat'] = True
+        ops.append({'op':'line','id':'mekanism:basic_thermodynamic_conductor','cells':[[4,1,3],[5,1,3]]})
 
     machine_names = set()
     def mach_title():
@@ -217,12 +229,18 @@ def compile_action(e, text, state):
                 gauges.append([n, cid])
         if '溜ま' in text and not gauges and outs:
             pass
-        ms = [rid for p, n, rid in found if is_machine(rid)]
-        if ms and state.get('placed') and ms[-1] != (state.get('machine') or main):
+        ms = [rid for p, n, rid in found if is_machine(rid) and not text[p+len(n):p+len(n)+2].startswith('から')]
+        side_at = None
+        if ms and main and ms[-1] != main:
+            # the scene's own block stays in the middle; the other machine goes beside it
+            if state.get('side') != ms[-1]:
+                ops.append({'op':'block','pos':[5,1,1],'id':ms[-1]}); state['side'] = ms[-1]
+            side_at = [5,1,1]
+        elif ms and state.get('placed') and ms[-1] != (state.get('machine') or main):
             ops.append({'op':'swap','id':ms[-1]}); state['machine'] = ms[-1]
         elif ms and not state.get('placed'):
             ops.append({'op':'block','pos':[3,1,3],'id':ms[-1]}); state['placed'] = True; state['machine'] = ms[-1]
-        title = mach_title()
+        title = side_at and ms[-1] or mach_title()
         seen = set(); g2 = []
         for n, c in gauges:
             if c in seen: continue
@@ -231,7 +249,7 @@ def compile_action(e, text, state):
         if not gauges and ('ゲージ' in text or '溜ま' in text):
             col = 0xB30505 if 'レッドストーン' in text else 0x3CFE9A if '電力' in text else 0x52BDCA if 'オスミウム' in text else 0x55AAFF
             gauges = [['', None]]; gcol = col
-        ops.append({'op':'panel','title':title,'in':ins[:4],'out':outs[:3],'gauge':[[n, (gcol if c is None else CHEM_COLOR.get(c.split(':')[-1], 0x55AAFF))] for n, c in gauges[:2]] or None,
+        ops.append({'op':'panel','title':title,'at':side_at,'in':ins[:4],'out':outs[:3],'gauge':[[n, (gcol if c is None else CHEM_COLOR.get(c.split(':')[-1], 0x55AAFF))] for n, c in gauges[:2]] or None,
                     'drain':'減' in text})
         return ops
     if 'ゲージ' in text or '溜ま' in text:
@@ -264,7 +282,7 @@ def compile_action(e, text, state):
     if 'レーザーの先' in text:
         ops.append({'op':'block','pos':[3,1,0],'id':'minecraft:stone'}); ops.append({'op':'breakat','pos':[3,1,0]}); return ops
     if any(o['op'] in ('mob','mobact') for o in ops): return ops
-    INFRA = {'mekanism:basic_universal_cable','mekanism:basic_pressurized_tube','mekanism:basic_mechanical_pipe','mekanism:basic_logistical_transporter'}
+    INFRA = {'mekanism:basic_thermodynamic_conductor','mekanism:basic_universal_cable','mekanism:basic_pressurized_tube','mekanism:basic_mechanical_pipe','mekanism:basic_logistical_transporter'}
     shown = [rid for p, n, rid in found if rid != focus and rid not in INFRA and not (state.get('machine') == rid)]
     if shown:
         ops.append({'op':'show','ids':[r for r in shown][:6]})

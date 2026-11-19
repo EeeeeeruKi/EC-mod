@@ -1,5 +1,6 @@
 package io.github.eeeeeeruki.ponderererer.api;
 
+import io.github.eeeeeeruki.ponderererer.world.MekanismSides;
 import io.github.eeeeeeruki.ponderererer.world.TransmitterLinker;
 import net.createmod.ponder.api.scene.Selection;
 import net.minecraft.core.Direction;
@@ -184,6 +185,25 @@ public final class FX {
     public void setTransmitterSides(BlockPos pos, Direction[] transmitterSides, Direction[] acceptorSides) {
         scene.addInstruction(ps -> {
             if (TransmitterLinker.set(ps.getWorld(), pos, transmitterSides, acceptorSides))
+                ps.forEach(WorldSectionElement.class, WorldSectionElement::queueRedraw);
+        });
+    }
+
+    /**
+     * Changes how the sides of a Mekanism machine look. {@code transmission} and {@code dataType} use the
+     * constants in {@link MekanismSides} (e.g. ENERGY and OUTPUT). Looks only.
+     */
+    public void setSideConfig(BlockPos pos, int transmission, int dataType) {
+        scene.addInstruction(ps -> {
+            if (MekanismSides.setAll(ps.getWorld(), pos, transmission, dataType))
+                ps.forEach(WorldSectionElement.class, WorldSectionElement::queueRedraw);
+        });
+    }
+
+    /** Same as {@link #setSideConfig(BlockPos, int, int)} with one data type per side: front, left, right, back, top, bottom. */
+    public void setSideConfig(BlockPos pos, int transmission, int[] sides) {
+        scene.addInstruction(ps -> {
+            if (MekanismSides.set(ps.getWorld(), pos, transmission, sides))
                 ps.forEach(WorldSectionElement.class, WorldSectionElement::queueRedraw);
         });
     }

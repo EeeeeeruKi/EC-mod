@@ -74,6 +74,7 @@ public final class TransmitterLinker {
         try {
             be.handleUpdateTag(tag, world.registryAccess());
             be.requestModelDataUpdate();
+            LiveModelData.mark(world, be.getBlockPos());
             return true;
         } catch (RuntimeException e) {
             return false; // never let a cable break the scene

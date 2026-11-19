@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.github.eeeeeeruki.ponderererer.api.FX;
+import io.github.eeeeeeruki.ponderererer.world.MekanismSides;
 import io.github.eeeeeeruki.ponderererer.element.BeamElement;
 import io.github.eeeeeeruki.ponderererer.element.PlayerElement;
 import java.util.ArrayList;
@@ -117,6 +118,10 @@ final class SceneRunner {
     private void place(BlockPos pos, BlockState state) {
         scene.world().setBlock(pos, face(state), false);
         fx.sound(state.getSoundType().getPlaceSound(), 1f, 0.8f);
+        if (BuiltInRegistries.BLOCK.getKey(state.getBlock()).getPath().endsWith("energy_cube")) {
+            // energy cubes: show every side as an output (looks only)
+            fx.setSideConfig(pos, MekanismSides.ENERGY, MekanismSides.OUTPUT);
+        }
         fx.connectTransmitters(util.select().fromTo(0, 1, 0, 6, 3, 6));
         if (pos.equals(CENTER)) placed = true;
     }
@@ -173,6 +178,10 @@ final class SceneRunner {
                 for (JsonElement c : o.getAsJsonArray("cells")) scene.world().setBlock(pos(c.getAsJsonArray()), state, true);
                 fx.connectTransmitters(util.select().fromTo(0, 1, 0, 6, 3, 6));
                 scene.idle(15);
+            }
+            case "machineon" -> {
+                setActive(pos(o.getAsJsonArray("pos")), true);
+                scene.idle(20);
             }
             case "breakat" -> {
                 scene.idle(25);
@@ -275,6 +284,8 @@ final class SceneRunner {
                 scene.idle(10);
             }
             target = crafter;
+        } else if (o.has("at") && !o.get("at").isJsonNull()) {
+            target = pos(o.getAsJsonArray("at")); // a second machine beside the scene's own block
         } else if (!placed && title != null) {
             BlockState st = block(title);
             if (st != null) { place(CENTER, st); scene.idle(10); }

@@ -1460,6 +1460,16 @@
       "summary": "Ponder（思案画面）に、レーザー・稲妻・爆発・ゲージ・機械の画面・プレイヤーなどの描画を追加するライブラリMODです。思案画面を作るMODから使います。",
       "versions": [
         {
+          "version": "1.2.0",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/ponderererer/1.21.1-neoforge/ponderererer-neoforge-1.21.1-1.2.0.jar",
+          "fileName": "ponderererer-neoforge-1.21.1-1.2.0.jar",
+          "sha256": "c84f9627ebee7e75f5dedea3f878511351e399bee55417c23a7cf483d6af61a5",
+          "changelog": "ケーブルのつながりや機械の面の見た目が思案画面に反映されるようにしました（1.1.0 の FX.connectTransmitters は、この版から見た目に出ます）。機械の面の入出力の見た目を変える FX.setSideConfig を追加しました。",
+          "released": "2026-11-19"
+        },
+        {
           "version": "1.1.1",
           "mc": "1.21.1",
           "loader": "neoforge",
@@ -1515,6 +1525,16 @@
       "name": "More MekaPonder",
       "summary": "Mekanism の機械・ケーブル・アイテム・道具・防具の使い方を、思案画面（Ponder）で解説するMODです。公式アドオン（Generators・Additions・Tools）にも対応しています。",
       "versions": [
+        {
+          "version": "1.0.5",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/moremekaponder/1.21.1-neoforge/moremekaponder-neoforge-1.21.1-1.0.5.jar",
+          "fileName": "moremekaponder-neoforge-1.21.1-1.0.5.jar",
+          "sha256": "6b51380463c0bb67a27b3ffa2f8e579bf474ddcffa4f56fefc510055150406e4",
+          "changelog": "エネルギーキューブのすべての面が出力の見た目になるようにしました。エネルギーキューブの場面で、キューブがほかの機械に置き換わってしまう不具合を直し、正面に機械をつなぐ場面を作り直しました。別の機械を使う場面では、元のブロックを置いたまま、横に別の機械を置くようにしました。発熱器の横に熱力学的コンダクターがつながるようにしました。Ponderererer 1.2.0 以上が必要です。",
+          "released": "2026-11-19"
+        },
         {
           "version": "1.0.4",
           "mc": "1.21.1",
