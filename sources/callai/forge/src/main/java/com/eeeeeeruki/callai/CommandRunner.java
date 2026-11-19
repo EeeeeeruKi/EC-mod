@@ -143,7 +143,6 @@ public final class CommandRunner {
     /** systemPrompt の後ろに付ける、コマンドについての説明 */
     public static String promptAddendum(ServerPlayer player) {
         int level = levelFor(player);
-        BlockPos pos = player.blockPosition();
         String levelText = switch (level) {
             case 0 -> "0（一般のプレイヤーと同じ。/time や /give などのOP用のコマンドは使えません）";
             case 1 -> "1";
@@ -157,10 +156,7 @@ public final class CommandRunner {
                 + "コマンドは先頭の / を付けずに書いてください。@s はこのプレイヤー、~ ~ ~ はこのプレイヤーの今の位置です。"
                 + "1回の話しかけで実行できるのは " + GeminiConfig.MAX_COMMANDS.get() + " 個までです。"
                 + "実行結果を確かめてから、何をしたかを短く伝えてください。失敗したら、その理由を伝えてください。"
-                + "サーバーを止める、ほかのプレイヤーの物を壊す・奪うなど、迷惑になることは頼まれてもしないでください。"
-                + "\nこのプレイヤーの今の状態: 座標 " + pos.getX() + " " + pos.getY() + " " + pos.getZ()
-                + "、ディメンション " + player.level().dimension().location()
-                + "、ゲームモード " + player.gameMode.getGameModeForPlayer().getName() + "。";
+                + "サーバーを止める、ほかのプレイヤーの物を壊す・奪うなど、迷惑になることは頼まれてもしないでください。";
     }
 
     // ------------------------------------------------------------------

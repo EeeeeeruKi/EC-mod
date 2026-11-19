@@ -93,7 +93,7 @@ public final class Reactions {
                 + "日本語で返事してください。";
 
 
-        system = system + Memory.promptFor(player);
+        system = system + GameInfo.promptFor(player) + Memory.promptFor(player);
         MinecraftServer server = player.getServer();
         UUID uuid = player.getUUID();
         GeminiChat.oneShot(player, system, message).whenComplete((text, err) -> server.execute(() -> {

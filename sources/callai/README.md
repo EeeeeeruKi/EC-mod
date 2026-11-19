@@ -1,6 +1,6 @@
 # Call AI ソース
 
-最新版（2.2.1）のソース。
+最新版（2.3.0）のソース。
 
 - forge/ … 1.20.1 Forge
 - neoforge/ … 1.21.1 NeoForge

@@ -179,7 +179,7 @@ public final class GeminiChat {
                 .replace("{bot}", GeminiConfig.BOT_NAME.get());
         if (cmds) prompt = prompt + CommandRunner.promptAddendum(player);
         boolean auto = GeminiConfig.MEMORY_AUTO.get();
-        prompt = prompt + Memory.promptFor(player) + (!auto ? "" : memoryTool ? Memory.toolAddendum() : Memory.tagAddendum());
+        prompt = prompt + GameInfo.promptFor(player) + Memory.promptFor(player) + (!auto ? "" : memoryTool ? Memory.toolAddendum() : Memory.tagAddendum());
         JsonArray decls = new JsonArray();
         if (memoryTool && auto) decls.add(Memory.declaration());
         if (cmds) decls.addAll(CommandRunner.declarations());
@@ -257,8 +257,14 @@ public final class GeminiChat {
                 List<JsonObject> results = new ArrayList<>();
                 for (GeminiClient.FunctionCall call : calls) {
                     JsonObject r;
-                    if (Memory.TOOL_NAME.equals(call.name()) && p != null) {
-                        r = Memory.run(p, call.args(), botName);
+                    if (Memory.TOOL_NAME.equals(call.name())) {
+                        if (p != null) {
+                            r = Memory.run(p, call.args(), botName);
+                        } else {
+                            r = new JsonObject();
+                            r.addProperty("success", false);
+                            r.addProperty("output", "プレイヤーがサーバーにいないので覚えられませんでした。");
+                        }
                     } else if (!CommandRunner.TOOL_NAME.equals(call.name()) || !cmds) {
                         r = new JsonObject();
                         r.addProperty("success", false);

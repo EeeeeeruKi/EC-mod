@@ -63,12 +63,18 @@ public final class Memory {
     }
 
     /** 覚えます。いっぱいなら一番古いものを忘れます。追加した文を返します */
-    public static synchronized String add(ServerPlayer player, boolean shared, String text) {
+    public static String add(ServerPlayer player, boolean shared, String text) {
+        return add(player.getServer(), shared ? null : player.getUUID().toString(), text);
+    }
+
+    /** uuidOrNull が null ならサーバーのこととして覚えます */
+    public static synchronized String add(MinecraftServer server, String uuidOrNull, String text) {
+        boolean shared = uuidOrNull == null;
         String t = text == null ? "" : text.replace("\n", " ").trim();
         if (t.isEmpty()) return "";
         if (t.length() > MAX_CHARS) t = t.substring(0, MAX_CHARS);
-        Data d = load(player.getServer());
-        List<String> list = shared ? d.server : d.players.computeIfAbsent(player.getUUID().toString(), k -> new ArrayList<>());
+        Data d = load(server);
+        List<String> list = shared ? d.server : d.players.computeIfAbsent(uuidOrNull, k -> new ArrayList<>());
         if (!list.contains(t)) list.add(t);
         int max = shared ? MAX_SERVER : MAX_PLAYER;
         while (list.size() > max) list.remove(0);
@@ -249,8 +255,7 @@ public final class Memory {
                                 .requires(s -> s.hasPermission(2))
                                 .then(Commands.argument("text", StringArgumentType.greedyString())
                                         .executes(ctx -> {
-                                            ServerPlayer p = ctx.getSource().getPlayerOrException();
-                                            String t = add(p, true, StringArgumentType.getString(ctx, "text"));
+                                            String t = add(ctx.getSource().getServer(), null, StringArgumentType.getString(ctx, "text"));
                                             ctx.getSource().sendSuccess(() -> Component.literal("AIにサーバーのこととして覚えさせました: " + t), true);
                                             return 1;
                                         })))

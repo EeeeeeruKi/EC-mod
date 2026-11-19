@@ -50,7 +50,7 @@ public class CallAI {
         NeoForge.EVENT_BUS.addListener(this::onLogin);
         NeoForge.EVENT_BUS.addListener(this::onServerStopping);
         NeoForge.EVENT_BUS.addListener(this::onAdvancement);
-        NeoForge.EVENT_BUS.addListener(this::onDeath);
+        NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.LOWEST, this::onDeath);
     }
 
     private void onCommand(CommandEvent event) {

@@ -512,6 +512,26 @@
       "summary": "/tell @ai でささやくと、AI（Google の Gemini か、OpenAI・Ollama・LM Studio などの OpenAI互換API）がささやき返してくれるMOD。頼めばコマンドも実行してくれます。",
       "versions": [
         {
+          "version": "2.3.0",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/callai/1.20.1-forge/callai-2.3.0.jar",
+          "fileName": "callai-2.3.0.jar",
+          "sha256": "e75b7b37e913d06dc7f7b196646770de674603aac546756e6e24a17e3bf26b4e",
+          "changelog": "AIがゲームの様子（ディメンション・プレイヤー・時間・体力・空腹度・権限レベル・レベル・エフェクト・使えるコマンド）を見て答えるようになりました。小さな不具合もいくつか直しました。",
+          "released": "2026-11-19"
+        },
+        {
+          "version": "2.3.0",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/callai/1.21.1-neoforge/callai-neoforge-1.21.1-2.3.0.jar",
+          "fileName": "callai-neoforge-1.21.1-2.3.0.jar",
+          "sha256": "66da3ce1f7aa41cff090a91b7e5a51cadabe28e8d5943191ec94cb0e69f7b858",
+          "changelog": "AIがゲームの様子（ディメンション・プレイヤー・時間・体力・空腹度・権限レベル・レベル・エフェクト・使えるコマンド）を見て答えるようになりました。小さな不具合もいくつか直しました。",
+          "released": "2026-11-19"
+        },
+        {
           "version": "2.2.1",
           "mc": "1.20.1",
           "loader": "forge",

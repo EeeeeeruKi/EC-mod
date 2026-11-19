@@ -49,7 +49,7 @@ public class CallAI {
         MinecraftForge.EVENT_BUS.addListener(this::onLogin);
         MinecraftForge.EVENT_BUS.addListener(this::onServerStopping);
         MinecraftForge.EVENT_BUS.addListener(this::onAdvancement);
-        MinecraftForge.EVENT_BUS.addListener(this::onDeath);
+        MinecraftForge.EVENT_BUS.addListener(net.minecraftforge.eventbus.api.EventPriority.LOWEST, this::onDeath);
     }
 
     private void onCommand(CommandEvent event) {

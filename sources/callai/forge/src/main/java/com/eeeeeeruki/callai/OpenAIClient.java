@@ -264,6 +264,8 @@ public final class OpenAIClient {
             // 閉じていない <think> が残っていたら、その後ろだけを使う
             int open = text.lastIndexOf("</think>");
             if (open >= 0) text = text.substring(open + "</think>".length()).trim();
+            // 考えている途中で切れた（</think> が無い）なら、考えている部分は見せない
+            else if (text.startsWith("<think>")) text = "";
             if (!text.isEmpty()) {
                 JsonObject p = new JsonObject();
                 p.addProperty("text", text);
