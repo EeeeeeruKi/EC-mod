@@ -117,6 +117,7 @@ final class SceneRunner {
     private void place(BlockPos pos, BlockState state) {
         scene.world().setBlock(pos, face(state), false);
         fx.sound(state.getSoundType().getPlaceSound(), 1f, 0.8f);
+        fx.connectTransmitters(util.select().fromTo(0, 1, 0, 6, 3, 6));
         if (pos.equals(CENTER)) placed = true;
     }
 
@@ -170,6 +171,7 @@ final class SceneRunner {
                 BlockState state = block(o.get("id").getAsString());
                 if (state == null) return;
                 for (JsonElement c : o.getAsJsonArray("cells")) scene.world().setBlock(pos(c.getAsJsonArray()), state, true);
+                fx.connectTransmitters(util.select().fromTo(0, 1, 0, 6, 3, 6));
                 scene.idle(15);
             }
             case "breakat" -> {

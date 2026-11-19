@@ -1,5 +1,9 @@
 package io.github.eeeeeeruki.ponderererer.api;
 
+import io.github.eeeeeeruki.ponderererer.world.TransmitterLinker;
+import net.createmod.ponder.api.scene.Selection;
+import net.minecraft.core.Direction;
+
 import io.github.eeeeeeruki.ponderererer.element.BeamElement;
 import io.github.eeeeeeruki.ponderererer.element.FxElement;
 import io.github.eeeeeeruki.ponderererer.element.FxOverlay;
@@ -159,6 +163,28 @@ public final class FX {
             }
             ps.addElement(new SoundElement(SoundEvents.GENERIC_EXPLODE.value(), 0.8f, 0.9f + r.nextFloat() * 0.2f));
             ps.addElement(new ScreenTintElement(0x80FFFFFF, 0, 2));
+        });
+    }
+
+    // ------------------------------------------------------------------ cables and pipes
+
+    /**
+     * Connects the cables, pipes and tubes (Mekanism transmitters) inside {@code area} to each other
+     * and to the machines next to them, so they render like they do in game. Call it after placing
+     * or removing blocks; calling it again is safe.
+     */
+    public void connectTransmitters(Selection area) {
+        scene.addInstruction(ps -> {
+            if (TransmitterLinker.link(ps.getWorld(), area) > 0)
+                ps.forEach(WorldSectionElement.class, WorldSectionElement::queueRedraw);
+        });
+    }
+
+    /** Sets which sides one transmitter connects to, when the automatic rule is not what the scene needs. */
+    public void setTransmitterSides(BlockPos pos, Direction[] transmitterSides, Direction[] acceptorSides) {
+        scene.addInstruction(ps -> {
+            if (TransmitterLinker.set(ps.getWorld(), pos, transmitterSides, acceptorSides))
+                ps.forEach(WorldSectionElement.class, WorldSectionElement::queueRedraw);
         });
     }
 

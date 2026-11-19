@@ -23,7 +23,7 @@ neoForge {
 
 dependencies {
     compileOnly("net.createmod.ponder:ponder-neoforge:${ponder_version}") { transitive = false }
-    compileOnly files("libs/ponderererer-neoforge-1.21.1-1.0.0.jar")
+    compileOnly files("libs/ponderererer-neoforge-1.21.1-1.1.0.jar")
 }
 
 var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {

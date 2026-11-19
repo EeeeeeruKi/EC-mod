@@ -1460,6 +1460,16 @@
       "summary": "Ponder（思案画面）に、レーザー・稲妻・爆発・ゲージ・機械の画面・プレイヤーなどの描画を追加するライブラリMODです。思案画面を作るMODから使います。",
       "versions": [
         {
+          "version": "1.1.0",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/ponderererer/1.21.1-neoforge/ponderererer-neoforge-1.21.1-1.1.0.jar",
+          "fileName": "ponderererer-neoforge-1.21.1-1.1.0.jar",
+          "sha256": "6d6b693772ad71760c88ded7d234eb5b8c7d321e292743a8472d7c6c21b75470",
+          "changelog": "思案画面の中で Mekanism のケーブル・パイプ・チューブが、となりのケーブルや機械とつながって表示されるようにする機能を追加しました。",
+          "released": "2026-11-19"
+        },
+        {
           "version": "1.0.2",
           "mc": "1.21.1",
           "loader": "neoforge",
@@ -1495,6 +1505,16 @@
       "name": "More MekaPonder",
       "summary": "Mekanism の機械・ケーブル・アイテム・道具・防具の使い方を、思案画面（Ponder）で解説するMODです。公式アドオン（Generators・Additions・Tools）にも対応しています。",
       "versions": [
+        {
+          "version": "1.0.4",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/moremekaponder/1.21.1-neoforge/moremekaponder-neoforge-1.21.1-1.0.4.jar",
+          "fileName": "moremekaponder-neoforge-1.21.1-1.0.4.jar",
+          "sha256": "bb9639b418e102cc857a9f4dd367541bcfe2bde87a33b8b7740a577fb5e31b95",
+          "changelog": "思案画面のケーブル・パイプ・チューブが、となりのケーブルや機械とつながって表示されるようにしました。Ponderererer 1.1.0 以上が必要です。",
+          "released": "2026-11-19"
+        },
         {
           "version": "1.0.3",
           "mc": "1.21.1",
