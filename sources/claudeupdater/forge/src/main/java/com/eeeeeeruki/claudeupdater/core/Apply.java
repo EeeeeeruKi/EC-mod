@@ -98,6 +98,7 @@ public final class Apply {
         }
         write(pending, left);
         log(left.isEmpty() ? "すべての入れ替えが完了しました" : left.size() + "件は次回の終了時にもう一度試します");
+        Restart.runIfRequested(pending.resolveSibling("restart.txt"));
     }
 
     /**

@@ -6,6 +6,36 @@
       "summary": "ゲームの起動時に、このライブラリのMODの新しい版があるか確認し、選んだMODを自動で入れ替えるMOD。jarを毎回ダウンロードして置き換える手間がなくなります。",
       "versions": [
         {
+          "version": "1.6.0",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/claudeupdater/1.20.1-forge/claudeupdater-1.6.0-forge-1.20.1.jar",
+          "fileName": "claudeupdater-1.6.0-forge-1.20.1.jar",
+          "sha256": "36c669ff42a95f23eb25723b72030dc820ac4795be15790da81cf4cd992e3ced",
+          "changelog": "ダウンロードのあとのボタンを「適用して再起動」に変えました。押すとゲームが一度閉じ、新しい版に入れ替えたあとで自動でもう一度起動します（Prism Launcher など）。",
+          "released": "2026-11-20"
+        },
+        {
+          "version": "1.6.0",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/claudeupdater/1.21.1-neoforge/claudeupdater-1.6.0-neoforge-1.21.1.jar",
+          "fileName": "claudeupdater-1.6.0-neoforge-1.21.1.jar",
+          "sha256": "54a97bf178ad81995653d3a709ac6bf4175f63a6cd7f33ea8eab794d5ef01283",
+          "changelog": "ダウンロードのあとのボタンを「適用して再起動」に変えました。押すとゲームが一度閉じ、新しい版に入れ替えたあとで自動でもう一度起動します（Prism Launcher など）。",
+          "released": "2026-11-20"
+        },
+        {
+          "version": "1.6.0",
+          "mc": "1.21.1",
+          "loader": "fabric",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/claudeupdater/1.21.1-fabric/claudeupdater-1.6.0-fabric-1.21.1.jar",
+          "fileName": "claudeupdater-1.6.0-fabric-1.21.1.jar",
+          "sha256": "91bfed775de7d227d19b0098910215b709e9c726cef240db9241a54962b98163",
+          "changelog": "ダウンロードのあとのボタンを「適用して再起動」に変えました。押すとゲームが一度閉じ、新しい版に入れ替えたあとで自動でもう一度起動します（Prism Launcher など）。",
+          "released": "2026-11-20"
+        },
+        {
           "version": "1.5.0",
           "mc": "1.20.1",
           "loader": "forge",

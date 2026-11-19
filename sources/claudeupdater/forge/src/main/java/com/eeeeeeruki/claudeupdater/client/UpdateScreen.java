@@ -129,8 +129,14 @@ public class UpdateScreen extends Screen {
         } else if (mode == Mode.FINISHED) {
             boolean any = list.stream().anyMatch(c -> c.state == UpdateCandidate.State.DONE);
             if (any && minecraft.level == null) {
-                addRenderableWidget(Button.builder(Component.literal("ゲームを終了して入れ替える"), b -> minecraft.stop())
-                        .bounds(width / 2 - 155, by, 150, 20).build());
+                addRenderableWidget(Button.builder(Component.literal("適用して再起動"), b -> {
+                            UpdaterCore.requestRestart();
+                            minecraft.stop();
+                        }).bounds(width / 2 - 155, by, 150, 20)
+                        .tooltip(Tooltip.create(Component.literal(UpdaterCore.canRestart()
+                                ? "ゲームを一度閉じて新しい版に入れ替え、そのままもう一度起動します。"
+                                : "ゲームを一度閉じて新しい版に入れ替えます。\n§7このランチャーでは自動で起動し直せないので、入れ替えのあとで起動してください。")))
+                        .build());
                 addRenderableWidget(Button.builder(Component.literal("あとで（終了時に入れ替え）"), b -> onClose())
                         .bounds(width / 2 + 5, by, 150, 20).build());
             } else {
@@ -243,7 +249,7 @@ public class UpdateScreen extends Screen {
                     l1 = "§c確認できませんでした: " + error;
                 } else if (waiting > 0) {
                     l1 = "ほかに新しい版はありません。";
-                    l2 = "ダウンロード済みのMOD（" + waiting + "個）は、ゲームを終了すると新しい版に入れ替わります。";
+                    l2 = "ダウンロード済みのMOD（" + waiting + "個）は、ゲームを終了したときに新しい版に入れ替わります。";
                 } else {
                     l1 = "すべてのMODが最新です。";
                 }
@@ -257,8 +263,8 @@ public class UpdateScreen extends Screen {
                 break;
             default:
                 boolean ok = list.stream().anyMatch(c -> c.state == UpdateCandidate.State.DONE);
-                if (ok && minecraft.level != null) l2 = "ワールドから出て、ゲームを終了すると入れ替わります。";
-                l1 = ok ? "ダウンロードが終わりました。ゲームを終了すると新しい版に入れ替わります。"
+                if (ok && minecraft.level != null) l2 = "ワールドから出て、この画面の「適用して再起動」を押すと入れ替わります。";
+                l1 = ok ? "ダウンロードが終わりました。「適用して再起動」を押すと新しい版に入れ替わります。"
                         : "ダウンロードできませんでした。カーソルを合わせると理由が表示されます。";
                 break;
         }

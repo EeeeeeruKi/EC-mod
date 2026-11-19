@@ -15,6 +15,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -111,6 +112,10 @@ public final class UpdaterCore {
                 .followRedirects(HttpClient.Redirect.NORMAL) // GitHub release downloads redirect to a CDN
                 .connectTimeout(Duration.ofSeconds(config.timeoutSeconds))
                 .build();
+        try {
+            Files.deleteIfExists(restartFile()); // a restart asked for in an earlier session is never carried over
+        } catch (Exception ignored) {
+        }
         applyLeftovers();
         registerShutdownHook();
 
@@ -436,9 +441,43 @@ public final class UpdaterCore {
         if (!Apply.read(env.pendingFile()).isEmpty()) startHelper();
     }
 
+    private static Path restartFile() {
+        return env.pendingFile().resolveSibling("restart.txt");
+    }
+
+    /** Whether "適用して再起動" can start the game again by itself (otherwise it only closes the game). */
+    public static boolean canRestart() {
+        return Restart.plan(env.gameDir()).isPresent();
+    }
+
+    /**
+     * "適用して再起動": remember how to start the game again; the helper swaps the jars once the game has closed
+     * and then starts it. The caller stops the game right after this.
+     */
+    public static void requestRestart() {
+        try {
+            Optional<Restart.Plan> plan = Restart.plan(env.gameDir());
+            if (plan.isPresent()) {
+                Restart.write(restartFile(), plan.get());
+                Log.info("入れ替えのあとでゲームをもう一度起動します（" + plan.get().how() + "）");
+            } else {
+                Files.deleteIfExists(restartFile());
+                Log.warn("このランチャーではゲームを自動で起動し直せません。入れ替えのあとで、もう一度起動してください。");
+            }
+        } catch (Throwable t) {
+            Log.warn("再起動の準備ができませんでした: " + t);
+        }
+        startHelper(); // already waiting in most cases; makes sure someone runs the restart
+    }
+
     private static void registerShutdownHook() {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             try {
+                if (Files.isRegularFile(restartFile())) {
+                    Apply.applyNow(env.pendingFile(), applyLog());
+                    startHelper(); // the helper also does the restart, after this process is gone
+                    return;
+                }
                 if (Apply.read(env.pendingFile()).isEmpty()) return;
                 if (Apply.applyNow(env.pendingFile(), applyLog()).isEmpty()) return;
                 startHelper(); // still locked: let the helper retry after the process is gone
