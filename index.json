@@ -1526,6 +1526,16 @@
       "summary": "Mekanism の機械・ケーブル・アイテム・道具・防具の使い方を、思案画面（Ponder）で解説するMODです。公式アドオン（Generators・Additions・Tools）にも対応しています。",
       "versions": [
         {
+          "version": "1.0.6",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/moremekaponder/1.21.1-neoforge/moremekaponder-neoforge-1.21.1-1.0.6.jar",
+          "fileName": "moremekaponder-neoforge-1.21.1-1.0.6.jar",
+          "sha256": "720e46664c218670825313ed849777b9f0130b65b4bf29452c5492bb390f2c05",
+          "changelog": "電力を使う機械は、場面の最初にクリエイティブエネルギーキューブとユニバーサルケーブルを置いて電源をつなぐようにしました。薪木ストーブの場面で、ストーブ自体を中に入れてしまう不具合を直しました。",
+          "released": "2026-11-19"
+        },
+        {
           "version": "1.0.5",
           "mc": "1.21.1",
           "loader": "neoforge",

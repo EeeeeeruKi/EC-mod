@@ -129,6 +129,14 @@ def slot_for(rid):
     if 'scuba_tank' in p: return 'CHEST'
     return 'MAINHAND'
 
+NOPOWER = {'mekanism:fuelwood_heater','mekanism:solar_neutron_activator','mekanism:laser_amplifier','mekanism:oredictionificator',
+           'mekanism:logistical_sorter','mekanism:quantum_entangloporter'}
+def powered(rid):
+    if not rid or not rid.startswith('mekanism:') or rid in NOPOWER: return False
+    p = rid.split(':')[1]
+    if any(k in p for k in ('bin','tank','energy_cube','cable','pipe','tube','transporter','conductor')): return False
+    return is_machine(rid) or p in ('chargepad','laser','seismic_vibrator','dimensional_stabilizer','digital_miner','electric_pump',
+                                    'fluidic_plenisher','formulaic_assemblicator','modification_station','resistive_heater')
 def compile_action(e, text, state):
     ops = []
     main = e['id'] if e['id'] in blocks else None
@@ -144,22 +152,27 @@ def compile_action(e, text, state):
     def infra(kind):
         if kind in state: return
         state[kind] = True
-        src = 'mekanismgenerators:heat_generator' if (kind == 'power' and '発電機から' in text) else None
-        P = {'power':(src or 'mekanism:basic_energy_cube','mekanism:basic_universal_cable',[0,1,3],[[1,1,3],[2,1,3]]),
+        P = {'power':('mekanism:creative_energy_cube','mekanism:basic_universal_cable',[0,1,3],[[1,1,3],[2,1,3]]),
              'tube':('mekanism:basic_chemical_tank','mekanism:basic_pressurized_tube',[3,1,6],[[3,1,5],[3,1,4]]),
              'pipe':('mekanism:basic_fluid_tank','mekanism:basic_mechanical_pipe',[6,1,3],[[5,1,3],[4,1,3]]),
              'item':('minecraft:chest','mekanism:basic_logistical_transporter',[3,1,0],[[3,1,1],[3,1,2]])}[kind]
         ops.append({'op':'block','pos':P[2],'id':P[0]})
         ops.append({'op':'line','id':P[1],'cells':P[3]})
     focus = None
-    if main: place_main(); focus = main
+    if main:
+        first = not state.get('placed')
+        place_main(); focus = main
+        if first and powered(main): infra('power')
     elif found and found[0][2] in blocks and is_machine(found[0][2]) and not state.get('placed'):
         focus = found[0][2]; ops.append({'op':'block','pos':[3,1,3],'id':focus}); state['placed'] = True; state['machine'] = focus
+        if powered(focus): infra('power')
     else:
         focus = state.get('machine')
         for _, n, rid in found:
             if is_machine(rid) and rid != state.get('machine') and not state.get('placed'):
-                ops.append({'op':'block','pos':[3,1,3],'id':rid}); state['placed'] = True; state['machine'] = focus = rid; break
+                ops.append({'op':'block','pos':[3,1,3],'id':rid}); state['placed'] = True; state['machine'] = focus = rid
+                if powered(rid): infra('power')
+                break
     if '電力' in text or 'ユニバーサルケーブル' in text or 'ケーブル' in text: infra('power')
     if '加圧チューブ' in text: infra('tube')
     if 'メカニカルパイプ' in text: infra('pipe')
@@ -221,7 +234,7 @@ def compile_action(e, text, state):
     if ('入れ' in text or '送' in text or '吹き込' in text) and split > 0:
         ins, outs, gauges = [], [], []; gcol = 0x55AAFF
         for p, n, rid in found:
-            if is_machine(rid) or rid in ('mekanism:basic_pressurized_tube','mekanism:basic_mechanical_pipe','mekanism:basic_universal_cable','mekanism:basic_logistical_transporter'):
+            if rid == main or is_machine(rid) or rid in ('mekanism:basic_pressurized_tube','mekanism:basic_mechanical_pipe','mekanism:basic_universal_cable','mekanism:basic_logistical_transporter'):
                 continue
             (ins if p < split else outs).append([rid, count_after(text, p+len(n))])
         for p, n, cid in cfound:
@@ -235,11 +248,13 @@ def compile_action(e, text, state):
             # the scene's own block stays in the middle; the other machine goes beside it
             if state.get('side') != ms[-1]:
                 ops.append({'op':'block','pos':[5,1,1],'id':ms[-1]}); state['side'] = ms[-1]
+                if powered(ms[-1]): ops.append({'op':'block','pos':[6,1,1],'id':'mekanism:creative_energy_cube'})
             side_at = [5,1,1]
         elif ms and state.get('placed') and ms[-1] != (state.get('machine') or main):
             ops.append({'op':'swap','id':ms[-1]}); state['machine'] = ms[-1]
         elif ms and not state.get('placed'):
             ops.append({'op':'block','pos':[3,1,3],'id':ms[-1]}); state['placed'] = True; state['machine'] = ms[-1]
+            if powered(ms[-1]): infra('power')
         title = side_at and ms[-1] or mach_title()
         seen = set(); g2 = []
         for n, c in gauges:
