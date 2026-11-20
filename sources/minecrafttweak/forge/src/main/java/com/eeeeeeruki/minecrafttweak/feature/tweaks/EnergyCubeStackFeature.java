@@ -10,6 +10,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -20,6 +21,8 @@ import net.minecraftforge.energy.IEnergyStorage;
 import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+
+import net.minecraftforge.event.ItemStackedOnOtherEvent;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -32,12 +35,12 @@ import java.util.Objects;
  *
  * 仕様:
  * - 同じティアで、同じFEのキューブは重なる。
- * - 同じティアのキューブを拾ったとき、持っているキューブと重ならないなら、FEを捨てて重ねる。
- *   低いほうに合わせる（例: 2% と 0% → 2% のFEを捨てて 0% にする。60% と 70% → 70% を 60% に。
- *   そのあと 50% を拾ったら 60% を 50% に）。
- * - 「50%以上」「50%未満」「100%」の3つの組に分けて、組をまたいではFEを捨てない。
- *   100% のキューブはFEを捨てない（100%どうしはそのまま重なる）。
- *   例: 20%・40%・50%・70%・100% を拾うと、20%×2・50%×2・100%×1 になる。
+ * - 拾ったとき: 持っている同じティアのキューブとのFEの差が「拾ったときに合わせる範囲」（7b、%）以内なら、
+ *   低いほうに合わせてFEを捨てて重ねる。0 にすると、拾ったときはFEを捨てない。
+ * - 手で重ねたとき（インベントリでキューブをキューブの上に置いたとき）: 低いほうに合わせてFEを捨てて重ねる
+ *   （例: 2% と 0% → 2% のFEを捨てて 0% にする。60% と 70% → 70% を 60% に）。
+ *   「50%以上」「50%未満」「100%」の3つの組に分けて、組をまたいではFEを捨てない。
+ * - どちらの場合も、100% のキューブはFEを捨てない（100%どうしはそのまま重なる）。
  * - 重ねられる数はゲームを起動したときに決まる（設定を変えたら再起動が必要）。
  *
  * 1.20.1 の Mekanism は、FEを NBT の mekData.EnergyContainers に入れている。
@@ -45,6 +48,7 @@ import java.util.Objects;
 public class EnergyCubeStackFeature extends Feature {
     public static EnergyCubeStackFeature INSTANCE;
     public ForgeConfigSpec.IntValue maxStack;
+    public ForgeConfigSpec.IntValue pickupRange;
 
     private static final String MEK_DATA = "mekData";
     private static final String ENERGY = "EnergyContainers";
@@ -58,12 +62,14 @@ public class EnergyCubeStackFeature extends Feature {
     @Override
     protected void addOptions(ForgeConfigSpec.Builder builder) {
         maxStack = intOption(builder, "max_stack", "How many energy cubes can be stacked (restart needed).", 64, 2, 64);
+        pickupRange = intOption(builder, "pickup_range", "When picking up a cube, match cubes whose energy differs by at most this many percent (0 = never on pickup).", 10, 0, 100);
     }
 
     @Override
     public void register(IEventBus modBus) {
         modBus.addListener(this::onSetup);
         MinecraftForge.EVENT_BUS.addListener(this::onPickup);
+        MinecraftForge.EVENT_BUS.addListener(this::onStackedOn);
     }
 
     public static boolean isCube(Item item) {
@@ -191,25 +197,29 @@ public class EnergyCubeStackFeature extends Feature {
             return; // 重ねられる数が変わっていない（再起動していない）
         }
         Group group = group(incoming);
-        if (group == Group.FULL || group == Group.UNKNOWN) {
+        int range = pickupRange.get();
+        if (group == Group.FULL || group == Group.UNKNOWN || range <= 0) {
             return;
         }
+        double mine = ratio(incoming);
         Inventory inv = player.getInventory();
         List<ItemStack> same = new ArrayList<>();
-        for (ItemStack s : inv.items) {
-            if (!s.isEmpty() && s.getItem() == incoming.getItem() && group(s) == group) {
-                same.add(s);
+        List<ItemStack> all = new ArrayList<>(inv.items);
+        all.addAll(inv.offhand);
+        for (ItemStack s : all) {
+            if (s.isEmpty() || s.getItem() != incoming.getItem()) {
+                continue;
             }
-        }
-        for (ItemStack s : inv.offhand) {
-            if (!s.isEmpty() && s.getItem() == incoming.getItem() && group(s) == group) {
+            Group g = group(s);
+            double r = ratio(s);
+            if (g != Group.FULL && g != Group.UNKNOWN && Math.abs(r - mine) * 100.0 <= range + 1e-9) {
                 same.add(s);
             }
         }
         if (same.isEmpty()) {
             return;
         }
-        // 組の中でいちばん低いキューブに合わせる
+        // 範囲の中でいちばん低いキューブに合わせる
         ItemStack lowest = incoming;
         double low = ratio(incoming);
         for (ItemStack s : same) {
@@ -236,6 +246,37 @@ public class EnergyCubeStackFeature extends Feature {
         if (changed) {
             compact(inv, incoming.getItem());
             inv.setChanged();
+        }
+    }
+
+    // ===== 手で重ねたとき =====
+
+    /**
+     * インベントリでキューブを持って、同じティアのキューブの上に置いたとき。
+     * 50%未満・50%以上の同じ組なら、低いほうに合わせてFEを捨てる（100% のキューブは捨てない）。
+     * FEをそろえたあとは、バニラの「重ねる」がそのまま動いて重なる。
+     */
+    private void onStackedOn(ItemStackedOnOtherEvent event) {
+        if (!isEnabled() || event.getClickAction() != ClickAction.PRIMARY) {
+            return;
+        }
+        ItemStack carried = event.getCarriedItem();
+        ItemStack target = event.getStackedOnItem();
+        if (carried.isEmpty() || target.isEmpty() || carried.getItem() != target.getItem() || !isCube(carried.getItem())) {
+            return;
+        }
+        if (carried.getMaxStackSize() <= 1 || sameEnergy(carried, target)) {
+            return;
+        }
+        Group a = group(carried);
+        Group b = group(target);
+        if (a != b || a == Group.FULL || a == Group.UNKNOWN) {
+            return;
+        }
+        if (ratio(carried) <= ratio(target)) {
+            copyEnergy(carried, target);
+        } else {
+            copyEnergy(target, carried);
         }
     }
 
