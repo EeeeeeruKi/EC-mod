@@ -1,6 +1,7 @@
 package com.eeeeeeruki.minecrafttweak.core;
 
 import com.eeeeeeruki.minecrafttweak.feature.client.MenuMusicFeature;
+import com.eeeeeeruki.minecrafttweak.feature.client.ModSafetyFeature;
 import com.eeeeeeruki.minecrafttweak.feature.client.EnglishSearchFeature;
 import com.eeeeeeruki.minecrafttweak.feature.client.PauseMusicFeature;
 import com.eeeeeeruki.minecrafttweak.feature.client.SystemLanguageFeature;
@@ -34,6 +35,8 @@ public final class Features {
         add(new CoyoteTimeFeature());
         // 7
         add(new EnergyCubeStackFeature());
+        // 8
+        add(new ModSafetyFeature());
     }
 
     private Features() {
