@@ -4,6 +4,8 @@ import com.eeeeeeruki.minecrafttweak.feature.client.MenuMusicFeature;
 import com.eeeeeeruki.minecrafttweak.feature.client.EnglishSearchFeature;
 import com.eeeeeeruki.minecrafttweak.feature.client.PauseMusicFeature;
 import com.eeeeeeruki.minecrafttweak.feature.client.SystemLanguageFeature;
+import com.eeeeeeruki.minecrafttweak.feature.tweaks.CoyoteTimeFeature;
+import com.eeeeeeruki.minecrafttweak.feature.tweaks.EnergyCubeStackFeature;
 import com.eeeeeeruki.minecrafttweak.feature.tweaks.XpPickupFeature;
 
 import java.util.ArrayList;
@@ -28,6 +30,10 @@ public final class Features {
         add(new PauseMusicFeature());
         // 5
         add(new EnglishSearchFeature());
+        // 6
+        add(new CoyoteTimeFeature());
+        // 7
+        add(new EnergyCubeStackFeature());
     }
 
     private Features() {

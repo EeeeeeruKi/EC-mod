@@ -186,5 +186,13 @@
   "minecrafttweak.config.code_screen": "設定コード",
   "minecrafttweak.config.code_screen.tooltip": "設定コードの読み込み・コピーと、ID一覧を開きます。",
   "minecrafttweak.config.home_help": "分類を選ぶと、その分類の機能をオン・オフできます。",
-  "minecrafttweak.title_button": "minEcraft twEEk の設定を開きます。"
+  "minecrafttweak.title_button": "minEcraft twEEk の設定を開きます。",
+  "minecrafttweak.feature.coyote_time": "コヨーテタイム",
+  "minecrafttweak.feature.coyote_time.desc": "足場から歩いて落ちたあと、少しのあいだならまだジャンプできます（落ちるたびに1回だけ）。",
+  "minecrafttweak.feature.coyote_time.ticks": "ジャンプできる時間（ティック）",
+  "minecrafttweak.feature.coyote_time.ticks.desc": "地面から離れてから、何ティックのあいだジャンプできるかです（20ティック＝1秒）。",
+  "minecrafttweak.feature.energy_cube_stack": "エネルギーキューブを重ねる",
+  "minecrafttweak.feature.energy_cube_stack.desc": "Mekanism の同じティアで同じFEのエネルギーキューブを重ねられます。同じティアのキューブを拾って重ならないときは、低いほうに合わせてFEを捨てて重ねます。50%未満・50%以上・100%の組をまたいでは合わせず、100%のキューブのFEは捨てません。重ねられる数を変えたときは、ゲームの再起動が必要です。",
+  "minecrafttweak.feature.energy_cube_stack.max_stack": "重ねられる数",
+  "minecrafttweak.feature.energy_cube_stack.max_stack.desc": "エネルギーキューブをいくつまで重ねられるかです。変えたら、ゲーム（サーバー）を再起動してください。"
 }

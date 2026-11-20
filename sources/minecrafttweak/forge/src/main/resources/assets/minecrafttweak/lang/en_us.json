@@ -186,5 +186,13 @@
   "minecrafttweak.config.code_screen": "Setting Codes",
   "minecrafttweak.config.code_screen.tooltip": "Import or copy setting codes, and open the ID list.",
   "minecrafttweak.config.home_help": "Pick a category to turn its features on or off.",
-  "minecrafttweak.title_button": "Open the minEcraft twEEk settings."
+  "minecrafttweak.title_button": "Open the minEcraft twEEk settings.",
+  "minecrafttweak.feature.coyote_time": "Coyote Time",
+  "minecrafttweak.feature.coyote_time.desc": "You can still jump for a moment after walking off a ledge (once per fall).",
+  "minecrafttweak.feature.coyote_time.ticks": "Jump window (ticks)",
+  "minecrafttweak.feature.coyote_time.ticks.desc": "How many ticks after leaving the ground you can still jump (20 ticks = 1 second).",
+  "minecrafttweak.feature.energy_cube_stack": "Stackable Energy Cubes",
+  "minecrafttweak.feature.energy_cube_stack.desc": "Mekanism energy cubes of the same tier and energy stack. When picked-up cubes of the same tier do not stack, the higher one throws away energy to match the lower one. Cubes below 50%, at 50% or more, and at 100% are kept apart, and full cubes never lose energy. Restart the game after changing the stack size.",
+  "minecrafttweak.feature.energy_cube_stack.max_stack": "Stack size",
+  "minecrafttweak.feature.energy_cube_stack.max_stack.desc": "How many energy cubes fit in one stack. Restart the game (server) after changing it."
 }

@@ -27,6 +27,11 @@ sourceSets.main.resources {
 }
 
 repositories {
+    maven {
+        name = "Modrinth"
+        url = "https://api.modrinth.com/maven"
+        content { includeGroup "maven.modrinth" }
+    }
     // Add here additional repositories if required by some of the dependencies below.
 }
 
@@ -117,7 +122,9 @@ configurations {
 
 dependencies {
     // 英語でも検索: JEI と EMI の API（別名の登録）。ゲームに入っていなければ使われない
-    compileOnly files('libs/jei-neoforge.jar', 'libs/emi-neoforge.jar')
+    // JEI と EMI（英語でも検索の連携用）。Modrinth の Maven から取る
+    compileOnly "maven.modrinth:jei:kmb7KviL"
+    compileOnly "maven.modrinth:emi:5sIPA1To"
     // Example optional mod dependency with JEI
     // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
     // compileOnly "mezz.jei:jei-${mc_version}-common-api:${jei_version}"
