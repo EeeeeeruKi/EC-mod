@@ -48,6 +48,8 @@ dependencies {
     // 英語でも検索: JEI と EMI の API（別名の登録）。ゲームに入っていなければ使われない
     // JEI と EMI（英語でも検索の連携用）。Modrinth の Maven から取る
     compileOnly "maven.modrinth:jei:3ehcytyv"
+    // Mekanism（エネルギーキューブを重ねる機能の mixin 用）
+    compileOnly "maven.modrinth:mekanism:uxe1WQp4"
     compileOnly "maven.modrinth:emi:Axuu9I9R"
 }
 

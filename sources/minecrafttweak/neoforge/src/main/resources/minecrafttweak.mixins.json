@@ -3,6 +3,13 @@
   "minVersion": "0.8",
   "package": "com.eeeeeeruki.minecrafttweak.mixin",
   "compatibilityLevel": "JAVA_21",
-  "client": ["AeNameSearchMixin"],
-  "injectors": {"defaultRequire": 0}
+  "client": [
+    "AeNameSearchMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 0
+  },
+  "mixins": [
+    "mekanism.EnergyCubeContainerMixin"
+  ]
 }

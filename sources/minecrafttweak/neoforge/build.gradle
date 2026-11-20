@@ -124,6 +124,8 @@ dependencies {
     // 英語でも検索: JEI と EMI の API（別名の登録）。ゲームに入っていなければ使われない
     // JEI と EMI（英語でも検索の連携用）。Modrinth の Maven から取る
     compileOnly "maven.modrinth:jei:kmb7KviL"
+    // Mekanism（エネルギーキューブを重ねる機能の mixin 用）
+    compileOnly "maven.modrinth:mekanism:5KzzycBT"
     compileOnly "maven.modrinth:emi:5sIPA1To"
     // Example optional mod dependency with JEI
     // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
