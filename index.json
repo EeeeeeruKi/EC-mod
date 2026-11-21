@@ -1712,6 +1712,26 @@
       "summary": "Quark を前提MODにして、Quark にない小さな改善をたくさん詰め込んでいくためのMODです。機能は最初はすべてオフで、ひとつずつオンにできます。このMOD・Quark・バニラ・Sodium の設定を、短い設定コードでまとめてやりとりできます。",
       "versions": [
         {
+          "version": "1.13.3",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/minecrafttweak/1.21.1-neoforge/minecrafttweak-neoforge-1.21.1-1.13.3.jar",
+          "fileName": "minecrafttweak-neoforge-1.21.1-1.13.3.jar",
+          "sha256": "4c431516560308d4a71b8848044a2a0698fd2592d2442f3dc630e28d32db4b3d",
+          "changelog": "不具合を直しました。「カスタムメニューBGM」がゲームの読み込み中に曲を鳴らそうとして、音の仕組みが壊れ、リソースの読み込み全体が失敗する（文字が□や英語の名前になり、ボタンの絵が紫と黒になる）問題を直しました。読み込みが終わるまで曲を鳴らさないようにしました。「システムの言語」への切り替えも、読み込みが落ち着いてから行うようにしました。",
+          "released": "2026-11-21"
+        },
+        {
+          "version": "1.13.3",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/minecrafttweak/1.20.1-forge/minecrafttweak-forge-1.20.1-1.13.3.jar",
+          "fileName": "minecrafttweak-forge-1.20.1-1.13.3.jar",
+          "sha256": "9e35b9cc9d28e20069deefeef7fc5d9904e2806ae46d17b9e7a9e1968ba10392",
+          "changelog": "不具合を直しました。「カスタムメニューBGM」がゲームの読み込み中に曲を鳴らそうとして、音の仕組みが壊れ、リソースの読み込み全体が失敗する（文字が□や英語の名前になり、ボタンの絵が紫と黒になる）問題を直しました。読み込みが終わるまで曲を鳴らさないようにしました。「システムの言語」への切り替えも、読み込みが落ち着いてから行うようにしました。",
+          "released": "2026-11-21"
+        },
+        {
           "version": "1.13.2",
           "mc": "1.21.1",
           "loader": "neoforge",

@@ -32,6 +32,7 @@ public final class SystemLanguage {
     private static boolean checkedAtStart;
     /** 起動時の読み込み（ロード画面）が終わってから言語を切り替えるための印。 */
     private static boolean pendingApply;
+    private static int readyTicks;
     /** いま開いている言語の画面に足した「システムの言語」の項目。 */
     private static Object addedEntry;
     private static ObjectSelectionList<?> addedList;
@@ -111,8 +112,12 @@ public final class SystemLanguage {
         if (!pendingApply) {
             return;
         }
-        Minecraft mc = Minecraft.getInstance();
-        if (mc.getOverlay() != null) {
+        // 読み込みがすべて終わって、少し落ち着いてから（1秒）切り替える
+        if (!SoundReady.ready()) {
+            readyTicks = 0;
+            return;
+        }
+        if (++readyTicks < 20) {
             return;
         }
         pendingApply = false;

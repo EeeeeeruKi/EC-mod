@@ -53,6 +53,8 @@ public final class MenuMusic {
     private static boolean finished;
     private static boolean customActive;
     private static Component status;
+    /** 音の仕組みが作り直されたので、使えるようになったら曲を読み直す。 */
+    private static boolean reloadWhenReady;
 
     // ポーズ画面のBGM
     private static ResourceLocation titleMusic;
@@ -101,7 +103,9 @@ public final class MenuMusic {
 
     private static void release() {
         if (player != null) {
-            player.delete();
+            if (SoundReady.ready()) {
+                player.delete();
+            }
             player = null;
         }
         if (pending != null) {
@@ -136,7 +140,22 @@ public final class MenuMusic {
                 startLoad(source);
             }
         }
-        if (pending != null && pending.isDone()) {
+        boolean soundReady = SoundReady.ready();
+        if (!soundReady) {
+            // 読み込み中・作り直し中は OpenAL を一切さわらない（さわると音もリソースの読み込みも壊れる）
+            if (player != null) {
+                player = null; // 中身は作り直しで消える
+                started = false;
+                reloadWhenReady = true;
+            }
+            customActive = false;
+        } else if (reloadWhenReady) {
+            reloadWhenReady = false;
+            if (!source.isEmpty() && pending == null) {
+                startLoad(source);
+            }
+        }
+        if (soundReady && pending != null && pending.isDone()) {
             CompletableFuture<AudioLoader.Audio> done = pending;
             pending = null;
             try {
@@ -154,17 +173,17 @@ public final class MenuMusic {
                 if (cause instanceof AudioLoader.LoadException le) {
                     status = Component.translatable(le.key, le.detail).withStyle(ChatFormatting.RED);
                 } else {
-                    status = Component.translatable("minecrafttweak.menu_music.error.io", String.valueOf(cause))
+                    status = Component.translatable("minecrafttweak.menu_music.error.io", cause == null ? "?" : cause.getMessage() != null ? cause.getMessage() : cause.getClass().getSimpleName())
                             .withStyle(ChatFormatting.RED);
                 }
                 MinecraftTweak.LOGGER.warn("minEcraft twEEk: could not load menu music {}", source, cause);
             } catch (Throwable t) {
-                status = Component.translatable("minecrafttweak.menu_music.error.io", String.valueOf(t.getMessage()))
+                status = Component.translatable("minecrafttweak.menu_music.error.io", t.getMessage() != null ? t.getMessage() : t.getClass().getSimpleName())
                         .withStyle(ChatFormatting.RED);
                 MinecraftTweak.LOGGER.warn("minEcraft twEEk: could not play menu music {}", source, t);
             }
         }
-        if (player != null && !player.valid()) {
+        if (soundReady && player != null && !player.valid()) {
             // 音の設定を変えたりして OpenAL が作り直された。読み直す（2回目はファイルから）
             player = null;
             started = false;
@@ -176,7 +195,7 @@ public final class MenuMusic {
             finished = false;
         }
         boolean wasCustomActive = customActive;
-        customActive = customWanted && player != null && !finished;
+        customActive = soundReady && customWanted && player != null && !finished;
         if (customActive) {
             if (!wasCustomActive) {
                 stopOtherMusic(mc);
@@ -194,7 +213,7 @@ public final class MenuMusic {
                     started = true;
                 }
             }
-        } else if (player != null && player.playing()) {
+        } else if (soundReady && player != null && player.playing()) {
             player.pause();
         }
 
