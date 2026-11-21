@@ -1,10 +1,13 @@
 {
   "required": false,
   "minVersion": "0.8",
+  "refmap": "minecrafttweak.refmap.json",
   "package": "com.eeeeeeruki.minecrafttweak.mixin",
   "compatibilityLevel": "JAVA_17",
   "client": [
-    "AeNameSearchMixin"
+    "AeNameSearchMixin",
+    "ChatComponentMixin",
+    "ChatScreenMixin"
   ],
   "injectors": {
     "defaultRequire": 0

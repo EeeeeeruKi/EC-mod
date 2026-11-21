@@ -2,6 +2,7 @@ plugins {
     id 'eclipse'
     id 'idea'
     id 'net.minecraftforge.gradle' version '[6.0,6.2)'
+    id 'org.spongepowered.mixin' version '0.7.+'
 }
 
 version = mod_version
@@ -45,12 +46,19 @@ repositories {
 
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+    // バニラのクラスに入れる mixin の名前の対応表（refmap）を作る
+    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
     // 英語でも検索: JEI と EMI の API（別名の登録）。ゲームに入っていなければ使われない
     // JEI と EMI（英語でも検索の連携用）。Modrinth の Maven から取る
     compileOnly "maven.modrinth:jei:3ehcytyv"
     // Mekanism（エネルギーキューブを重ねる機能の mixin 用）
     compileOnly "maven.modrinth:mekanism:uxe1WQp4"
     compileOnly "maven.modrinth:emi:Axuu9I9R"
+}
+
+mixin {
+    add sourceSets.main, 'minecrafttweak.refmap.json'
+    config 'minecrafttweak.mixins.json'
 }
 
 tasks.named('processResources', ProcessResources).configure {
@@ -76,7 +84,6 @@ tasks.named('jar', Jar).configure {
                 'Implementation-Title'    : project.name,
                 'Implementation-Version'  : project.jar.archiveVersion,
                 'Implementation-Vendor'   : 'EeeeeeruKi',
-                'MixinConfigs'            : 'minecrafttweak.mixins.json',
         ])
     }
     finalizedBy 'reobfJar'

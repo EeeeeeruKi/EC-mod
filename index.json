@@ -1682,6 +1682,26 @@
       "summary": "Quark を前提MODにして、Quark にない小さな改善をたくさん詰め込んでいくためのMODです。機能は最初はすべてオフで、ひとつずつオンにできます。このMOD・Quark・バニラ・Sodium の設定を、短い設定コードでまとめてやりとりできます。",
       "versions": [
         {
+          "version": "1.12.0",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/minecrafttweak/1.21.1-neoforge/minecrafttweak-neoforge-1.21.1-1.12.0.jar",
+          "fileName": "minecrafttweak-neoforge-1.21.1-1.12.0.jar",
+          "sha256": "74f844b931d3968ffabfa76597240386383328c6e5cccc6bdb087a363eeb81e1",
+          "changelog": "「チャットの画像」（9）を追加しました。チャット欄のいちばん左の「＋」ボタンから、画像ファイルか画像のリンク（PNG・JPEG・GIF・BMP）を添付して送ると、チャットの中に画像が表示されます（GIFも動きます）。ファイルを送るには、サーバーにもこのmodが入っていて、この機能がオンになっている必要があります。",
+          "released": "2026-11-21"
+        },
+        {
+          "version": "1.12.0",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/minecrafttweak/1.20.1-forge/minecrafttweak-forge-1.20.1-1.12.0.jar",
+          "fileName": "minecrafttweak-forge-1.20.1-1.12.0.jar",
+          "sha256": "0f003efbdc6e41468de7656e810f66c5662c20bc2cfdc998b5019d46c0740bfa",
+          "changelog": "「チャットの画像」（9）を追加しました。チャット欄のいちばん左の「＋」ボタンから、画像ファイルか画像のリンク（PNG・JPEG・GIF・BMP）を添付して送ると、チャットの中に画像が表示されます（GIFも動きます）。ファイルを送るには、サーバーにもこのmodが入っていて、この機能がオンになっている必要があります。",
+          "released": "2026-11-21"
+        },
+        {
           "version": "1.11.0",
           "mc": "1.21.1",
           "loader": "neoforge",

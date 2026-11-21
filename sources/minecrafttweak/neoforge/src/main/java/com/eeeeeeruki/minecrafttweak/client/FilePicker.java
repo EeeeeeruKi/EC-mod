@@ -18,13 +18,17 @@ public final class FilePicker {
     }
 
     public static void open(String[] patterns, String current, Consumer<String> onPicked) {
+        openIn(patterns, startPath(current), onPicked);
+    }
+
+    /** 開いたときの場所（フォルダなら最後に区切り文字を付ける）を決めて開く。 */
+    public static void openIn(String[] patterns, String start, Consumer<String> onPicked) {
         if (open) {
             return;
         }
         open = true;
         String title = I18n.get("minecrafttweak.config.browse.title");
         String description = I18n.get("minecrafttweak.config.browse.filter", String.join(", ", patterns));
-        String start = startPath(current);
         Thread thread = new Thread(() -> {
             try (MemoryStack stack = MemoryStack.stackPush()) {
                 PointerBuffer filters = stack.mallocPointer(patterns.length);

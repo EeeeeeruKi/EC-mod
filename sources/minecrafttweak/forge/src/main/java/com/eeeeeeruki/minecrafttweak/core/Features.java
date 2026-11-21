@@ -1,5 +1,6 @@
 package com.eeeeeeruki.minecrafttweak.core;
 
+import com.eeeeeeruki.minecrafttweak.feature.client.ChatImageFeature;
 import com.eeeeeeruki.minecrafttweak.feature.client.MenuMusicFeature;
 import com.eeeeeeruki.minecrafttweak.feature.client.ModSafetyFeature;
 import com.eeeeeeruki.minecrafttweak.feature.client.EnglishSearchFeature;
@@ -37,6 +38,8 @@ public final class Features {
         add(new EnergyCubeStackFeature());
         // 8
         add(new ModSafetyFeature());
+        // 9
+        add(new ChatImageFeature());
     }
 
     private Features() {
