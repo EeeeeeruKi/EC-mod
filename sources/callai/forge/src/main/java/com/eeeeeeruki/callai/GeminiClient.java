@@ -66,6 +66,12 @@ public final class GeminiClient {
      */
     public static JsonObject buildBody(String systemPrompt, List<Turn> turns, byte[] image,
                                        String thinkingLevel, JsonArray functionDeclarations) {
+        return buildBody(systemPrompt, turns, image == null ? List.of() : List.of(image), thinkingLevel, functionDeclarations);
+    }
+
+    /** images（JPEG）は最後の発言に順番に付けます */
+    public static JsonObject buildBody(String systemPrompt, List<Turn> turns, List<byte[]> images,
+                                       String thinkingLevel, JsonArray functionDeclarations) {
         JsonObject body = new JsonObject();
 
         String level = thinkingLevel == null ? "default" : thinkingLevel.trim().toLowerCase(Locale.ROOT);
@@ -97,13 +103,16 @@ public final class GeminiClient {
             JsonObject c = new JsonObject();
             c.addProperty("role", t.fromUser() ? "user" : "model");
             JsonArray p = parts(t.text());
-            if (image != null && i == turns.size() - 1) {
-                JsonObject inline = new JsonObject();
-                inline.addProperty("mimeType", "image/jpeg");
-                inline.addProperty("data", Base64.getEncoder().encodeToString(image));
-                JsonObject part = new JsonObject();
-                part.add("inlineData", inline);
-                p.add(part);
+            if (images != null && i == turns.size() - 1) {
+                for (byte[] image : images) {
+                    if (image == null) continue;
+                    JsonObject inline = new JsonObject();
+                    inline.addProperty("mimeType", "image/jpeg");
+                    inline.addProperty("data", Base64.getEncoder().encodeToString(image));
+                    JsonObject part = new JsonObject();
+                    part.add("inlineData", inline);
+                    p.add(part);
+                }
             }
             c.add("parts", p);
             contents.add(c);

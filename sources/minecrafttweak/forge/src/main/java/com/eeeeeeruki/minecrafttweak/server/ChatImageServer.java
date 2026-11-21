@@ -31,6 +31,9 @@ public final class ChatImageServer {
     private static final Map<UUID, Pending> PENDING = new HashMap<>();
     private static final LinkedHashMap<String, byte[]> STORE = new LinkedHashMap<>(16, 0.75f, true);
     private static long storeBytes;
+    /** 画像がチャットに貼られたときに呼ばれる（Call AI など、ほかのmodとの連携用）。 */
+    private static final java.util.List<java.util.function.BiConsumer<ServerPlayer, String>> LISTENERS =
+            new java.util.concurrent.CopyOnWriteArrayList<>();
 
     private static final class Pending {
         final int total;
@@ -117,6 +120,13 @@ public final class ChatImageServer {
         if (server != null) {
             server.getPlayerList().broadcastSystemMessage(message, false);
         }
+        for (java.util.function.BiConsumer<ServerPlayer, String> l : LISTENERS) {
+            try {
+                l.accept(player, id);
+            } catch (Throwable t) {
+                MinecraftTweak.LOGGER.warn("minEcraft twEEk: chat image listener failed: {}", t.toString());
+            }
+        }
         MinecraftTweak.LOGGER.info("minEcraft twEEk: {} sent a chat image {} ({} bytes)", player.getName().getString(), id, bytes.length);
     }
 
@@ -142,6 +152,20 @@ public final class ChatImageServer {
             storeBytes -= e.getValue().length;
             it.remove();
         }
+    }
+
+    /**
+     * ほかのmodとの連携用。画像がチャットに貼られるたびに (送った人, 画像の番号) で呼ばれる。サーバーのメインスレッドで呼ばれる。
+     */
+    public static void addListener(java.util.function.BiConsumer<ServerPlayer, String> listener) {
+        if (listener != null) {
+            LISTENERS.add(listener);
+        }
+    }
+
+    /** ほかのmodとの連携用。覚えている画像ファイルの中身（もう忘れていたら null）。サーバーのメインスレッドで呼ぶ。 */
+    public static byte[] getImage(String id) {
+        return id == null ? null : STORE.get(id);
     }
 
     public static void onRequest(ServerPlayer player, String id) {

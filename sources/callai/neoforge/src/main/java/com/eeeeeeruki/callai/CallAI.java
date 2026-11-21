@@ -50,6 +50,10 @@ public class CallAI {
         NeoForge.EVENT_BUS.addListener(this::onLogout);
         NeoForge.EVENT_BUS.addListener(this::onLogin);
         NeoForge.EVENT_BUS.addListener(this::onServerStopping);
+        // チャットに貼られた画像のリンクを覚える（@ai の処理より先に）
+        NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGH, (net.neoforged.neoforge.event.ServerChatEvent e) -> ChatImageLog.onChat(e.getPlayer(), e.getRawText()));
+        // minEcraft twEEk のチャットの画像と連携
+        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.server.ServerStartedEvent e) -> ChatImageLog.hookTweak());
         NeoForge.EVENT_BUS.addListener(this::onAdvancement);
         NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.LOWEST, this::onDeath);
     }
@@ -298,6 +302,27 @@ public class CallAI {
                 .then(Reactions.command())
                 // 覚えていること
                 .then(Memory.command())
+                // チャットに貼られた画像を何分前までAIに見せるか（見るのは誰でも、変えるのはOP）
+                .then(Commands.literal("chatimages")
+                        .executes(ctx -> {
+                            int m = GeminiConfig.CHAT_IMAGE_MINUTES.get();
+                            String tw = ChatImageLog.tweakLinked() ? "minEcraft twEEk の画像と画像のリンク" : "画像のリンク（minEcraft twEEk 1.16.1 以降を入れるとファイルの画像も）";
+                            ctx.getSource().sendSuccess(() -> Component.literal(m <= 0
+                                    ? "チャットに貼られた画像はAIに見せていません（OPは /ai chatimages <分> で変えられます）"
+                                    : "チャットに貼られた" + tw + "を、" + m + "分前のものまでAIに見せます（OPは /ai chatimages <0〜60> で変えられます。0で見せない）"), false);
+                            return 1;
+                        })
+                        .then(Commands.argument("minutes", IntegerArgumentType.integer(0, 60))
+                                .requires(src -> src.hasPermission(2))
+                                .executes(ctx -> {
+                                    int m = IntegerArgumentType.getInteger(ctx, "minutes");
+                                    GeminiConfig.CHAT_IMAGE_MINUTES.set(m);
+                                    GeminiConfig.CHAT_IMAGE_MINUTES.save();
+                                    ctx.getSource().sendSuccess(() -> Component.literal(m <= 0
+                                            ? "チャットに貼られた画像をAIに見せないようにしました。"
+                                            : "チャットに貼られた画像を、" + m + "分前のものまでAIに見せるようにしました。"), false);
+                                    return 1;
+                                })))
                 // クールダウン（見るのは誰でも、変えるのはOP）
                 .then(Commands.literal("cooldown")
                         .executes(ctx -> {
@@ -394,6 +419,7 @@ public class CallAI {
     }
 
     private void onServerStopping(ServerStoppingEvent event) {
+        ChatImageLog.clear();
         GeminiChat.clearAll();
         KeyStore.unload();
         ReadSettings.unload();

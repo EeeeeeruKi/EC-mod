@@ -29,6 +29,8 @@ public final class GeminiChat {
         boolean busy;
         long lastTellMs;
         long lastChatMs;
+        /** もうAIに見せたチャットの画像（同じ画像を2回送らないため） */
+        final java.util.Set<String> seenImages = ConcurrentHashMap.newKeySet();
     }
 
     private static final Map<UUID, Session> SESSIONS = new ConcurrentHashMap<>();
@@ -111,7 +113,7 @@ public final class GeminiChat {
         if (apiKey.isEmpty() && !useOpenAI()) {
             return CompletableFuture.failedFuture(new GeminiClient.GeminiException("APIキーがありません"));
         }
-        JsonObject body = GeminiClient.buildBody(systemPrompt, List.of(new GeminiClient.Turn(true, message)), null,
+        JsonObject body = GeminiClient.buildBody(systemPrompt, List.of(new GeminiClient.Turn(true, message)), (byte[]) null,
                 GeminiConfig.THINKING_LEVEL.get(), null);
         int timeout = GeminiConfig.TIMEOUT_SECONDS.get();
         CompletableFuture<JsonObject> sent = useOpenAI()
@@ -143,7 +145,7 @@ public final class GeminiChat {
                 + "マークダウン（**や#や箇条書き）は使わず、普通の文章で書いてください。相手と同じ言語で返事してください。";
         List<String> shared = Memory.server(server);
         if (!shared.isEmpty()) system = system + "\n\n【あなたの記憶】\n- " + String.join("\n- ", shared);
-        JsonObject body = GeminiClient.buildBody(system, List.of(new GeminiClient.Turn(true, message)), null,
+        JsonObject body = GeminiClient.buildBody(system, List.of(new GeminiClient.Turn(true, message)), (byte[]) null,
                 GeminiConfig.THINKING_LEVEL.get(), null);
         int timeout = GeminiConfig.TIMEOUT_SECONDS.get();
         CompletableFuture<JsonObject> sent = useOpenAI()
@@ -248,15 +250,32 @@ public final class GeminiChat {
             }
         }
 
-        shot.thenCompose(image -> {
-            List<GeminiClient.Turn> t = history;
+        // チャットに貼られた画像（minEcraft twEEk の画像・画像のリンク）
+        if (s.seenImages.size() > 200) s.seenImages.clear();
+        CompletableFuture<List<ChatImageLog.Picture>> chatPics = ChatImageLog.pick(message, s.seenImages);
+
+        shot.thenCombine(chatPics, (image, pics) -> {
+            List<byte[]> images = new ArrayList<>();
+            StringBuilder note = new StringBuilder();
+            int n = 0;
             if (image != null) {
-                t = new ArrayList<>(history);
-                t.set(t.size() - 1, new GeminiClient.Turn(true,
-                        message + "\n\n（添付の画像は、このプレイヤーがいま見ているMinecraftの画面です）"));
+                images.add(image);
+                n++;
+                note.append("\n").append(n).append("枚目: このプレイヤーがいま見ているMinecraftの画面");
             }
-            JsonObject body = GeminiClient.buildBody(systemPrompt, t, image, GeminiConfig.THINKING_LEVEL.get(),
+            for (ChatImageLog.Picture pic : pics) {
+                images.add(pic.jpeg());
+                n++;
+                note.append("\n").append(n).append("枚目: ").append(pic.note());
+            }
+            List<GeminiClient.Turn> t = history;
+            if (!images.isEmpty()) {
+                t = new ArrayList<>(history);
+                t.set(t.size() - 1, new GeminiClient.Turn(true, message + "\n\n（添付の画像について）" + note));
+            }
+            return GeminiClient.buildBody(systemPrompt, t, images, GeminiConfig.THINKING_LEVEL.get(),
                     decls.isEmpty() ? null : decls);
+        }).thenCompose(body -> {
             return converse(apiKey, body, server, uuid, botName, cmds, new int[]{0}, 0);
         }).whenComplete((reply, err) -> server.execute(() -> {
             if (err != null) {

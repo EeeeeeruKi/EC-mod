@@ -19,6 +19,7 @@ public final class GeminiConfig {
     public static final ForgeConfigSpec.IntValue MAX_REPLY_CHARS;
     public static final ForgeConfigSpec.IntValue TIMEOUT_SECONDS;
     public static final ForgeConfigSpec.ConfigValue<String> THINKING_LEVEL;
+    public static final ForgeConfigSpec.IntValue CHAT_IMAGE_MINUTES;
 
     public static final ForgeConfigSpec.ConfigValue<String> PROVIDER;
     public static final ForgeConfigSpec.ConfigValue<String> OPENAI_BASE_URL;
@@ -64,6 +65,8 @@ public final class GeminiConfig {
                 .defineInRange("replyTimeoutSeconds", 120, 5, 600);
         THINKING_LEVEL = b.comment("AIが返事の前に考える量です（default / minimal / low / medium / high）。少ないほど速く返事が来ます。default はモデルにおまかせです。対応していないモデルでは自動で default になります。/ai thinking <量> でも変えられます。")
                 .define("thinkingLevel", "low");
+        CHAT_IMAGE_MINUTES = b.comment("チャットに貼られた画像（minEcraft twEEk の画像と画像のリンク）を、何分前のものまでAIに見せるかです。0にすると見せません。/ai chatimages <分> でも変えられます。")
+                .defineInRange("chatImageMinutes", 5, 0, 60);
 
         b.pop();
         b.push("provider");

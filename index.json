@@ -592,6 +592,26 @@
       "summary": "/tell @ai でささやくと、AI（Google の Gemini か、OpenAI・Ollama・LM Studio などの OpenAI互換API）がささやき返してくれるMOD。頼めばコマンドも実行してくれます。",
       "versions": [
         {
+          "version": "2.5.0",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/callai/1.21.1-neoforge/callai-neoforge-1.21.1-2.5.0.jar",
+          "fileName": "callai-neoforge-1.21.1-2.5.0.jar",
+          "sha256": "5aaf409c433aff433a67060ba9bf1fae3f9a1043f772c3d57fafa532dc26dcef",
+          "changelog": "チャットに貼られた画像もAIが見られるようになりました。minEcraft twEEk（1.16.1 以降）の「チャットの画像」で貼られた画像と、チャットに書かれた画像のリンクを、直近5分のものまで（1回に3枚まで）AIに見せます。/ai chatimages <分> で変えられます（0で見せない）。",
+          "released": "2026-11-21"
+        },
+        {
+          "version": "2.5.0",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/callai/1.20.1-forge/callai-2.5.0.jar",
+          "fileName": "callai-2.5.0.jar",
+          "sha256": "deb7914d8e3267bd86ae193fff4a3b293d6f74b533bd0cc6ddf15b99f8468bc7",
+          "changelog": "チャットに貼られた画像もAIが見られるようになりました。minEcraft twEEk（1.16.1 以降）の「チャットの画像」で貼られた画像と、チャットに書かれた画像のリンクを、直近5分のものまで（1回に3枚まで）AIに見せます。/ai chatimages <分> で変えられます（0で見せない）。",
+          "released": "2026-11-21"
+        },
+        {
           "version": "2.4.1",
           "mc": "1.21.1",
           "loader": "neoforge",
@@ -807,6 +827,16 @@
       "name": "Call AI（旧 Gemini Tell）",
       "installable": false,
       "versions": [
+        {
+          "version": "2.5.0",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/callai/1.20.1-forge/callai-2.5.0.jar",
+          "fileName": "callai-2.5.0.jar",
+          "sha256": "deb7914d8e3267bd86ae193fff4a3b293d6f74b533bd0cc6ddf15b99f8468bc7",
+          "changelog": "Gemini Tell は Call AI に名前が変わりました。更新すると古い jar は消えます。設定ファイルが新しくなるので、もう一度 /gemini key set でAPIキーを設定してください。",
+          "released": "2026-11-21"
+        },
         {
           "version": "2.4.1",
           "mc": "1.20.1",
@@ -1761,6 +1791,26 @@
       "name": "minEcraft twEEk",
       "summary": "Quark を前提MODにして、Quark にない小さな改善をたくさん詰め込んでいくためのMODです。機能は最初はすべてオフで、ひとつずつオンにできます。このMOD・Quark・バニラ・Sodium の設定を、短い設定コードでまとめてやりとりできます。",
       "versions": [
+        {
+          "version": "1.16.1",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/minecrafttweak/1.21.1-neoforge/minecrafttweak-neoforge-1.21.1-1.16.1.jar",
+          "fileName": "minecrafttweak-neoforge-1.21.1-1.16.1.jar",
+          "sha256": "8b3e81ad43bea2e54a06694514b18a80daa544638374e5a8645bfbe2453d22ef",
+          "changelog": "「チャットの画像」で貼られた画像を、Call AI（2.5.0 以降）がAIに見せられるようにしました（ほかのmodと連携するための入口を追加）。",
+          "released": "2026-11-21"
+        },
+        {
+          "version": "1.16.1",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/minecrafttweak/1.20.1-forge/minecrafttweak-forge-1.20.1-1.16.1.jar",
+          "fileName": "minecrafttweak-forge-1.20.1-1.16.1.jar",
+          "sha256": "b59b14034a0180707f0c1466fea5723839a5d60107ad8e074225076be6c6e0c5",
+          "changelog": "「チャットの画像」で貼られた画像を、Call AI（2.5.0 以降）がAIに見せられるようにしました（ほかのmodと連携するための入口を追加）。",
+          "released": "2026-11-21"
+        },
         {
           "version": "1.16.0",
           "mc": "1.21.1",
