@@ -1,0 +1,21 @@
+{
+  "replace": false,
+  "values": [
+    "hijikiaddon:iri_sword",
+    "hijikiaddon:iri_axe",
+    "hijikiaddon:iri_pickaxe",
+    "hijikiaddon:iri_paxel",
+    "hijikiaddon:iri_helmet",
+    "hijikiaddon:iri_chestplate",
+    "hijikiaddon:iri_leggings",
+    "hijikiaddon:iri_boots",
+    "hijikiaddon:yowaiyo_sword",
+    "hijikiaddon:yowaiyo_axe",
+    "hijikiaddon:yowaiyo_pickaxe",
+    "hijikiaddon:yowaiyo_paxel",
+    "hijikiaddon:yowaiyo_helmet",
+    "hijikiaddon:yowaiyo_chestplate",
+    "hijikiaddon:yowaiyo_leggings",
+    "hijikiaddon:yowaiyo_boots"
+  ]
+}

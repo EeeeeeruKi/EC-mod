@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/handheld",
+  "textures": {
+    "layer0": "hijikiaddon:item/iri_pickaxe"
+  }
+}

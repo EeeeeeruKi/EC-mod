@@ -2498,6 +2498,32 @@
           "released": "2026-11-21"
         }
       ]
+    },
+    "hijikiaddon": {
+      "name": "Hijiki Addon",
+      "summary": "ひじき豆modV2 に、iri と弱いよの道具（剣・斧・ツルハシ・パクセル）と防具（ヘルメット・チェストプレート・レギンス・ブーツ）を追加するアドオンです。",
+      "versions": [
+        {
+          "version": "1.0.0-neoforge",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/hijikiaddon/1.21.1-neoforge/hijikiaddon-neoforge-1.21.1-1.0.0-neoforge.jar",
+          "fileName": "hijikiaddon-neoforge-1.21.1-1.0.0-neoforge.jar",
+          "sha256": "ab4c3157fc0ca4ff507ec3d14bf77d6f47abab88dae9a1e7d018e0faf243ba7c",
+          "changelog": "最初の版です。",
+          "released": "2026-11-22"
+        },
+        {
+          "version": "1.0.0-forge",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/hijikiaddon/1.20.1-forge/hijikiaddon-forge-1.20.1-1.0.0-forge.jar",
+          "fileName": "hijikiaddon-forge-1.20.1-1.0.0-forge.jar",
+          "sha256": "ffb357eea2de659b407b770e4324b9c5ea7950c237e56a93b562b79ffea01de1",
+          "changelog": "最初の版です。",
+          "released": "2026-11-22"
+        }
+      ]
     }
   }
 }
