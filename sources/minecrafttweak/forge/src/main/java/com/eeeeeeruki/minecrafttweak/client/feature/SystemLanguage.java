@@ -57,6 +57,12 @@ public final class SystemLanguage {
         if (!enabled()) return false;
         try {
             Path f = stateFile();
+            if (!Files.exists(f)) {
+                // まだ決めていない（初めて起動したとき）: 言語を自分で選んでいなければ（最初の英語のままなら）、システムの言語に合わせる
+                boolean first = "en_us".equals(Minecraft.getInstance().options.languageCode);
+                setFollowing(first);
+                return first;
+            }
             return Files.exists(f) && Files.readString(f, StandardCharsets.UTF_8).trim().equals("true");
         } catch (IOException e) {
             return false;
@@ -77,9 +83,9 @@ public final class SystemLanguage {
 
     /** パソコンの言語に一番近い、マイクラにある言語のコード（例: ja_jp）。 */
     public static String systemCode(LanguageManager languages) {
-        Locale locale = Locale.getDefault();
-        String lang = locale.getLanguage().toLowerCase(Locale.ROOT);
-        String country = locale.getCountry().toLowerCase(Locale.ROOT);
+        String[] lc = OsLanguage.get();
+        String lang = lc[0];
+        String country = lc[1];
         String full = lang + "_" + country;
         if (!country.isEmpty() && languages.getLanguage(full) != null) {
             return full;

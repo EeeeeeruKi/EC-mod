@@ -8,6 +8,7 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.neoforged.bus.api.EventPriority;
@@ -18,7 +19,8 @@ import java.util.List;
 
 /**
  * タイトル画面に、Quark の「q」ボタンと同じような小さいボタンを足す。押すと設定のホームが開く。
- * 言語ボタンの左か、アクセシビリティのボタンの右の、あいているほうに置く（Quark のボタンとは重ならない）。
+ * まず「Mod」ボタンの段のいちばん右の横に置く（Essential などがタイトル画面の左下や左右に出すものと重ならないように）。
+ * そこがあいていなければ、言語ボタンの左か、アクセシビリティのボタンの右の、あいているほうに置く（Quark のボタンとは重ならない）。
  */
 public final class TitleScreenButton {
     private TitleScreenButton() {
@@ -36,14 +38,16 @@ public final class TitleScreenButton {
         List<? extends GuiEventListener> children = screen.children();
         // 言語・アクセシビリティのボタン（20×20）が並ぶ段: 「シングルプレイ」の 72 下
         int row = screen.height / 4 + 48 + 72 + 12;
+        int[] modsRow = rightOfModsRow(children);
         int[][] candidates = {
+                modsRow,                              // 「Mod」の段のいちばん右の横
                 {screen.width / 2 - 124 - 24, row},  // 言語ボタンの左
                 {screen.width / 2 + 104 + 24, row},  // アクセシビリティの右
                 {screen.width / 2 - 124 - 48, row},
                 {screen.width / 2 + 104 + 48, row},
         };
         for (int[] c : candidates) {
-            if (free(children, c[0], c[1])) {
+            if (c != null && free(children, c[0], c[1])) {
                 Button button = new IconButton(c[0], c[1], 20, 20, Component.empty(), new ItemStack(Items.COMPARATOR),
                         b -> Minecraft.getInstance().setScreen(new TweakConfigScreen(screen)));
                 button.setTooltip(Tooltip.create(Component.translatable("minecrafttweak.title_button")));
@@ -51,6 +55,28 @@ public final class TitleScreenButton {
                 return;
             }
         }
+    }
+
+    /** 「Mod」ボタンと同じ段にあるボタンの、いちばん右の横の場所（見つからなければ null）。 */
+    private static int[] rightOfModsRow(List<? extends GuiEventListener> children) {
+        AbstractWidget mods = null;
+        for (GuiEventListener child : children) {
+            if (child instanceof AbstractWidget w && w.visible
+                    && w.getMessage().getContents() instanceof TranslatableContents t && t.getKey().equals("fml.menu.mods")) {
+                mods = w;
+                break;
+            }
+        }
+        if (mods == null) {
+            return null;
+        }
+        int right = mods.getX() + mods.getWidth();
+        for (GuiEventListener child : children) {
+            if (child instanceof AbstractWidget w && w.visible && w.getY() == mods.getY()) {
+                right = Math.max(right, w.getX() + w.getWidth());
+            }
+        }
+        return new int[]{right + 4, mods.getY()};
     }
 
     private static boolean free(List<? extends GuiEventListener> children, int x, int y) {
