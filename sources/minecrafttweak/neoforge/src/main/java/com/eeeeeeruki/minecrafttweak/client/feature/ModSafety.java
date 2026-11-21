@@ -307,10 +307,25 @@ public final class ModSafety {
             JsonObject body = JsonParser.parseString(res.body()).getAsJsonObject();
             JsonArray arr = body.getAsJsonArray("results");
             if (arr != null) {
-                for (JsonElement el : arr) {
-                    JsonObject r = el.getAsJsonObject();
-                    if (r.has("query")) {
-                        bySha.put(r.get("query").getAsString().toLowerCase(Locale.ROOT), r);
+                // query は「sha1:<ハッシュ>」の形で返ってくる。結果は頼んだ順に並ぶので、順番でも合わせる
+                for (int k = 0; k < arr.size(); k++) {
+                    if (!arr.get(k).isJsonObject()) {
+                        continue;
+                    }
+                    JsonObject r = arr.get(k).getAsJsonObject();
+                    String key = null;
+                    if (r.has("query") && r.get("query").isJsonPrimitive()) {
+                        key = stripPrefix(r.get("query").getAsString());
+                    }
+                    if ((key == null || key.length() != 40) && r.has("file") && r.get("file").isJsonObject()
+                            && r.getAsJsonObject("file").has("sha1") && r.getAsJsonObject("file").get("sha1").isJsonPrimitive()) {
+                        key = stripPrefix(r.getAsJsonObject("file").get("sha1").getAsString());
+                    }
+                    if ((key == null || key.length() != 40) && k < part.size()) {
+                        key = part.get(k).getValue();
+                    }
+                    if (key != null) {
+                        bySha.put(key, r);
                     }
                 }
             }
@@ -327,30 +342,50 @@ public final class ModSafety {
         return List.copyOf(out);
     }
 
+    private static String stripPrefix(String value) {
+        String v = value.trim().toLowerCase(Locale.ROOT);
+        int colon = v.indexOf(':');
+        return colon >= 0 ? v.substring(colon + 1) : v;
+    }
+
+    private static Status toStatus(String value) {
+        return switch (value == null ? "" : value.trim().toLowerCase(Locale.ROOT)) {
+            case "malware" -> Status.MALWARE;
+            case "warning" -> Status.WARNING;
+            case "partly_checked", "partly", "partial" -> Status.PARTLY;
+            case "passed", "safe", "clean" -> Status.PASSED;
+            default -> Status.NOT_CHECKED;
+        };
+    }
+
     private static Entry toEntry(String fileName, String sha1, JsonObject r) {
-        if (r == null || !r.has("found") || !r.get("found").getAsBoolean()
+        if (r == null || !r.has("found") || !r.get("found").isJsonPrimitive() || !r.get("found").getAsBoolean()
                 || !r.has("project") || !r.get("project").isJsonObject()) {
             return new Entry(fileName, sha1, Status.UNKNOWN, "", "", List.of());
         }
         JsonObject p = r.getAsJsonObject("project");
-        String security = p.has("security") && !p.get("security").isJsonNull() ? p.get("security").getAsString() : "";
+        String security = p.has("security") && p.get("security").isJsonPrimitive() ? p.get("security").getAsString() : "";
         boolean malwareHere = r.has("malware_on_this_platform") && !r.get("malware_on_this_platform").isJsonNull()
                 && r.get("malware_on_this_platform").getAsBoolean();
-        Status status = switch (security) {
-            case "malware" -> Status.MALWARE;
-            case "warning" -> Status.WARNING;
-            case "partly_checked" -> Status.PARTLY;
-            case "not_checked" -> Status.NOT_CHECKED;
-            case "passed" -> Status.PASSED;
-            default -> Status.NOT_CHECKED;
-        };
-        if (malwareHere) {
+        Status status = toStatus(security);
+        // そのファイルそのものの結果（file.result）も見て、悪いほうにする
+        if (r.has("file") && r.get("file").isJsonObject()) {
+            JsonObject f = r.getAsJsonObject("file");
+            if (f.has("result") && f.get("result").isJsonPrimitive()) {
+                Status fileStatus = toStatus(f.get("result").getAsString());
+                if (fileStatus.ordinal() < status.ordinal()) {
+                    status = fileStatus;
+                }
+            }
+        }
+        if (malwareHere || (p.has("malware_confirmed") && p.get("malware_confirmed").isJsonPrimitive()
+                && p.get("malware_confirmed").getAsBoolean())) {
             status = Status.MALWARE;
         }
         List<String> reasons = new ArrayList<>();
         if (p.has("reasons") && p.get("reasons").isJsonArray()) {
             for (JsonElement el : p.getAsJsonArray("reasons")) {
-                reasons.add(el.getAsString());
+                reasons.add(el.isJsonPrimitive() ? el.getAsString() : el.toString());
             }
         }
         String title = p.has("title") && !p.get("title").isJsonNull() ? p.get("title").getAsString() : fileName;

@@ -1712,6 +1712,26 @@
       "summary": "Quark を前提MODにして、Quark にない小さな改善をたくさん詰め込んでいくためのMODです。機能は最初はすべてオフで、ひとつずつオンにできます。このMOD・Quark・バニラ・Sodium の設定を、短い設定コードでまとめてやりとりできます。",
       "versions": [
         {
+          "version": "1.14.1",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/minecrafttweak/1.21.1-neoforge/minecrafttweak-neoforge-1.21.1-1.14.1.jar",
+          "fileName": "minecrafttweak-neoforge-1.21.1-1.14.1.jar",
+          "sha256": "7997984f06e355b692f2aeb1b029dd8c50246184fea9f206eadeb9130755b7c4",
+          "changelog": "不具合を直しました。「modの安全チェック」で、Modgrade にあるmodもすべて「Modgrade にない」と出てしまう問題を直しました（返事の読み取りのまちがい）。ファイルそのものの結果も見るようにしました。",
+          "released": "2026-11-21"
+        },
+        {
+          "version": "1.14.1",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/minecrafttweak/1.20.1-forge/minecrafttweak-forge-1.20.1-1.14.1.jar",
+          "fileName": "minecrafttweak-forge-1.20.1-1.14.1.jar",
+          "sha256": "b11d9d80f255df882faf3ba04fe034c133accbc336fef7964bdd58da980db80a",
+          "changelog": "不具合を直しました。「modの安全チェック」で、Modgrade にあるmodもすべて「Modgrade にない」と出てしまう問題を直しました（返事の読み取りのまちがい）。ファイルそのものの結果も見るようにしました。",
+          "released": "2026-11-21"
+        },
+        {
           "version": "1.14.0",
           "mc": "1.21.1",
           "loader": "neoforge",
