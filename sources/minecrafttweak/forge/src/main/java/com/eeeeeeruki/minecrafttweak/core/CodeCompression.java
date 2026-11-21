@@ -16,14 +16,19 @@ import java.util.zip.Inflater;
 /**
  * 圧縮コード。中身は普通の設定コードを縮めたもの。
  *
- * - 「MT2.」… 今の形。項目を1つずつビットに詰めて（オン/オフは1ビット、Quark の番号は20ビット…）、
- *   さらに縮むときだけ Deflate をかけ、英数字と「-」「.」の64文字で書く。
- *   Discord などで斜体や太字になってしまう「_」「*」は使わない。
+ * - 「MT3.」… 今の形。項目を1つずつビットに詰めて（オン/オフは2ビット、番号は前との差…）、
+ *   さらに縮むときだけ Deflate をかけ、漢字1文字に14ビットずつ書く（英数字の2倍以上詰まる）。
+ * - 「MT2.」… 前の形（中身は同じで、英数字と「-」「.」の64文字で書く）。読み込みだけできる。
  * - 「MT1.」… 前の形（テキストを Deflate して base64url）。読み込みだけできる。
  */
 public final class CodeCompression {
-    public static final String PREFIX = "MT2.";
+    /** 今の形（漢字で書く）。 */
+    public static final String PREFIX = "MT3.";
+    /** 前の形（英数字で書く）。読み込みだけできる。 */
+    public static final String PREFIX_V2 = "MT2.";
     public static final String PREFIX_V1 = "MT1.";
+    /** 漢字1文字に14ビット（U+4E00 から 16384 文字。どれも「CJK統合漢字」で、NFKC で変わらない）。 */
+    private static final int KANJI_BASE = 0x4E00;
 
     private static final String ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-.";
     private static final Pattern KEY = Pattern.compile("([a-z]*)(\\d+)(?:([a-z]+)|\\.(\\d+))?");
@@ -43,6 +48,7 @@ public final class CodeCompression {
 
     public static boolean isCompressed(String token) {
         return token.regionMatches(true, 0, PREFIX, 0, PREFIX.length())
+                || token.regionMatches(true, 0, PREFIX_V2, 0, PREFIX_V2.length())
                 || token.regionMatches(true, 0, PREFIX_V1, 0, PREFIX_V1.length());
     }
 
@@ -148,7 +154,7 @@ public final class CodeCompression {
         byte[] all = new byte[body.length + 1];
         all[0] = (byte) flags;
         System.arraycopy(body, 0, all, 1, body.length);
-        return PREFIX + toText(all);
+        return PREFIX + toKanji(all);
     }
 
     private static Item parse(String entry) {
@@ -398,7 +404,9 @@ public final class CodeCompression {
             if (token.regionMatches(true, 0, PREFIX_V1, 0, PREFIX_V1.length())) {
                 return decodeV1(token);
             }
-            byte[] all = fromText(token.substring(PREFIX.length()));
+            boolean kanji = token.regionMatches(true, 0, PREFIX, 0, PREFIX.length());
+            String bodyText = token.substring(PREFIX.length());
+            byte[] all = kanji ? fromKanji(bodyText) : fromText(bodyText);
             if (all == null || all.length < 1) {
                 return null;
             }
@@ -481,7 +489,47 @@ public final class CodeCompression {
     // 64文字で書く
     // =====================================================================
 
-    private static String toText(byte[] data) {
+    // ---- 漢字で書く（1文字14ビット） ----
+
+    private static String toKanji(byte[] data) {
+        StringBuilder sb = new StringBuilder();
+        int buffer = 0;
+        int count = 0;
+        for (byte b : data) {
+            buffer = (buffer << 8) | (b & 0xFF);
+            count += 8;
+            if (count >= 14) {
+                count -= 14;
+                sb.append((char) (KANJI_BASE + ((buffer >> count) & 0x3FFF)));
+            }
+        }
+        if (count > 0) {
+            sb.append((char) (KANJI_BASE + ((buffer << (14 - count)) & 0x3FFF)));
+        }
+        return sb.toString();
+    }
+
+    private static byte[] fromKanji(String text) {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        int buffer = 0;
+        int count = 0;
+        for (int i = 0; i < text.length(); i++) {
+            int v = text.charAt(i) - KANJI_BASE;
+            if (v < 0 || v > 0x3FFF) {
+                return null;
+            }
+            buffer = (buffer << 14) | v;
+            count += 14;
+            while (count >= 8) {
+                count -= 8;
+                out.write((buffer >> count) & 0xFF);
+            }
+        }
+        return out.toByteArray();
+    }
+
+    /** 英数字で書く（前の「MT2.」の形）。 */
+    static String toText(byte[] data) {
         StringBuilder sb = new StringBuilder();
         int buffer = 0;
         int count = 0;

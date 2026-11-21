@@ -1792,6 +1792,26 @@
       "summary": "Quark を前提MODにして、Quark にない小さな改善をたくさん詰め込んでいくためのMODです。機能は最初はすべてオフで、ひとつずつオンにできます。このMOD・Quark・バニラ・Sodium の設定を、短い設定コードでまとめてやりとりできます。",
       "versions": [
         {
+          "version": "1.16.3",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/minecrafttweak/1.21.1-neoforge/minecrafttweak-neoforge-1.21.1-1.16.3.jar",
+          "fileName": "minecrafttweak-neoforge-1.21.1-1.16.3.jar",
+          "sha256": "ffb1caa154ab5103d4210b55504c6df29394b002ddc8b97d5a01a4ab699a1d8f",
+          "changelog": "設定コードの圧縮を、漢字で書く形（「MT3.」で始まる）にしました。漢字1文字に英数字の2倍以上の情報を詰めるので、コードの文字数がさらに半分以下になります。前の「MT2.」「MT1.」のコードもそのまま読み込めます。",
+          "released": "2026-11-21"
+        },
+        {
+          "version": "1.16.3",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/minecrafttweak/1.20.1-forge/minecrafttweak-forge-1.20.1-1.16.3.jar",
+          "fileName": "minecrafttweak-forge-1.20.1-1.16.3.jar",
+          "sha256": "9ad5c88fbd95bc838421ec345c7e86aaf1f193f297e6e3a852fba675fe99a295",
+          "changelog": "設定コードの圧縮を、漢字で書く形（「MT3.」で始まる）にしました。漢字1文字に英数字の2倍以上の情報を詰めるので、コードの文字数がさらに半分以下になります。前の「MT2.」「MT1.」のコードもそのまま読み込めます。",
+          "released": "2026-11-21"
+        },
+        {
           "version": "1.16.2",
           "mc": "1.21.1",
           "loader": "neoforge",
