@@ -257,5 +257,14 @@
   "minecrafttweak.chat_images.sending_link": "Loading and sending the linked image…",
   "minecrafttweak.chat_images.error.link_failed": "Could not send the linked image (%s).",
   "minecrafttweak.feature.custom_menu_music.keep_playing": "Keep playing",
-  "minecrafttweak.feature.custom_menu_music.keep_playing.desc": "Keeps the music playing everywhere: in worlds, after unpausing and in setting screens (other music does not play while it does)."
+  "minecrafttweak.feature.custom_menu_music.keep_playing.desc": "Keeps the music playing everywhere: in worlds, after unpausing and in setting screens (other music does not play while it does).",
+  "minecrafttweak.feature.longer_chat": "Longer Chat",
+  "minecrafttweak.feature.longer_chat.desc": "Lets you send chat messages and commands longer than 256 characters. If the server also has this mod with this feature on, long text is sent as is. Otherwise, long chat messages are split into 256-character parts sent once a second (commands cannot be split, so they stay at 256).",
+  "minecrafttweak.feature.longer_chat.max_length": "Maximum length",
+  "minecrafttweak.feature.longer_chat.max_length.desc": "The longest text you can type in the chat box (256 to 8000). On a server, the server's own value is also used.",
+  "minecrafttweak.longer_chat.command_too_long": "This server does not have minEcraft twEEk, so commands are limited to 256 characters (this one has %s).",
+  "minecrafttweak.longer_chat.server_off": "Longer Chat is turned off on this server.",
+  "minecrafttweak.longer_chat.too_long": "Too long (up to %s characters on this server).",
+  "minecrafttweak.longer_chat.wait": "Please wait a moment before sending again.",
+  "minecrafttweak.longer_chat.splitting": "This server does not have minEcraft twEEk, so the long message is sent in %s parts, one per second."
 }

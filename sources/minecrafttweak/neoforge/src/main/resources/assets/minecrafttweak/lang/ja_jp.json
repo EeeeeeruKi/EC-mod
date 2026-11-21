@@ -257,5 +257,14 @@
   "minecrafttweak.chat_images.sending_link": "リンクの画像を読み込んで送っています…",
   "minecrafttweak.chat_images.error.link_failed": "リンクの画像を送れませんでした（%s）。",
   "minecrafttweak.feature.custom_menu_music.keep_playing": "途切れさせない",
-  "minecrafttweak.feature.custom_menu_music.keep_playing.desc": "オンにすると、ワールドに入っても、ポーズを解除しても、設定の画面を開いても、曲を止めずに流しつづけます（流しているあいだ、ほかの音楽は鳴りません）。"
+  "minecrafttweak.feature.custom_menu_music.keep_playing.desc": "オンにすると、ワールドに入っても、ポーズを解除しても、設定の画面を開いても、曲を止めずに流しつづけます（流しているあいだ、ほかの音楽は鳴りません）。",
+  "minecrafttweak.feature.longer_chat": "チャットの文字数を増やす",
+  "minecrafttweak.feature.longer_chat.desc": "チャットとコマンドで、256文字より長い文を送れるようにします。サーバーにもこのmodが入っていて、サーバーでもこの機能がオンなら、長い文をそのまま送れます。サーバーにこのmodがないときは、長いチャットを256文字ずつに分けて1秒ごとに送ります（コマンドは分けられないので256文字までです）。",
+  "minecrafttweak.feature.longer_chat.max_length": "送れる文字数",
+  "minecrafttweak.feature.longer_chat.max_length.desc": "チャット欄に入れられる、いちばん長い文字数です（256〜8000）。サーバーでは、サーバーのこの設定も使われます。",
+  "minecrafttweak.longer_chat.command_too_long": "このサーバーには minEcraft twEEk が入っていないため、コマンドは256文字までです（今は%s文字）。",
+  "minecrafttweak.longer_chat.server_off": "このサーバーでは「チャットの文字数を増やす」がオフになっています。",
+  "minecrafttweak.longer_chat.too_long": "長すぎます（このサーバーでは%s文字まで）。",
+  "minecrafttweak.longer_chat.wait": "少し待ってから送ってください。",
+  "minecrafttweak.longer_chat.splitting": "このサーバーには minEcraft twEEk が入っていないため、長いチャットを%s回に分けて1秒ごとに送ります。"
 }
