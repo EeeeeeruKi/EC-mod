@@ -506,6 +506,26 @@
       "summary": "チャットで @プレイヤー名・@OP・@everyone のメンションと、メッセージへの返信ができるMOD。メンションは色付きで表示され、ゲームを見ていないときは Windows の通知が届きます。",
       "versions": [
         {
+          "version": "1.6.0",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/mentionmod/1.21.1-neoforge/mentionmod-neoforge-1.21.1-1.6.0.jar",
+          "fileName": "mentionmod-neoforge-1.21.1-1.6.0.jar",
+          "sha256": "e44a1c529f5ec1ac166f26f05e7be635003fc61d7b6df3ee57565d4dcee3d163",
+          "changelog": "チャットで「@」を打つと、入力欄の上に @OP・@everyone・@ai とプレイヤー名の候補が出るようになりました（プレイヤー名は1文字以上打ってから）。「@」キーで、最初から「@」が入ったチャットを開けるようにしました。何人かが同時に @ai で話しかけたとき「考え中」の表示が途中で消える不具合を直しました。",
+          "released": "2026-11-21"
+        },
+        {
+          "version": "1.6.0",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/mentionmod/1.20.1-forge/mentionmod-forge-1.20.1-1.6.0.jar",
+          "fileName": "mentionmod-forge-1.20.1-1.6.0.jar",
+          "sha256": "f8f8e9e8b9d44852fada5ff39e7267f0526da6f39850f6522e3a223e0ca95596",
+          "changelog": "チャットで「@」を打つと、入力欄の上に @OP・@everyone・@ai とプレイヤー名の候補が出るようになりました（プレイヤー名は1文字以上打ってから）。「@」キーで、最初から「@」が入ったチャットを開けるようにしました。何人かが同時に @ai で話しかけたとき「考え中」の表示が途中で消える不具合を直しました。",
+          "released": "2026-11-21"
+        },
+        {
           "version": "1.5.0",
           "mc": "1.20.1",
           "loader": "forge",

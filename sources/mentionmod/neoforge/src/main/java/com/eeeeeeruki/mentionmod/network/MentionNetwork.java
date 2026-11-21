@@ -14,13 +14,15 @@ public final class MentionNetwork {
 
     public static void register(RegisterPayloadHandlersEvent event) {
         // optional: このmodが入っていないクライアントでもサーバーに入れる
-        PayloadRegistrar registrar = event.registrar("4").optional();
+        PayloadRegistrar registrar = event.registrar("5").optional();
         registrar.playToClient(MentionPayload.TYPE, MentionPayload.STREAM_CODEC,
                 (payload, context) -> context.enqueueWork(() -> ClientBridge.handle(payload)));
         registrar.playToClient(ReplyStatusPayload.TYPE, ReplyStatusPayload.STREAM_CODEC,
                 (payload, context) -> context.enqueueWork(() -> ClientBridge.handleStatus(payload)));
         registrar.playToClient(AiStatusPayload.TYPE, AiStatusPayload.STREAM_CODEC,
                 (payload, context) -> context.enqueueWork(() -> ClientBridge.handleAi(payload)));
+        registrar.playToClient(FeaturesPayload.TYPE, FeaturesPayload.STREAM_CODEC,
+                (payload, context) -> context.enqueueWork(() -> ClientBridge.handleFeatures(payload)));
         registrar.playToServer(ReplyPayload.TYPE, ReplyPayload.STREAM_CODEC,
                 (payload, context) -> context.enqueueWork(() -> {
                     if (context.player() instanceof ServerPlayer sp) {
@@ -48,6 +50,15 @@ public final class MentionNetwork {
         try {
             if (!target.connection.hasChannel(AiStatusPayload.TYPE)) return;
             PacketDistributor.sendToPlayer(target, new AiStatusPayload(name, state));
+        } catch (Exception ignored) {
+        }
+    }
+
+    /** ログインした人に、このサーバーで使える機能を伝える */
+    public static void sendFeatures(ServerPlayer target, boolean ai) {
+        try {
+            if (!target.connection.hasChannel(FeaturesPayload.TYPE)) return;
+            PacketDistributor.sendToPlayer(target, new FeaturesPayload(ai));
         } catch (Exception ignored) {
         }
     }

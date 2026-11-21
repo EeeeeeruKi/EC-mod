@@ -1,12 +1,16 @@
 package com.eeeeeeruki.mentionmod;
 
+import com.eeeeeeruki.mentionmod.client.MentionKey;
+import com.eeeeeeruki.mentionmod.client.MentionSuggestions;
 import com.eeeeeeruki.mentionmod.client.ReplyClient;
 import com.eeeeeeruki.mentionmod.network.MentionNetwork;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.server.ServerStoppedEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 
 @Mod(MentionMod.MOD_ID)
@@ -17,8 +21,18 @@ public class MentionMod {
         MentionNetwork.register();
         MinecraftForge.EVENT_BUS.addListener(ServerChatHandler::onChat);
         MinecraftForge.EVENT_BUS.addListener(MentionMod::onLogout);
+        MinecraftForge.EVENT_BUS.addListener(MentionMod::onLogin);
+        MinecraftForge.EVENT_BUS.addListener((ServerStoppedEvent e) -> ServerChatHandler.resetAi());
         if (FMLEnvironment.dist == Dist.CLIENT) {
             ReplyClient.init();
+            MentionKey.init(FMLJavaModLoadingContext.get().getModEventBus());
+            MentionSuggestions.init();
+        }
+    }
+
+    private static void onLogin(PlayerEvent.PlayerLoggedInEvent event) {
+        if (event.getEntity() instanceof ServerPlayer sp) {
+            MentionNetwork.sendFeatures(sp, CallAiBridge.available());
         }
     }
 

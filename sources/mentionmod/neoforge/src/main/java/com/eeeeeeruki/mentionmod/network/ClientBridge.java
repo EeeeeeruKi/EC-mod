@@ -21,6 +21,12 @@ final class ClientBridge {
         }
     }
 
+    static void handleFeatures(FeaturesPayload payload) {
+        if (FMLEnvironment.dist == Dist.CLIENT) {
+            com.eeeeeeruki.mentionmod.client.MentionSuggestions.setServerAi(payload.ai());
+        }
+    }
+
     static void handleStatus(ReplyStatusPayload payload) {
         if (FMLEnvironment.dist == Dist.CLIENT) {
             ReplyClient.setRemoteReplying(payload.player(), payload.replying());

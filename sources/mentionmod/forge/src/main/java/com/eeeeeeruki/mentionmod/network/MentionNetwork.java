@@ -12,7 +12,7 @@ import net.minecraftforge.network.simple.SimpleChannel;
 import java.util.UUID;
 
 public final class MentionNetwork {
-    private static final String PROTOCOL = "4";
+    private static final String PROTOCOL = "5";
 
     // acceptMissingOr: このmodが入っていないクライアント・サーバーとも接続できる
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
@@ -49,6 +49,11 @@ public final class MentionNetwork {
                 .decoder(AiStatusPacket::decode)
                 .consumerMainThread(AiStatusPacket::handle)
                 .add();
+        CHANNEL.messageBuilder(FeaturesPacket.class, 5, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(FeaturesPacket::encode)
+                .decoder(FeaturesPacket::decode)
+                .consumerMainThread(FeaturesPacket::handle)
+                .add();
     }
 
     public static void sendAiStatus(ServerPlayer target, String name, int state) {
@@ -65,6 +70,15 @@ public final class MentionNetwork {
             CHANNEL.send(PacketDistributor.PLAYER.with(() -> target), new MentionPacket(sender, message, kind));
         } catch (Exception ignored) {
             // クライアントにmodが無いなどで送れなくても、チャット自体は止めない
+        }
+    }
+
+    /** ログインした人に、このサーバーで使える機能を伝える */
+    public static void sendFeatures(ServerPlayer target, boolean ai) {
+        try {
+            if (!CHANNEL.isRemotePresent(target.connection.connection)) return;
+            CHANNEL.send(PacketDistributor.PLAYER.with(() -> target), new FeaturesPacket(ai));
+        } catch (Exception ignored) {
         }
     }
 

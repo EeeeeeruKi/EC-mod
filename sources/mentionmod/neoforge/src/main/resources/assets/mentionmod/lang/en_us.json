@@ -9,5 +9,10 @@
   "mentionmod.watut.replying": "%s is replying",
   "mentionmod.watut.many": "Several people are typing",
   "mentionmod.ai.thinking": "%s is thinking",
-  "mentionmod.ai.replying": "%s is replying"
+  "mentionmod.ai.replying": "%s is replying",
+  "key.categories.mentionmod": "Mention Mod",
+  "key.mentionmod.open_mention": "Open Chat with @",
+  "mentionmod.suggest.op": "All operators",
+  "mentionmod.suggest.everyone": "Everyone (OP only)",
+  "mentionmod.suggest.ai": "Talk to the AI"
 }

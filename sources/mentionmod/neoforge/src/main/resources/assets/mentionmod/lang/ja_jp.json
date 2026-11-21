@@ -9,5 +9,10 @@
   "mentionmod.watut.replying": "%sが返信中",
   "mentionmod.watut.many": "複数人が入力中",
   "mentionmod.ai.thinking": "%sが考え中",
-  "mentionmod.ai.replying": "%sが返信中"
+  "mentionmod.ai.replying": "%sが返信中",
+  "key.categories.mentionmod": "Mention Mod",
+  "key.mentionmod.open_mention": "メンションを入力する",
+  "mentionmod.suggest.op": "OP全員",
+  "mentionmod.suggest.everyone": "全員（OPのみ）",
+  "mentionmod.suggest.ai": "AIに話しかける"
 }

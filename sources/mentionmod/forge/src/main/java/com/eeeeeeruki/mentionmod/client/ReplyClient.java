@@ -78,6 +78,16 @@ public final class ReplyClient {
         else AI_STATUS.put(name, new long[]{state, System.currentTimeMillis()});
     }
 
+    /** いま返信モードか（候補の表示位置を返信先の帯の上にずらすのに使う） */
+    public static boolean isReplying() {
+        return target != null;
+    }
+
+    /** サーバーにこのmodが入っているか */
+    public static boolean serverHasModPublic() {
+        return serverHasMod();
+    }
+
     public static void setRemoteReplying(UUID player, boolean replying) {
         if (replying) REMOTE_REPLYING.add(player);
         else REMOTE_REPLYING.remove(player);

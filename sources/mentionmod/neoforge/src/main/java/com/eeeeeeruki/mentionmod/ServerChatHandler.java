@@ -20,7 +20,23 @@ public final class ServerChatHandler {
     private static final int SNIPPET_SHOWN = 20;
     private static final Pattern GEMINI = Pattern.compile("(?i)(?<![A-Za-z0-9_])@(?:ai|gemini)(?![A-Za-z0-9_])");
 
+    /** チャットの @ai で、いま考え中・返信待ちの数（何人かが同時に聞いても表示が途中で消えないように数える） */
+    private static int aiThinking = 0;
+    private static int aiReplying = 0;
+
     private ServerChatHandler() {}
+
+    /** サーバーが止まった時に数を戻す（シングルプレイで別のワールドを開いた時のため） */
+    public static void resetAi() {
+        aiThinking = 0;
+        aiReplying = 0;
+    }
+
+    /** 数に合わせて、全員の画面の「AIが考え中／返信中」を更新する（サーバーのスレッドで呼ぶ） */
+    private static void updateAiStatus(MinecraftServer server, String bot) {
+        int state = aiReplying > 0 ? AiStatusApi.REPLYING : aiThinking > 0 ? AiStatusApi.THINKING : AiStatusApi.IDLE;
+        MentionNetwork.broadcastAiStatus(server, bot, state);
+    }
 
     public static void onChat(ServerChatEvent event) {
         ServerPlayer sender = event.getPlayer();
@@ -69,9 +85,12 @@ public final class ServerChatHandler {
         UUID uuid = sender.getUUID();
         String askerName = sender.getGameProfile().getName();
 
+        // 先に数えておく（返事がすぐ返ってきても数がずれないように）
+        aiThinking++;
         boolean started = CallAiBridge.ask(sender, question, (text, error) -> {
+            aiThinking = Math.max(0, aiThinking - 1);
             if (error != null) {
-                MentionNetwork.broadcastAiStatus(server, bot, AiStatusApi.IDLE);
+                updateAiStatus(server, bot);
                 ServerPlayer p = server.getPlayerList().getPlayer(uuid);
                 if (p != null) {
                     p.sendSystemMessage(Component.literal(bot + "から返事をもらえませんでした: " + error)
@@ -80,10 +99,12 @@ public final class ServerChatHandler {
                 return;
             }
             // 「AIが返信中」を少し見せてから、チャットに返事を出す
-            MentionNetwork.broadcastAiStatus(server, bot, AiStatusApi.REPLYING);
+            aiReplying++;
+            updateAiStatus(server, bot);
             CompletableFuture.delayedExecutor(CallAiBridge.replyDelayMs(text), TimeUnit.MILLISECONDS)
                     .execute(() -> server.execute(() -> {
-                        MentionNetwork.broadcastAiStatus(server, bot, AiStatusApi.IDLE);
+                        aiReplying = Math.max(0, aiReplying - 1);
+                        updateAiStatus(server, bot);
                         MutableComponent line = Component.literal("<").append(
                                         Component.literal(bot).withStyle(ChatFormatting.LIGHT_PURPLE))
                                 .append(Component.literal("> "))
@@ -94,7 +115,8 @@ public final class ServerChatHandler {
                         if (p != null) MentionNetwork.sendMention(p, bot, text, MentionParser.KIND_REPLY);
                     }));
         });
-        if (started) MentionNetwork.broadcastAiStatus(server, bot, AiStatusApi.THINKING);
+        if (!started) aiThinking = Math.max(0, aiThinking - 1);
+        updateAiStatus(server, bot);
     }
 
     /** 「↪名前「元のメッセージ」 」の部分。カーソルを合わせると元のメッセージが全部見える */
