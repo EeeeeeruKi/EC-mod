@@ -187,7 +187,9 @@ public final class MenuMusic {
             startLoad(source);
         }
 
-        boolean customWanted = !source.isEmpty() && (inMenu || (onPause && pauseEnabled()));
+        // 「途切れさせない」がオンなら、ワールドの中でも・ポーズを解除しても・設定を開いても流しつづける
+        boolean keepPlaying = customEnabled() && MenuMusicFeature.INSTANCE.keepPlaying.get();
+        boolean customWanted = !source.isEmpty() && (keepPlaying || inMenu || (onPause && pauseEnabled()));
         if (!customWanted) {
             finished = false;
         }

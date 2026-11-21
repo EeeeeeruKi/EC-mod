@@ -255,5 +255,7 @@
   "minecrafttweak.chat_images.server_off": "Chat Images is turned off on this server.",
   "minecrafttweak.chat_images.server_too_big": "The image is too large (up to %s KB).",
   "minecrafttweak.chat_images.sending_link": "Loading and sending the linked image…",
-  "minecrafttweak.chat_images.error.link_failed": "Could not send the linked image (%s)."
+  "minecrafttweak.chat_images.error.link_failed": "Could not send the linked image (%s).",
+  "minecrafttweak.feature.custom_menu_music.keep_playing": "Keep playing",
+  "minecrafttweak.feature.custom_menu_music.keep_playing.desc": "Keeps the music playing everywhere: in worlds, after unpausing and in setting screens (other music does not play while it does)."
 }

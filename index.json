@@ -1712,6 +1712,26 @@
       "summary": "Quark を前提MODにして、Quark にない小さな改善をたくさん詰め込んでいくためのMODです。機能は最初はすべてオフで、ひとつずつオンにできます。このMOD・Quark・バニラ・Sodium の設定を、短い設定コードでまとめてやりとりできます。",
       "versions": [
         {
+          "version": "1.15.0",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/minecrafttweak/1.21.1-neoforge/minecrafttweak-neoforge-1.21.1-1.15.0.jar",
+          "fileName": "minecrafttweak-neoforge-1.21.1-1.15.0.jar",
+          "sha256": "55eab7407257dcec84bfb8438bcc63f9a46409edf37ea26abda704956be7a869",
+          "changelog": "「カスタムメニューBGM」の詳細設定に「途切れさせない」（3d）を追加しました。オンにすると、ワールドに入っても、ポーズを解除しても、設定の画面を開いても、曲を止めずに流しつづけます。",
+          "released": "2026-11-21"
+        },
+        {
+          "version": "1.15.0",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/minecrafttweak/1.20.1-forge/minecrafttweak-forge-1.20.1-1.15.0.jar",
+          "fileName": "minecrafttweak-forge-1.20.1-1.15.0.jar",
+          "sha256": "35c80c36e420db4260a5ce7548afc21946a9eabb18973715c4f2984ea8d0a23c",
+          "changelog": "「カスタムメニューBGM」の詳細設定に「途切れさせない」（3d）を追加しました。オンにすると、ワールドに入っても、ポーズを解除しても、設定の画面を開いても、曲を止めずに流しつづけます。",
+          "released": "2026-11-21"
+        },
+        {
           "version": "1.14.1",
           "mc": "1.21.1",
           "loader": "neoforge",

@@ -11,6 +11,7 @@ public class MenuMusicFeature extends Feature {
     public ForgeConfigSpec.ConfigValue<String> url;
     public ForgeConfigSpec.IntValue volume;
     public ForgeConfigSpec.BooleanValue loop;
+    public ForgeConfigSpec.BooleanValue keepPlaying;
 
     public MenuMusicFeature() {
         super("custom_menu_music", FeatureCategory.CLIENT,
@@ -23,6 +24,7 @@ public class MenuMusicFeature extends Feature {
         url = fileOption(builder, "url", "URL or file path of an .ogg / .mp3 / .wav file.", "", "*.ogg", "*.mp3", "*.wav");
         volume = intOption(builder, "volume", "Volume in percent (multiplied by the music volume).", 100, 0, 100);
         loop = boolOption(builder, "loop", "Play the music again when it ends.", true);
+        keepPlaying = boolOption(builder, "keep_playing", "Keep the music playing everywhere: in worlds, after unpausing and in setting screens.", false);
     }
 
     @Override
