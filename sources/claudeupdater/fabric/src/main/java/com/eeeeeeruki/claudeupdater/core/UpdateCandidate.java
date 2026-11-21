@@ -5,7 +5,7 @@ package com.eeeeeeruki.claudeupdater.core;
  * or a mod that is not installed yet ({@link #installed} null, from the install screen).
  */
 public class UpdateCandidate {
-    public enum State { WAITING, DOWNLOADING, DONE, FAILED }
+    public enum State { WAITING, DOWNLOADING, READY, DONE, FAILED }
 
     public final String id;
     public final InstalledMod installed;
@@ -20,6 +20,10 @@ public class UpdateCandidate {
     public volatile java.nio.file.Path file;
     /** For a required mod offered by the dependency screen: which downloaded mods need it. */
     public volatile String neededBy;
+    /** Downloaded into the staging folder but not put in place yet (see UpdaterCore.fetch / commit). */
+    public volatile boolean fetched;
+    /** Where an offered required mod comes from: "ライブラリ" or "Modrinth". */
+    public volatile String source;
 
     /** An update for an installed mod (selected by default). */
     public UpdateCandidate(InstalledMod installed, String name, ModIndex.Release release) {

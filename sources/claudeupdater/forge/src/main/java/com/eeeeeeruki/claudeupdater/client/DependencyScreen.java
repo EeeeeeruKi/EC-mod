@@ -1,6 +1,5 @@
 package com.eeeeeeruki.claudeupdater.client;
 
-import com.eeeeeeruki.claudeupdater.core.ModSites;
 import com.eeeeeeruki.claudeupdater.core.UpdateCandidate;
 import com.eeeeeeruki.claudeupdater.core.UpdaterCore;
 import net.minecraft.Util;
@@ -12,63 +11,78 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Set;
 
 /**
- * Shown after a download when the new jars need other mods that are not there: the ones in the library can be
- * downloaded together (selected by default), the others can have their name copied or a search page opened.
+ * Shown before anything is put in place, when the chosen mods need other mods that are not there.
+ * Mods in the library or on Modrinth can be downloaded together (selected by default); the others can have
+ * their name copied or a search page opened. The chosen mods are only installed once the player decides.
  */
 public class DependencyScreen extends Screen {
-    private enum Mode { LIST, DOWNLOADING, FINISHED }
+    /** What the player decided: install (with the required mods that were fetched) or cancel everything. */
+    public interface Decision {
+        void done(List<UpdateCandidate> extra, boolean install);
+    }
+
+    private enum Mode { LIST, DOWNLOADING }
 
     private static final int ROW_W = 320;
     private static final int ROW_H = 22;
     private static final int TOP = 56;
     private static final int SMALL = 48;
 
-    /** One row: a library mod to download, or a mod the player has to get elsewhere. */
-    private record Row(UpdateCandidate library, UpdaterCore.MissingDeps.External external) {
+    /** One row: a mod that can be downloaded, or a mod the player has to get elsewhere. */
+    private record Row(UpdateCandidate offer, UpdaterCore.MissingDeps.External external) {
     }
 
     private final Screen parent;
     private final UpdaterCore.MissingDeps deps;
+    /** Everything in this install so far (the chosen mods and required mods already fetched). */
+    private final List<UpdateCandidate> batch;
+    /** Required mods fetched on earlier dependency screens of the same install. */
+    private final List<UpdateCandidate> extra;
+    /** Mod IDs already offered, so a mod that was turned down is not asked about again. */
+    private final Set<String> asked;
+    private final Decision decision;
     private final List<Row> rowsData = new ArrayList<>();
     private volatile Mode mode = Mode.LIST;
-    private volatile boolean needRebuild;
+    private volatile boolean fetchedAll;
     private volatile UpdaterCore.MissingDeps next;
+    private volatile boolean needRebuild;
     private int page;
     private final Map<Button, UpdateCandidate> rows = new LinkedHashMap<>();
     private Button mainButton;
-    /** CurseForge or Modrinth when the game was surely started from that launcher, otherwise OTHER. */
-    private final ModSites.Launcher site;
-    /** Per missing mod ID: whether it is on the launcher's site, filled in by a background lookup. */
-    private final Map<String, ModSites.Result> notes = new ConcurrentHashMap<>();
 
-    public DependencyScreen(Screen parent, UpdaterCore.MissingDeps deps) {
+    public DependencyScreen(Screen parent, UpdaterCore.MissingDeps deps, List<UpdateCandidate> batch, Decision decision) {
+        this(parent, deps, batch, new ArrayList<>(), new HashSet<>(), decision);
+    }
+
+    private DependencyScreen(Screen parent, UpdaterCore.MissingDeps deps, List<UpdateCandidate> batch,
+                             List<UpdateCandidate> extra, Set<String> asked, Decision decision) {
         super(Component.literal("必要なMOD"));
         this.parent = parent;
         this.deps = deps;
-        for (UpdateCandidate c : deps.library) rowsData.add(new Row(c, null));
-        for (UpdaterCore.MissingDeps.External x : deps.external) rowsData.add(new Row(null, x));
-        site = ModSites.launcher(UpdaterCore.env().gameDir());
-        if (site.site != null && !deps.external.isEmpty()) {
-            Thread t = new Thread(() -> {
-                for (UpdaterCore.MissingDeps.External x : deps.external) {
-                    notes.put(x.id(), ModSites.lookup(site, x.id(), x.name(),
-                            UpdaterCore.env().mcVersion(), UpdaterCore.env().loader()));
-                }
-            }, "ClaudeUpdater-SiteLookup");
-            t.setDaemon(true);
-            t.start();
+        this.batch = batch;
+        this.extra = extra;
+        this.asked = asked;
+        this.decision = decision;
+        for (UpdateCandidate c : deps.library) {
+            rowsData.add(new Row(c, null));
+            asked.add(c.id);
+        }
+        for (UpdaterCore.MissingDeps.External x : deps.external) {
+            rowsData.add(new Row(null, x));
+            asked.add(x.id());
         }
     }
 
-    /** Rows get room for a sentence underneath when the launcher's site is being checked. */
+    /** Rows get room for a line underneath when a mod that is not available has a note about Modrinth. */
     private int rowH() {
-        return site.site != null && !deps.external.isEmpty() ? 34 : ROW_H;
+        return deps.external.stream().anyMatch(x -> x.note() != null) ? 34 : ROW_H;
     }
 
     @Override
@@ -84,14 +98,14 @@ public class DependencyScreen extends Screen {
         for (int i = page * perPage; i < Math.min(rowsData.size(), (page + 1) * perPage); i++) {
             Row r = rowsData.get(i);
             int y = TOP + (i - page * perPage) * rowH();
-            if (r.library() != null) {
-                UpdateCandidate c = r.library();
-                Button b = Button.builder(libraryLabel(c), btn -> {
+            if (r.offer() != null) {
+                UpdateCandidate c = r.offer();
+                Button b = Button.builder(offerLabel(c), btn -> {
                     if (mode != Mode.LIST) return;
                     c.selected = !c.selected;
-                    btn.setMessage(libraryLabel(c));
+                    btn.setMessage(offerLabel(c));
                     if (mainButton != null) mainButton.active = anySelected();
-                }).bounds(x, y, ROW_W, 20).tooltip(Tooltip.create(libraryTooltip(c))).build();
+                }).bounds(x, y, ROW_W, 20).tooltip(Tooltip.create(offerTooltip(c))).build();
                 rows.put(addRenderableWidget(b), c);
             } else {
                 UpdaterCore.MissingDeps.External ext = r.external();
@@ -100,7 +114,7 @@ public class DependencyScreen extends Screen {
                                 })
                         .bounds(x, y, ROW_W - SMALL * 2 - 4, 20)
                         .tooltip(Tooltip.create(Component.literal(ext.name() + "（MOD ID: " + ext.id() + "）\n"
-                                + "MODライブラリにはありません。名前をコピーして探すか、「開く」で Modrinth の検索ページを開けます。")))
+                                + "MODライブラリにも Modrinth にもないので、自分で入れてください。")))
                         .build());
                 label.active = false;
                 addRenderableWidget(Button.builder(Component.literal("コピー"), b -> {
@@ -110,13 +124,9 @@ public class DependencyScreen extends Screen {
                         .bounds(x + ROW_W - SMALL * 2 - 2, y, SMALL, 20)
                         .tooltip(Tooltip.create(Component.literal("「" + ext.name() + "」をクリップボードにコピーします")))
                         .build());
-                addRenderableWidget(Button.builder(Component.literal("開く"), b -> {
-                            ModSites.Result n = notes.get(ext.id());
-                            openLink(n != null ? n.url() : ext.url());
-                        })
+                addRenderableWidget(Button.builder(Component.literal("開く"), b -> openLink(ext.url()))
                         .bounds(x + ROW_W - SMALL, y, SMALL, 20)
-                        .tooltip(Tooltip.create(Component.literal((site.site != null ? site.site : "Modrinth")
-                                + " で「" + ext.name() + "」のページを開きます")))
+                        .tooltip(Tooltip.create(Component.literal("「" + ext.name() + "」を探すページを開きます")))
                         .build());
             }
         }
@@ -130,16 +140,25 @@ public class DependencyScreen extends Screen {
             nextPage.active = page < pages - 1;
         }
 
-        if (mode == Mode.LIST && !deps.library.isEmpty()) {
-            mainButton = addRenderableWidget(Button.builder(Component.literal("選んだMODもダウンロード"), b -> startDownload())
-                    .bounds(width / 2 - 155, by, 150, 20).build());
+        if (mode != Mode.LIST) return; // DOWNLOADING: no buttons, the rows show progress
+        if (!deps.library.isEmpty()) {
+            mainButton = addRenderableWidget(Button.builder(Component.literal("選んだMODも一緒に入れる"), b -> startDownload())
+                    .bounds(width / 2 - 155, by - 24, 310, 20).build());
             mainButton.active = anySelected();
-            addRenderableWidget(Button.builder(Component.literal("ダウンロードしない"), b -> onClose())
-                    .bounds(width / 2 + 5, by, 150, 20).build());
-        } else if (mode != Mode.DOWNLOADING) {
-            addRenderableWidget(Button.builder(Component.literal("閉じる"), b -> onClose())
-                    .bounds(width / 2 - 75, by, 150, 20).build());
+            addRenderableWidget(Button.builder(Component.literal("必要なMODなしで入れる"), b -> finish(true))
+                    .bounds(width / 2 - 155, by, 150, 20)
+                    .tooltip(Tooltip.create(Component.literal("必要なMODが無いと、ゲームが起動しないことがあります。")))
+                    .build());
+        } else {
+            addRenderableWidget(Button.builder(Component.literal("このまま入れる"), b -> finish(true))
+                    .bounds(width / 2 - 155, by, 150, 20)
+                    .tooltip(Tooltip.create(Component.literal("必要なMODは、あとで自分で入れてください。\n入れないと、ゲームが起動しないことがあります。")))
+                    .build());
         }
+        addRenderableWidget(Button.builder(Component.literal("やめる"), b -> finish(false))
+                .bounds(width / 2 + 5, by, 150, 20)
+                .tooltip(Tooltip.create(Component.literal("何も入れずに、MODを選ぶ画面に戻ります。")))
+                .build());
     }
 
     private void openLink(String url) {
@@ -150,7 +169,7 @@ public class DependencyScreen extends Screen {
     }
 
     private int perPage() {
-        int bottom = height - 28 - 6;
+        int bottom = height - 28 - 24 - 6; // keep room for the two button rows
         return Math.max(1, (bottom - TOP - ROW_H) / rowH());
     }
 
@@ -162,35 +181,54 @@ public class DependencyScreen extends Screen {
         mode = Mode.DOWNLOADING;
         rebuildWidgets();
         Thread t = new Thread(() -> {
-            UpdaterCore.downloadAll(deps.library);
-            next = UpdaterCore.missingDeps(deps.library); // what the new ones need in turn
-            mode = Mode.FINISHED;
-            needRebuild = true;
+            List<UpdateCandidate> chosen = new ArrayList<>();
+            for (UpdateCandidate c : deps.library) if (c.selected) chosen.add(c);
+            UpdaterCore.fetchAll(chosen);
+            for (UpdateCandidate c : chosen) if (c.fetched) extra.add(c);
+            // what the newly fetched mods need in turn (anything asked about already is left out)
+            List<UpdateCandidate> all = new ArrayList<>(batch);
+            all.addAll(extra);
+            UpdaterCore.MissingDeps more = UpdaterCore.missingDeps(all);
+            more.library.removeIf(c -> asked.contains(c.id));
+            more.external.removeIf(x -> asked.contains(x.id()));
+            next = more;
+            fetchedAll = true;
         }, "ClaudeUpdater-Dependencies");
         t.setDaemon(true);
         t.start();
     }
 
-    private Component libraryLabel(UpdateCandidate c) {
+    private void finish(boolean install) {
+        if (!install) {
+            UpdaterCore.discard(extra);
+            UpdaterCore.discard(deps.library);
+        }
+        decision.done(new ArrayList<>(extra), install);
+    }
+
+    private Component offerLabel(UpdateCandidate c) {
         String ver = "v" + c.release.version;
+        String from = "§8（" + c.source + "）";
         if (mode == Mode.LIST) {
-            return Component.literal((c.selected ? "☑ " : "☐ ") + c.name + "   §7" + ver + "  " + c.neededBy + " に必要");
+            return Component.literal((c.selected ? "☑ " : "☐ ") + c.name + " " + from + "  §7" + c.neededBy + " に必要");
         }
         if (!c.selected) return Component.literal("§7" + c.name + "   入れません");
         String s;
         switch (c.state) {
             case WAITING: s = "§7待機中"; break;
             case DOWNLOADING: s = "§eダウンロード中…"; break;
-            case DONE: s = "§a完了"; break;
+            case READY: case DONE: s = "§aダウンロードしました"; break;
             default: s = "§c失敗しました"; break;
         }
         return Component.literal(c.name + "   " + ver + "   " + s);
     }
 
-    private Component libraryTooltip(UpdateCandidate c) {
+    private Component offerTooltip(UpdateCandidate c) {
         StringBuilder sb = new StringBuilder();
         sb.append(c.name).append(" v").append(c.release.version).append("\n§7").append(c.neededBy).append(" を動かすのに必要です");
+        sb.append("\n§7").append("Modrinth".equals(c.source) ? "Modrinth からダウンロードします" : "MODライブラリからダウンロードします");
         if (c.summary != null && !c.summary.isBlank()) sb.append("\n§f").append(c.summary);
+        sb.append("\n§8").append(c.release.fileName);
         if (c.error != null) sb.append("\n§c").append(c.error);
         return Component.literal(sb.toString());
     }
@@ -203,10 +241,20 @@ public class DependencyScreen extends Screen {
             rebuildWidgets();
             return;
         }
+        if (fetchedAll) {
+            fetchedAll = false;
+            UpdaterCore.MissingDeps more = next;
+            if (more != null && !more.isEmpty()) {
+                minecraft.setScreen(new DependencyScreen(parent, more, batch, extra, asked, decision));
+            } else {
+                finish(true);
+            }
+            return;
+        }
         if (mode != Mode.LIST) {
             for (Map.Entry<Button, UpdateCandidate> e : rows.entrySet()) {
-                e.getKey().setMessage(libraryLabel(e.getValue()));
-                e.getKey().setTooltip(Tooltip.create(libraryTooltip(e.getValue())));
+                e.getKey().setMessage(offerLabel(e.getValue()));
+                e.getKey().setTooltip(Tooltip.create(offerTooltip(e.getValue())));
             }
         }
     }
@@ -217,26 +265,18 @@ public class DependencyScreen extends Screen {
         super.render(g, mouseX, mouseY, partialTick);
         g.drawCenteredString(font, "必要なMOD", width / 2, 14, 0xFFFFFF);
         String l1;
-        String l2 = null;
-        switch (mode) {
-            case LIST:
-                l1 = "ダウンロードしたMODを動かすには、ほかのMODも必要です。";
-                if (!deps.library.isEmpty()) {
-                    l2 = deps.external.isEmpty() ? "MODライブラリにあるので、一緒にダウンロードしておくのがおすすめです。"
-                            : "ライブラリにあるMODは一緒にダウンロードできます。ほかは自分で入れてください。";
-                } else {
-                    l2 = "MODライブラリにはないので、名前をコピーするか「開く」で探して入れてください。";
-                }
-                break;
-            case DOWNLOADING:
-                l1 = "ダウンロードしています…";
-                break;
-            default:
-                boolean ok = deps.library.stream().anyMatch(c -> c.state == UpdateCandidate.State.DONE);
-                l1 = ok ? "mods フォルダに入れました。ゲームを起動し直すと使えるようになります。"
-                        : "ダウンロードできませんでした。カーソルを合わせると理由が表示されます。";
-                if (!deps.external.isEmpty()) l2 = "ライブラリにないMODは、自分で入れてください。";
-                break;
+        String l2;
+        if (mode == Mode.DOWNLOADING) {
+            l1 = "必要なMODをダウンロードしています…";
+            l2 = null;
+        } else {
+            l1 = "§e選んだMODを動かすには、ほかのMODも必要です。§rまだ何も入れていません。";
+            if (!deps.library.isEmpty()) {
+                l2 = deps.external.isEmpty() ? "MODライブラリか Modrinth にあるので、一緒に入れるのがおすすめです。"
+                        : "チェックしたMODは一緒に入れられます。ほかのMODは自分で入れてください。";
+            } else {
+                l2 = "MODライブラリにも Modrinth にもないので、名前をコピーするか「開く」で探して入れてください。";
+            }
         }
         g.drawCenteredString(font, l1, width / 2, 30, 0xCCCCCC);
         if (l2 != null) g.drawCenteredString(font, l2, width / 2, 42, 0x999999);
@@ -246,16 +286,12 @@ public class DependencyScreen extends Screen {
         if (pages > 1) {
             g.drawCenteredString(font, (page + 1) + " / " + pages, width / 2, TOP + perPage * rowH() + 8, 0xAAAAAA);
         }
-        // under each mod that is not in the library: is it on the launcher's own site?
-        if (site.site != null) {
-            for (int i = page * perPage; i < Math.min(rowsData.size(), (page + 1) * perPage); i++) {
-                Row r = rowsData.get(i);
-                if (r.external() == null) continue;
-                int y = TOP + (i - page * perPage) * rowH() + 23;
-                ModSites.Result n = notes.get(r.external().id());
-                String text = n != null ? n.sentence() : "§7" + site.site + " にあるか調べています…";
-                g.drawCenteredString(font, text, width / 2, y, 0xFFFFFF);
-            }
+        // under each mod that cannot be downloaded here: what Modrinth said
+        for (int i = page * perPage; i < Math.min(rowsData.size(), (page + 1) * perPage); i++) {
+            Row r = rowsData.get(i);
+            if (r.external() == null || r.external().note() == null) continue;
+            int y = TOP + (i - page * perPage) * rowH() + 23;
+            g.drawCenteredString(font, r.external().note(), width / 2, y, 0xFFFFFF);
         }
     }
 
@@ -266,8 +302,6 @@ public class DependencyScreen extends Screen {
 
     @Override
     public void onClose() {
-        UpdaterCore.MissingDeps more = next;
-        if (more != null && !more.isEmpty()) minecraft.setScreen(new DependencyScreen(parent, more));
-        else minecraft.setScreen(parent);
+        finish(false); // Esc = cancel, nothing is installed
     }
 }

@@ -19,8 +19,8 @@ import java.util.Locale;
 import java.util.Set;
 
 /**
- * Which launcher started the game, and whether a mod can be found on that launcher's own site
- * (CurseForge or Modrinth), so the dependency screen can say where to get a missing mod.
+ * Which launcher started the game, and finding missing required mods on Modrinth so they can be
+ * downloaded right away (CurseForge needs an API key, so it only gets a search page).
  */
 public final class ModSites {
     private ModSites() {
@@ -76,8 +76,8 @@ public final class ModSites {
         return Launcher.OTHER;
     }
 
-    /** What was found for one mod: a sentence to show and the page "開く" should open. */
-    public record Result(String sentence, String url) {
+    /** A mod found on Modrinth with a file for this Minecraft version and loader. */
+    public record Hit(String slug, String title, String summary, ModIndex.Release release) {
     }
 
     private static final HttpClient HTTP = HttpClient.newBuilder()
@@ -85,36 +85,61 @@ public final class ModSites {
             .connectTimeout(Duration.ofSeconds(10))
             .build();
 
-    /** Looks the mod up on the launcher's site. Runs network requests: call it off the render thread. */
-    public static Result lookup(Launcher l, String id, String name, String mc, String loader) {
-        String ver = mc + " " + loaderName(loader);
-        try {
-            Boolean found;
-            String page;
-            if (l == Launcher.MODRINTH) {
-                String slug = modrinthSlug(id, name, mc, loader);
-                found = slug != null;
-                page = slug != null ? "https://modrinth.com/mod/" + slug : Deps.searchUrl(id, mc, loader);
-            } else {
-                Object[] cf = curseForge(id, name, mc, loader); // {Boolean found-with-version or null, url}
-                found = (Boolean) cf[0];
-                page = (String) cf[1];
-                if (found == null) {
-                    return new Result("§7" + l.site + " にあるかは確かめられませんでした。「開く」で " + l.site + " の検索ページを開けます。", page);
-                }
+    /**
+     * Looks a required mod up on Modrinth (official public API, no key needed) and picks its newest file for
+     * this Minecraft version and loader (a release when there is one). Network: call it off the render thread.
+     *
+     * @return null when Modrinth has no such mod or no file for this version
+     */
+    public static Hit modrinth(String id, String name, String mc, String loader) throws Exception {
+        JsonObject project = modrinthProject(id, name, mc, loader);
+        if (project == null) return null;
+        String slug = project.get("slug").getAsString();
+        String lf = "[\"" + loader.toLowerCase(Locale.ROOT) + "\"]";
+        String gv = "[\"" + mc + "\"]";
+        int[] st = new int[1];
+        String body = get("https://api.modrinth.com/v2/project/" + URLEncoder.encode(slug, StandardCharsets.UTF_8)
+                + "/version?loaders=" + URLEncoder.encode(lf, StandardCharsets.UTF_8)
+                + "&game_versions=" + URLEncoder.encode(gv, StandardCharsets.UTF_8), st);
+        if (st[0] != 200) throw new java.io.IOException("HTTP " + st[0]);
+        JsonArray versions = JsonParser.parseString(body).getAsJsonArray();
+        JsonObject pick = null;
+        for (JsonElement v : versions) { // newest first
+            JsonObject o = v.getAsJsonObject();
+            if (pick == null) pick = o;
+            if ("release".equals(str(o, "version_type"))) {
+                pick = o;
+                break;
             }
-            if (found) {
-                return new Result("§a" + l.site + " に " + ver + " 版があります。" + l.app + " で「" + name + "」を検索すると入れられます。", page);
-            }
-            return new Result("§6" + l.site + " では " + ver + " 版を見つけられませんでした（名前が違うだけかもしれません）。", page);
-        } catch (Exception e) {
-            Log.warn(l.site + " で " + id + " を探せませんでした: " + e);
-            String page = l == Launcher.MODRINTH ? Deps.searchUrl(id, mc, loader) : curseSearchUrl(name, mc);
-            return new Result("§7" + l.site + " に接続できなかったため、あるか確かめられませんでした。", page);
         }
+        if (pick == null) return null;
+        JsonObject file = null;
+        for (JsonElement f : pick.getAsJsonArray("files")) {
+            JsonObject fo = f.getAsJsonObject();
+            if (file == null || fo.has("primary") && fo.get("primary").getAsBoolean()) file = fo;
+            if (fo.has("primary") && fo.get("primary").getAsBoolean()) break;
+        }
+        if (file == null || !file.has("hashes")) return null;
+        ModIndex.Release r = new ModIndex.Release();
+        r.version = str(pick, "version_number");
+        r.mc = mc;
+        r.loader = loader;
+        r.url = str(file, "url");
+        r.fileName = str(file, "filename");
+        r.sha512 = str(file.getAsJsonObject("hashes"), "sha512");
+        r.changelog = null;
+        r.released = str(pick, "date_published");
+        if (r.released != null && r.released.length() >= 10) r.released = r.released.substring(0, 10);
+        if (r.url == null || !r.url.startsWith("https://") || r.fileName == null || r.sha512 == null) return null;
+        String title = str(project, "title");
+        return new Hit(slug, title != null ? title : name, str(project, "description"), r);
     }
 
-    private static String loaderName(String loader) {
+    private static String str(JsonObject o, String key) {
+        return o != null && o.has(key) && !o.get(key).isJsonNull() ? o.get(key).getAsString() : null;
+    }
+
+    public static String loaderName(String loader) {
         switch (loader.toLowerCase(Locale.ROOT)) {
             case "neoforge": return "NeoForge";
             case "forge": return "Forge";
@@ -139,8 +164,8 @@ public final class ModSites {
 
     // ---- Modrinth (official public API, no key needed) ------------------------------------------
 
-    /** The slug of a Modrinth mod with this ID or name that has a file for this version and loader. */
-    private static String modrinthSlug(String id, String name, String mc, String loader) throws Exception {
+    /** The Modrinth search hit for a mod with this ID or name that has a file for this version and loader. */
+    private static JsonObject modrinthProject(String id, String name, String mc, String loader) throws Exception {
         String facets = "[[\"categories:" + loader.toLowerCase(Locale.ROOT) + "\"],[\"versions:" + mc + "\"],[\"project_type:mod\"]]";
         Set<String> queries = new LinkedHashSet<>();
         queries.add(name);
@@ -156,59 +181,16 @@ public final class ModSites {
                 String slug = o.has("slug") ? o.get("slug").getAsString() : null;
                 String title = o.has("title") ? o.get("title").getAsString() : null;
                 if (slug == null) continue;
-                if (norm(slug).equals(norm(id)) || norm(title).equals(norm(name)) || norm(title).equals(norm(id))) return slug;
+                if (norm(slug).equals(norm(id)) || norm(title).equals(norm(name)) || norm(title).equals(norm(id))) return o;
             }
         }
         return null;
     }
 
-    // ---- CurseForge (the official API needs a key, so the public CFWidget mirror is used) ------------
+    // ---- CurseForge (its API needs a key, so only a search page is offered) ----------------------------
 
-    private static String curseSearchUrl(String name, String mc) {
+    public static String curseSearchUrl(String name, String mc) {
         return "https://www.curseforge.com/minecraft/search?class=mc-mods&gameVersion=" + mc + "&search="
                 + URLEncoder.encode(name, StandardCharsets.UTF_8);
-    }
-
-    /** @return {TRUE/FALSE when known, null when it could not be checked; the page to open} */
-    private static Object[] curseForge(String id, String name, String mc, String loader) throws Exception {
-        Set<String> slugs = new LinkedHashSet<>();
-        slugs.add(id.toLowerCase(Locale.ROOT).replace('_', '-'));
-        slugs.add(name.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]+", "-").replaceAll("(^-|-$)", ""));
-        boolean unsure = false;
-        for (String slug : slugs) {
-            if (slug.isEmpty()) continue;
-            int[] st = new int[1];
-            String body = get("https://api.cfwidget.com/minecraft/mc-mods/" + slug, st);
-            if (st[0] == 404) continue;
-            if (st[0] != 200) { // 202 = not looked up yet, try again later
-                unsure = true;
-                continue;
-            }
-            JsonObject o = JsonParser.parseString(body).getAsJsonObject();
-            String page = "https://www.curseforge.com/minecraft/mc-mods/" + slug;
-            if (o.has("urls") && o.getAsJsonObject("urls").has("curseforge")) {
-                page = o.getAsJsonObject("urls").get("curseforge").getAsString();
-            }
-            boolean match = false;
-            if (o.has("files") && o.get("files").isJsonArray()) {
-                for (JsonElement f : o.getAsJsonArray("files")) {
-                    JsonObject fo = f.getAsJsonObject();
-                    if (!fo.has("versions") || !fo.get("versions").isJsonArray()) continue;
-                    boolean v = false;
-                    boolean ld = false;
-                    for (JsonElement x : fo.getAsJsonArray("versions")) {
-                        String s = x.getAsString();
-                        if (s.equals(mc)) v = true;
-                        if (s.equalsIgnoreCase(loader)) ld = true;
-                    }
-                    if (v && ld) {
-                        match = true;
-                        break;
-                    }
-                }
-            }
-            return new Object[]{match, page};
-        }
-        return new Object[]{unsure ? null : Boolean.FALSE, curseSearchUrl(name, mc)};
     }
 }

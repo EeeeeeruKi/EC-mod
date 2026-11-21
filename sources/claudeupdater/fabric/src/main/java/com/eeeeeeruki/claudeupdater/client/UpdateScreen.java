@@ -15,7 +15,7 @@ import java.util.Map;
 
 /** Lists the mods that have a newer version, lets the player pick which to download, and shows progress. */
 public class UpdateScreen extends Screen {
-    private enum Mode { CHECKING, NOTHING, LIST, DOWNLOADING, FINISHED }
+    private enum Mode { CHECKING, NOTHING, LIST, DOWNLOADING, CONFIRM, FINISHED }
 
     private static final int ROW_W = 320;
     private static final int ROW_H = 22;
@@ -160,13 +160,47 @@ public class UpdateScreen extends Screen {
         mode = Mode.DOWNLOADING;
         rebuildWidgets();
         Thread t = new Thread(() -> {
-            UpdaterCore.downloadAll(list);
-            deps = UpdaterCore.missingDeps(list);
-            mode = Mode.FINISHED;
+            // fetch first, so the required mods can be asked about before anything is put in place
+            UpdaterCore.fetchAll(list);
+            UpdaterCore.MissingDeps d = UpdaterCore.missingDeps(list);
+            if (d.isEmpty()) {
+                UpdaterCore.commitAll(list);
+                mode = Mode.FINISHED;
+            } else {
+                deps = d;
+                mode = Mode.CONFIRM;
+            }
             needRebuild = true;
         }, "ClaudeUpdater-Download");
         t.setDaemon(true);
         t.start();
+    }
+
+    /** Back from the dependency screen. */
+    private void onDecision(List<UpdateCandidate> extra, boolean install) {
+        if (install) {
+            List<UpdateCandidate> all = new ArrayList<>(list);
+            all.addAll(extra); // shown in the finished list too
+            list = all;
+            mode = Mode.DOWNLOADING;
+            Thread t = new Thread(() -> {
+                UpdaterCore.commitAll(list);
+                mode = Mode.FINISHED;
+                needRebuild = true;
+            }, "ClaudeUpdater-Download-Commit");
+            t.setDaemon(true);
+            t.start();
+        } else {
+            UpdaterCore.discard(list);
+            for (UpdateCandidate c : list) {
+                if (c.state == UpdateCandidate.State.FAILED) c.state = UpdateCandidate.State.WAITING;
+                c.error = null;
+            }
+            mode = Mode.LIST;
+        }
+        deps = null;
+        depsShown = false;
+        minecraft.setScreen(this);
     }
 
     private void hideAll() {
@@ -180,7 +214,8 @@ public class UpdateScreen extends Screen {
     }
 
     private Component rowLabel(UpdateCandidate c) {
-        String ver = c.installed.version() + " → " + c.release.version;
+        // required mods added from the dependency screen are new installs
+        String ver = c.installed != null ? c.installed.version() + " → " + c.release.version : "v" + c.release.version + "（新しく入れる）";
         switch (mode) {
             case LIST:
                 return Component.literal((c.selected ? "☑ " : "☐ ") + c.name + "   " + ver
@@ -191,6 +226,7 @@ public class UpdateScreen extends Screen {
                 switch (c.state) {
                     case WAITING: s = "§7待機中"; break;
                     case DOWNLOADING: s = "§eダウンロード中…"; break;
+                    case READY: s = "§7確認中…"; break;
                     case DONE: s = "§a完了"; break;
                     default: s = "§c失敗しました"; break;
                 }
@@ -203,12 +239,12 @@ public class UpdateScreen extends Screen {
         sb.append(c.name).append(" ").append(c.release.version);
         if (c.release.released != null) sb.append("（").append(c.release.released).append("）");
         if (c.release.changelog != null && !c.release.changelog.isBlank()) sb.append("\n").append(c.release.changelog);
-        sb.append("\n§7今のファイル: ").append(c.installed.jar().getFileName());
+        if (c.installed != null) sb.append("\n§7今のファイル: ").append(c.installed.jar().getFileName());
         if (c.error != null) sb.append("\n§c").append(c.error);
         return Component.literal(sb.toString());
     }
 
-    /** Required mods the downloaded jars need; shown once on top of the finished list. */
+    /** Required mods the chosen jars need; asked about before anything is put in place. */
     private volatile UpdaterCore.MissingDeps deps;
     private boolean depsShown;
 
@@ -220,12 +256,12 @@ public class UpdateScreen extends Screen {
             rebuildWidgets();
             return;
         }
-        if (mode == Mode.FINISHED && !depsShown && deps != null && !deps.isEmpty()) {
+        if (mode == Mode.CONFIRM && !depsShown && deps != null) {
             depsShown = true;
-            minecraft.setScreen(new DependencyScreen(this, deps));
+            minecraft.setScreen(new DependencyScreen(this, deps, list, this::onDecision));
             return;
         }
-        if (mode == Mode.DOWNLOADING || mode == Mode.FINISHED) {
+        if (mode == Mode.DOWNLOADING || mode == Mode.CONFIRM || mode == Mode.FINISHED) {
             for (Map.Entry<Button, UpdateCandidate> e : rows.entrySet()) {
                 e.getKey().setMessage(rowLabel(e.getValue()));
                 e.getKey().setTooltip(Tooltip.create(tooltip(e.getValue())));
@@ -260,6 +296,9 @@ public class UpdateScreen extends Screen {
             case DOWNLOADING:
                 l1 = "ダウンロードしています…";
                 break;
+            case CONFIRM:
+                l1 = "必要なMODを確かめています…";
+                break;
             default:
                 boolean ok = list.stream().anyMatch(c -> c.state == UpdateCandidate.State.DONE);
                 if (ok && minecraft.level != null) l2 = "ワールドから出て、この画面の「適用して再起動」を押すと入れ替わります。";
@@ -281,7 +320,7 @@ public class UpdateScreen extends Screen {
 
     @Override
     public boolean shouldCloseOnEsc() {
-        return mode != Mode.DOWNLOADING;
+        return mode != Mode.DOWNLOADING && mode != Mode.CONFIRM;
     }
 
     @Override

@@ -18,7 +18,7 @@ import java.util.Map;
  * the index that are not installed yet and downloads the chosen ones into the mods folder.
  */
 public class InstallScreen extends Screen {
-    private enum Mode { CHECKING, NOTHING, LIST, DOWNLOADING, FINISHED }
+    private enum Mode { CHECKING, NOTHING, LIST, DOWNLOADING, CONFIRM, FINISHED }
 
     private static final int ROW_W = 320;
     private static final int ROW_H = 22;
@@ -122,13 +122,47 @@ public class InstallScreen extends Screen {
         mode = Mode.DOWNLOADING;
         rebuildWidgets();
         Thread t = new Thread(() -> {
-            UpdaterCore.downloadAll(list);
-            deps = UpdaterCore.missingDeps(list);
-            mode = Mode.FINISHED;
+            // fetch first, so the required mods can be asked about before anything is put in place
+            UpdaterCore.fetchAll(list);
+            UpdaterCore.MissingDeps d = UpdaterCore.missingDeps(list);
+            if (d.isEmpty()) {
+                UpdaterCore.commitAll(list);
+                mode = Mode.FINISHED;
+            } else {
+                deps = d;
+                mode = Mode.CONFIRM;
+            }
             needRebuild = true;
         }, "ClaudeUpdater-Install");
         t.setDaemon(true);
         t.start();
+    }
+
+    /** Back from the dependency screen. */
+    private void onDecision(List<UpdateCandidate> extra, boolean install) {
+        if (install) {
+            List<UpdateCandidate> all = new ArrayList<>(list);
+            all.addAll(extra); // shown in the finished list too
+            list = all;
+            mode = Mode.DOWNLOADING;
+            Thread t = new Thread(() -> {
+                UpdaterCore.commitAll(list);
+                mode = Mode.FINISHED;
+                needRebuild = true;
+            }, "ClaudeUpdater-Install-Commit");
+            t.setDaemon(true);
+            t.start();
+        } else {
+            UpdaterCore.discard(list);
+            for (UpdateCandidate c : list) {
+                if (c.state == UpdateCandidate.State.FAILED) c.state = UpdateCandidate.State.WAITING;
+                c.error = null;
+            }
+            mode = Mode.LIST;
+        }
+        deps = null;
+        depsShown = false;
+        minecraft.setScreen(this);
     }
 
     private Component rowLabel(UpdateCandidate c) {
@@ -141,6 +175,7 @@ public class InstallScreen extends Screen {
         switch (c.state) {
             case WAITING: s = "§7待機中"; break;
             case DOWNLOADING: s = "§eダウンロード中…"; break;
+            case READY: s = "§7確認中…"; break;
             case DONE: s = "§a完了"; break;
             default: s = "§c失敗しました"; break;
         }
@@ -157,7 +192,7 @@ public class InstallScreen extends Screen {
         return Component.literal(sb.toString());
     }
 
-    /** Required mods the downloaded jars need; shown once on top of the finished list. */
+    /** Required mods the chosen jars need; asked about before anything is put in place. */
     private volatile UpdaterCore.MissingDeps deps;
     private boolean depsShown;
 
@@ -169,12 +204,12 @@ public class InstallScreen extends Screen {
             rebuildWidgets();
             return;
         }
-        if (mode == Mode.FINISHED && !depsShown && deps != null && !deps.isEmpty()) {
+        if (mode == Mode.CONFIRM && !depsShown && deps != null) {
             depsShown = true;
-            minecraft.setScreen(new DependencyScreen(this, deps));
+            minecraft.setScreen(new DependencyScreen(this, deps, list, this::onDecision));
             return;
         }
-        if (mode == Mode.DOWNLOADING || mode == Mode.FINISHED) {
+        if (mode == Mode.DOWNLOADING || mode == Mode.CONFIRM || mode == Mode.FINISHED) {
             for (Map.Entry<Button, UpdateCandidate> e : rows.entrySet()) {
                 e.getKey().setMessage(rowLabel(e.getValue()));
                 e.getKey().setTooltip(Tooltip.create(tooltip(e.getValue())));
@@ -203,6 +238,9 @@ public class InstallScreen extends Screen {
             case DOWNLOADING:
                 l1 = "ダウンロードしています…";
                 break;
+            case CONFIRM:
+                l1 = "必要なMODを確かめています…";
+                break;
             default:
                 boolean ok = list.stream().anyMatch(c -> c.state == UpdateCandidate.State.DONE);
                 l1 = ok ? "mods フォルダに入れました。ゲームを起動し直すと使えるようになります。"
@@ -223,7 +261,7 @@ public class InstallScreen extends Screen {
 
     @Override
     public boolean shouldCloseOnEsc() {
-        return mode != Mode.DOWNLOADING;
+        return mode != Mode.DOWNLOADING && mode != Mode.CONFIRM;
     }
 
     @Override

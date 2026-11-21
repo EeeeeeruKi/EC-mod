@@ -137,7 +137,7 @@ public final class UpdaterCore {
                     downloadAll(found);
                     Log.info("ダウンロードした更新は、サーバーを停止したあとに入れ替わります。");
                     MissingDeps m = missingDeps(found);
-                    for (UpdateCandidate c : m.library) Log.warn(c.neededBy + " には " + c.name + " が必要です（MODライブラリにあります）");
+                    for (UpdateCandidate c : m.library) Log.warn(c.neededBy + " には " + c.name + " が必要です（" + c.source + "にあります）");
                     for (MissingDeps.External x : m.external) Log.warn(x.neededBy() + " には " + x.name() + "（" + x.id() + "）が必要です");
                 }
             } catch (Exception ex) {
@@ -245,6 +245,49 @@ public final class UpdaterCore {
 
     /** Downloads one jar into the staging folder, checks its hash and records the swap in pending.txt. */
     public static void download(UpdateCandidate c) {
+        if (fetch(c)) commit(c);
+    }
+
+    /** Downloads every selected mod into the staging folder only (nothing changes in the mods folder yet). */
+    public static void fetchAll(List<UpdateCandidate> list) {
+        for (UpdateCandidate c : list) {
+            if (!c.selected || c.fetched) continue;
+            if (c.state == UpdateCandidate.State.DONE || downloaded.contains(c.id)) {
+                c.state = UpdateCandidate.State.DONE;
+                continue;
+            }
+            fetch(c);
+        }
+    }
+
+    /** Puts every fetched mod in place (new jars into mods, updates into pending.txt). */
+    public static void commitAll(List<UpdateCandidate> list) {
+        for (UpdateCandidate c : list) {
+            if (c.selected && c.fetched) commit(c);
+        }
+        scheduleSwap();
+    }
+
+    /** Throws away what was fetched but not put in place (the player cancelled). */
+    public static void discard(List<UpdateCandidate> list) {
+        for (UpdateCandidate c : list) {
+            if (!c.fetched) continue;
+            try {
+                if (c.file != null) Files.deleteIfExists(c.file);
+            } catch (IOException ignored) {
+            }
+            c.fetched = false;
+            c.file = null;
+            c.state = UpdateCandidate.State.WAITING;
+        }
+    }
+
+    /**
+     * Step 1 of a download: the jar goes into the staging folder and its hash is checked.
+     *
+     * @return true when it is ready for {@link #commit}
+     */
+    public static boolean fetch(UpdateCandidate c) {
         c.state = UpdateCandidate.State.DOWNLOADING;
         c.error = null;
         Path tmp = null;
@@ -263,7 +306,8 @@ public final class UpdaterCore {
                 res.body().close();
                 throw new IOException("HTTP " + res.statusCode());
             }
-            MessageDigest sha = MessageDigest.getInstance("SHA-256");
+            boolean sha256 = c.release.sha256 != null && !c.release.sha256.isBlank();
+            MessageDigest sha = MessageDigest.getInstance(sha256 ? "SHA-256" : "SHA-512");
             try (InputStream in = res.body(); var out = Files.newOutputStream(tmp)) {
                 byte[] buf = new byte[64 * 1024];
                 int n;
@@ -273,10 +317,35 @@ public final class UpdaterCore {
                 }
             }
             String got = hex(sha.digest());
-            if (!got.equalsIgnoreCase(c.release.sha256)) {
-                throw new IOException("ファイルが壊れています（SHA-256が一致しません）");
+            String want = sha256 ? c.release.sha256 : c.release.sha512;
+            if (want == null || !got.equalsIgnoreCase(want)) {
+                throw new IOException("ファイルが壊れています（" + (sha256 ? "SHA-256" : "SHA-512") + "が一致しません）");
             }
             Files.move(tmp, staged, StandardCopyOption.REPLACE_EXISTING);
+            c.file = staged;
+            c.fetched = true;
+            c.state = UpdateCandidate.State.READY;
+            return true;
+        } catch (Exception e) {
+            c.error = e.getMessage() == null ? e.toString() : e.getMessage();
+            c.state = UpdateCandidate.State.FAILED;
+            Log.warn(c.name + " のダウンロードに失敗しました: " + c.error);
+            if (tmp != null) {
+                try {
+                    Files.deleteIfExists(tmp);
+                } catch (IOException ignored) {
+                }
+            }
+            return false;
+        }
+    }
+
+    /** Step 2 of a download: a new jar goes into the mods folder, an update is queued in pending.txt. */
+    public static void commit(UpdateCandidate c) {
+        try {
+            String fileName = safeFileName(c);
+            Path staged = c.file;
+            if (staged == null || !Files.isRegularFile(staged)) throw new IOException("ダウンロードしたファイルが見つかりません");
             Path target = env.modsDir().resolve(fileName);
             if (c.isNewInstall()) {
                 // nothing to replace: a new jar can go straight into the mods folder, it loads on the next launch
@@ -291,18 +360,14 @@ public final class UpdaterCore {
             }
             downloaded.add(c.id);
             c.file = c.isNewInstall() ? target : staged;
+            c.fetched = false;
             c.state = UpdateCandidate.State.DONE;
             Log.info("ダウンロードしました: " + c.name + " " + c.release.version);
         } catch (Exception e) {
             c.error = e.getMessage() == null ? e.toString() : e.getMessage();
             c.state = UpdateCandidate.State.FAILED;
-            Log.warn(c.name + " のダウンロードに失敗しました: " + c.error);
-            if (tmp != null) {
-                try {
-                    Files.deleteIfExists(tmp);
-                } catch (IOException ignored) {
-                }
-            }
+            c.fetched = false;
+            Log.warn(c.name + " を入れられませんでした: " + c.error);
         }
     }
 
@@ -311,10 +376,14 @@ public final class UpdaterCore {
 
     /** Required mods that the downloaded ones need but that are not there. */
     public static final class MissingDeps {
-        public record External(String id, String name, String neededBy, String url) {
+        /** @param note a line about Modrinth (not found there, or it could not be reached), may be null */
+        public record External(String id, String name, String neededBy, String url, String note) {
         }
 
-        /** In the library for this Minecraft version and loader: can be downloaded right away (selected). */
+        /**
+         * Can be downloaded right away (selected by default): from the library, or from Modrinth when it has a
+         * file for this Minecraft version and loader ({@link UpdateCandidate#source} says which).
+         */
         public final List<UpdateCandidate> library = new ArrayList<>();
         /** Not in the library: the player has to get these themselves. */
         public final List<External> external = new ArrayList<>();
@@ -325,8 +394,9 @@ public final class UpdaterCore {
     }
 
     /**
-     * Reads the required mods of every successfully downloaded jar in the list and returns the ones that are
-     * neither loaded, nor downloaded, nor part of the same batch.
+     * Reads the required mods of every downloaded (or fetched) jar in the list and returns the ones that are
+     * neither loaded, nor downloaded, nor part of the same batch. Mods that are not in the library are looked
+     * up on Modrinth, so this makes network requests: call it off the render thread.
      */
     public static MissingDeps missingDeps(List<UpdateCandidate> list) {
         MissingDeps out = new MissingDeps();
@@ -334,7 +404,11 @@ public final class UpdaterCore {
         have.addAll(alreadyHandled());
         Map<String, List<String>> need = new java.util.LinkedHashMap<>();
         for (UpdateCandidate c : list) {
-            if (c.state != UpdateCandidate.State.DONE || c.file == null || !Files.isRegularFile(c.file)) continue;
+            if (c.selected) have.add(c.id);
+        }
+        for (UpdateCandidate c : list) {
+            boolean ready = c.state == UpdateCandidate.State.DONE || c.fetched;
+            if (!ready || c.file == null || !Files.isRegularFile(c.file)) continue;
             Deps.Info info = Deps.read(c.file, !dedicated);
             have.addAll(info.provides);
             for (String id : info.requires) need.computeIfAbsent(id, k -> new ArrayList<>()).add(c.name);
@@ -366,11 +440,32 @@ public final class UpdaterCore {
                 UpdateCandidate c = new UpdateCandidate(id, name, entry.summary, best);
                 c.selected = true;
                 c.neededBy = by;
+                c.source = "ライブラリ";
                 out.library.add(c);
-            } else {
-                out.external.add(new MissingDeps.External(id, Deps.displayName(id), by,
-                        Deps.searchUrl(id, env.mcVersion(), env.loader())));
+                continue;
             }
+            String name = Deps.displayName(id);
+            String note;
+            try {
+                ModSites.Hit hit = ModSites.modrinth(id, name, env.mcVersion(), env.loader());
+                if (hit != null) {
+                    UpdateCandidate c = new UpdateCandidate(id, hit.title(), hit.summary(), hit.release());
+                    c.selected = true;
+                    c.neededBy = by;
+                    c.source = "Modrinth";
+                    out.library.add(c);
+                    continue;
+                }
+                note = "§6Modrinth には " + env.mcVersion() + " " + ModSites.loaderName(env.loader())
+                        + " 版がありませんでした。名前をコピーして探してください。";
+            } catch (Exception ex) {
+                Log.warn("Modrinth で " + id + " を探せませんでした: " + ex);
+                note = "§7Modrinth に接続できなかったため、あるか確かめられませんでした。";
+            }
+            String url = ModSites.launcher(env.gameDir()) == ModSites.Launcher.CURSEFORGE
+                    ? ModSites.curseSearchUrl(name, env.mcVersion())
+                    : Deps.searchUrl(id, env.mcVersion(), env.loader());
+            out.external.add(new MissingDeps.External(id, name, by, url, note));
         }
         return out;
     }

@@ -6,6 +6,36 @@
       "summary": "ゲームの起動時に、このライブラリのMODの新しい版があるか確認し、選んだMODを自動で入れ替えるMOD。jarを毎回ダウンロードして置き換える手間がなくなります。",
       "versions": [
         {
+          "version": "1.7.0",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/claudeupdater/1.20.1-forge/claudeupdater-1.7.0-forge-1.20.1.jar",
+          "fileName": "claudeupdater-1.7.0-forge-1.20.1.jar",
+          "sha256": "2b4482b93aa32170d7e24fa3067b415aa2d47f49d6ce5ea8926db91de97184bd",
+          "changelog": "必要なMODの案内を、ダウンロードの前（まだ何も入れていないうち）に出すようにしました。MODライブラリにない必要なMODでも、Modrinth にあればその画面からそのまま一緒にダウンロードできます。",
+          "released": "2026-11-21"
+        },
+        {
+          "version": "1.7.0",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/claudeupdater/1.21.1-neoforge/claudeupdater-1.7.0-neoforge-1.21.1.jar",
+          "fileName": "claudeupdater-1.7.0-neoforge-1.21.1.jar",
+          "sha256": "2e8c59da4ae6c9af54b96ff7205789da6b5f87ab6bb93a929766a8edc9a954ac",
+          "changelog": "必要なMODの案内を、ダウンロードの前（まだ何も入れていないうち）に出すようにしました。MODライブラリにない必要なMODでも、Modrinth にあればその画面からそのまま一緒にダウンロードできます。",
+          "released": "2026-11-21"
+        },
+        {
+          "version": "1.7.0",
+          "mc": "1.21.1",
+          "loader": "fabric",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/claudeupdater/1.21.1-fabric/claudeupdater-1.7.0-fabric-1.21.1.jar",
+          "fileName": "claudeupdater-1.7.0-fabric-1.21.1.jar",
+          "sha256": "45167c9d726847cdc051d61d068c5aa4361323e967d8da0ad738f0edcb9df7f7",
+          "changelog": "必要なMODの案内を、ダウンロードの前（まだ何も入れていないうち）に出すようにしました。MODライブラリにない必要なMODでも、Modrinth にあればその画面からそのまま一緒にダウンロードできます。",
+          "released": "2026-11-21"
+        },
+        {
           "version": "1.6.0",
           "mc": "1.20.1",
           "loader": "forge",

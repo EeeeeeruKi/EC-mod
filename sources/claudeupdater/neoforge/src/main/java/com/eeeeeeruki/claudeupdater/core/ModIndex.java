@@ -45,6 +45,8 @@ public class ModIndex {
         public String url;
         public String fileName;
         public String sha256;
+        /** Modrinth gives SHA-512 instead (only set for mods found on Modrinth, never in index.json). */
+        public transient String sha512;
         public String changelog;
         public String released;
     }
