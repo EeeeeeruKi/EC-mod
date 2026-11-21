@@ -46,10 +46,10 @@ public class ChatAttachScreen extends Screen {
                 .bounds(x, y + 56, 200, 20).build());
 
         Button remove = Button.builder(Component.translatable("minecrafttweak.chat_images.attach.remove"), b -> {
-            ChatImages.setPendingFile(null);
+            ChatImages.clearPending();
             back(chatText);
         }).bounds(x, y + 88, 98, 20).build();
-        remove.active = ChatImages.pendingFile() != null;
+        remove.active = ChatImages.hasPending();
         addRenderableWidget(remove);
         addRenderableWidget(Button.builder(Component.translatable("minecrafttweak.chat_images.attach.back"), b -> back(chatText))
                 .bounds(x + 102, y + 88, 98, 20).build());
@@ -80,13 +80,20 @@ public class ChatAttachScreen extends Screen {
             messageColor = 0xFF7070;
             return;
         }
-        String text = chatText.isBlank() ? url : chatText.stripTrailing() + " " + url;
-        if (text.length() > 256) {
-            message = Component.translatable("minecrafttweak.chat_images.error.too_long");
-            messageColor = 0xFF7070;
+        if (!ChatImages.serverSupportsFiles()) {
+            // サーバーにこのmodがないときは、前と同じようにリンクをチャットの文に入れる
+            String text = chatText.isBlank() ? url : chatText.stripTrailing() + " " + url;
+            if (text.length() > 256) {
+                message = Component.translatable("minecrafttweak.chat_images.error.too_long");
+                messageColor = 0xFF7070;
+                return;
+            }
+            back(text);
             return;
         }
-        back(text);
+        // 画像ファイルと同じように添付する（送るときに読み込んで、サーバーへ送る）
+        ChatImages.setPendingUrl(url);
+        back(chatText);
     }
 
     private void back(String text) {

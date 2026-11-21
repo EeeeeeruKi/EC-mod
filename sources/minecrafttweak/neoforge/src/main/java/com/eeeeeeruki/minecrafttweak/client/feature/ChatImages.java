@@ -96,6 +96,8 @@ public final class ChatImages {
 
     /** 送る前の添付ファイル。 */
     private static Path pendingFile;
+    /** 添付の画面で入れた画像のリンク（送るときに読み込んで、ファイルと同じようにサーバーへ送る）。 */
+    private static String pendingUrl;
     /** 添付の画面に行くときだけ、チャットを閉じても添付を消さない。 */
     private static boolean keepPending;
 
@@ -658,6 +660,25 @@ public final class ChatImages {
 
     public static void setPendingFile(Path file) {
         pendingFile = file;
+        pendingUrl = null;
+    }
+
+    public static String pendingUrl() {
+        return pendingUrl;
+    }
+
+    public static void setPendingUrl(String url) {
+        pendingUrl = url;
+        pendingFile = null;
+    }
+
+    public static boolean hasPending() {
+        return pendingFile != null || pendingUrl != null;
+    }
+
+    public static void clearPending() {
+        pendingFile = null;
+        pendingUrl = null;
     }
 
     /** 添付する前に確かめる。だめなら理由の翻訳キー、よければ null。 */
@@ -690,7 +711,7 @@ public final class ChatImages {
 
     /** チャットを送るとき（ChatScreenMixin から）。添付があれば画像として送り、ふつうのチャットは送らない。 */
     public static boolean onSend(String message) {
-        if (pendingFile == null || !enabled()) {
+        if (!hasPending() || !enabled()) {
             return false;
         }
         String text = message == null ? "" : message.strip();
@@ -698,10 +719,35 @@ public final class ChatImages {
             return false;
         }
         Path file = pendingFile;
-        pendingFile = null;
+        String url = pendingUrl;
+        clearPending();
         Minecraft mc = Minecraft.getInstance();
         if (!serverSupportsFiles()) {
             mc.gui.getChat().addMessage(Component.translatable("minecrafttweak.chat_images.attach.file_unavailable"));
+            return true;
+        }
+        if (text.length() > 256) {
+            text = text.substring(0, 256);
+        }
+        if (url != null) {
+            // リンクの画像は、自分が読み込んでから、ファイルと同じようにサーバーへ送る（見る人はリンク先につながらない）
+            String caption = text;
+            mc.gui.getChat().addMessage(Component.translatable("minecrafttweak.chat_images.sending_link"));
+            POOL.submit(() -> {
+                try {
+                    byte[] data = download(url);
+                    mc.execute(() -> sendBytes(caption, data));
+                } catch (LoadException e) {
+                    mc.execute(() -> mc.gui.getChat().addMessage(Component.translatable("minecrafttweak.chat_images.error.link_failed",
+                            Component.translatable(e.key, e.args))));
+                } catch (Exception e) {
+                    mc.execute(() -> mc.gui.getChat().addMessage(Component.translatable("minecrafttweak.chat_images.error.link_failed",
+                            Component.translatable("minecrafttweak.chat_images.reason.network"))));
+                }
+            });
+            if (!text.isEmpty()) {
+                mc.gui.getChat().addRecentChat(text);
+            }
             return true;
         }
         byte[] bytes;
@@ -711,13 +757,24 @@ public final class ChatImages {
             mc.gui.getChat().addMessage(Component.translatable("minecrafttweak.chat_images.error.read"));
             return true;
         }
+        sendBytes(text, bytes);
+        if (!text.isEmpty()) {
+            mc.gui.getChat().addRecentChat(text);
+        }
+        return true;
+    }
+
+    /** 画像の中身をサーバーへ送る（メインスレッドで呼ぶ）。 */
+    private static void sendBytes(String text, byte[] bytes) {
+        Minecraft mc = Minecraft.getInstance();
         if (bytes.length > maxUploadBytes() || !ChatImageFormat.supported(bytes)) {
             mc.gui.getChat().addMessage(Component.translatable(bytes.length > maxUploadBytes()
                     ? "minecrafttweak.chat_images.error.too_big" : "minecrafttweak.chat_images.error.not_image", maxUploadBytes() / 1024));
-            return true;
+            return;
         }
-        if (text.length() > 256) {
-            text = text.substring(0, 256);
+        if (!serverSupportsFiles()) {
+            mc.gui.getChat().addMessage(Component.translatable("minecrafttweak.chat_images.attach.file_unavailable"));
+            return;
         }
         // 自分の画面では、サーバーからもらわなくても出せるように先に読んでおく
         String id = ChatImageFormat.id(bytes);
@@ -736,10 +793,6 @@ public final class ChatImages {
             int to = Math.min(bytes.length, from + chunk);
             ChatImageNetwork.sendUpload(i, total, text, java.util.Arrays.copyOfRange(bytes, from, to));
         }
-        if (!text.isEmpty()) {
-            mc.gui.getChat().addRecentChat(text);
-        }
-        return true;
     }
 
     // ---------------------------------------------------------------- 画面
@@ -772,11 +825,12 @@ public final class ChatImages {
     }
 
     private static void onScreenRender(ScreenEvent.Render.Post event) {
-        if (!(event.getScreen() instanceof ChatScreen screen) || pendingFile == null || !enabled()) {
+        if (!(event.getScreen() instanceof ChatScreen screen) || !hasPending() || !enabled()) {
             return;
         }
         Minecraft mc = Minecraft.getInstance();
-        String text = I18n.get("minecrafttweak.chat_images.attached", pendingFile.getFileName().toString());
+        String name = pendingFile != null ? pendingFile.getFileName().toString() : shorten(pendingUrl);
+        String text = I18n.get("minecrafttweak.chat_images.attached", name);
         int w = mc.font.width(text);
         GuiGraphics g = event.getGuiGraphics();
         g.fill(2, screen.height - 27, 2 + w + 4, screen.height - 15, 0xC0000000);
@@ -788,7 +842,7 @@ public final class ChatImages {
             if (keepPending) {
                 keepPending = false;
             } else {
-                pendingFile = null;
+                clearPending();
             }
         }
     }
@@ -800,7 +854,7 @@ public final class ChatImages {
         CACHE.clear();
         INCOMING.clear();
         REQUESTED.clear();
-        pendingFile = null;
+        clearPending();
     }
 
     // ---------------------------------------------------------------- PicPop 連携
@@ -863,5 +917,12 @@ public final class ChatImages {
             return null;
         }
         return new Object[]{img.frames.clone(), img.delays.clone(), img.width, img.height};
+    }
+
+    private static String shorten(String url) {
+        if (url == null) {
+            return "";
+        }
+        return url.length() <= 48 ? url : url.substring(0, 45) + "...";
     }
 }

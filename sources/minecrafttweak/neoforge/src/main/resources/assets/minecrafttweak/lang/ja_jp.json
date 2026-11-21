@@ -232,10 +232,10 @@
   "minecrafttweak.chat_images.attach.file_unavailable": "このサーバーには minEcraft twEEk が入っていないため、画像ファイルは送れません。リンクは送れます。",
   "minecrafttweak.chat_images.attach.link_label": "画像のリンク",
   "minecrafttweak.chat_images.attach.link_hint": "https://…",
-  "minecrafttweak.chat_images.attach.link": "リンクをチャットに入れる",
+  "minecrafttweak.chat_images.attach.link": "リンクの画像を添付する",
   "minecrafttweak.chat_images.attach.remove": "添付を外す",
   "minecrafttweak.chat_images.attach.back": "戻る",
-  "minecrafttweak.chat_images.attach.note": "PNG・JPEG・GIF・BMPに対応しています。",
+  "minecrafttweak.chat_images.attach.note": "PNG・JPEG・GIF・BMPに対応しています。添付したリンクの画像は、ファイルと同じようにサーバーから届けます。",
   "minecrafttweak.chat_images.attached": "添付: %s（Enterで送信します）",
   "minecrafttweak.chat_images.error.too_big": "ファイルが大きすぎます（%s KBまで）。",
   "minecrafttweak.chat_images.error.not_image": "PNG・JPEG・GIF・BMPの画像ではありません。",
@@ -253,5 +253,7 @@
   "minecrafttweak.chat_images.reason.no_server_mod": "サーバーにこのmodがありません",
   "minecrafttweak.chat_images.reason.decode": "読み込めませんでした",
   "minecrafttweak.chat_images.server_off": "このサーバーでは「チャットの画像」がオフになっています。",
-  "minecrafttweak.chat_images.server_too_big": "画像が大きすぎます（%s KBまで）。"
+  "minecrafttweak.chat_images.server_too_big": "画像が大きすぎます（%s KBまで）。",
+  "minecrafttweak.chat_images.sending_link": "リンクの画像を読み込んで送っています…",
+  "minecrafttweak.chat_images.error.link_failed": "リンクの画像を送れませんでした（%s）。"
 }

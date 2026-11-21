@@ -232,10 +232,10 @@
   "minecrafttweak.chat_images.attach.file_unavailable": "This server does not have minEcraft twEEk, so image files cannot be sent. Links still work.",
   "minecrafttweak.chat_images.attach.link_label": "Image link",
   "minecrafttweak.chat_images.attach.link_hint": "https://…",
-  "minecrafttweak.chat_images.attach.link": "Put the link in chat",
+  "minecrafttweak.chat_images.attach.link": "Attach the linked image",
   "minecrafttweak.chat_images.attach.remove": "Remove attachment",
   "minecrafttweak.chat_images.attach.back": "Back",
-  "minecrafttweak.chat_images.attach.note": "PNG, JPEG, GIF and BMP are supported.",
+  "minecrafttweak.chat_images.attach.note": "PNG, JPEG, GIF and BMP are supported. An attached link is sent through the server like a file.",
   "minecrafttweak.chat_images.attached": "Attached: %s (press Enter to send)",
   "minecrafttweak.chat_images.error.too_big": "The file is too large (up to %s KB).",
   "minecrafttweak.chat_images.error.not_image": "This is not a PNG, JPEG, GIF or BMP image.",
@@ -253,5 +253,7 @@
   "minecrafttweak.chat_images.reason.no_server_mod": "the server does not have this mod",
   "minecrafttweak.chat_images.reason.decode": "could not read it",
   "minecrafttweak.chat_images.server_off": "Chat Images is turned off on this server.",
-  "minecrafttweak.chat_images.server_too_big": "The image is too large (up to %s KB)."
+  "minecrafttweak.chat_images.server_too_big": "The image is too large (up to %s KB).",
+  "minecrafttweak.chat_images.sending_link": "Loading and sending the linked image…",
+  "minecrafttweak.chat_images.error.link_failed": "Could not send the linked image (%s)."
 }

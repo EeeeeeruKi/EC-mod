@@ -1712,6 +1712,26 @@
       "summary": "Quark を前提MODにして、Quark にない小さな改善をたくさん詰め込んでいくためのMODです。機能は最初はすべてオフで、ひとつずつオンにできます。このMOD・Quark・バニラ・Sodium の設定を、短い設定コードでまとめてやりとりできます。",
       "versions": [
         {
+          "version": "1.14.0",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/minecrafttweak/1.21.1-neoforge/minecrafttweak-neoforge-1.21.1-1.14.0.jar",
+          "fileName": "minecrafttweak-neoforge-1.21.1-1.14.0.jar",
+          "sha256": "3f8d95843ef9cbfadd6e7b941001f83cc56fa891b0b0d0e904e61d020dcf73a2",
+          "changelog": "「チャットの画像」の添付の画面でリンクを入れたときは、画像ファイルと同じように添付するようにしました。送るときに自分の画面で画像を読み込み、サーバーを通して届けるので、見る人はリンク先につながりません。チャットに直接リンクを書いたときは、これまでどおりです。",
+          "released": "2026-11-21"
+        },
+        {
+          "version": "1.14.0",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/minecrafttweak/1.20.1-forge/minecrafttweak-forge-1.20.1-1.14.0.jar",
+          "fileName": "minecrafttweak-forge-1.20.1-1.14.0.jar",
+          "sha256": "2a24c7b72fe44527b5060c3955eefaed7298f64d851e4a71b0fb23ffe038e899",
+          "changelog": "「チャットの画像」の添付の画面でリンクを入れたときは、画像ファイルと同じように添付するようにしました。送るときに自分の画面で画像を読み込み、サーバーを通して届けるので、見る人はリンク先につながりません。チャットに直接リンクを書いたときは、これまでどおりです。",
+          "released": "2026-11-21"
+        },
+        {
           "version": "1.13.3",
           "mc": "1.21.1",
           "loader": "neoforge",
