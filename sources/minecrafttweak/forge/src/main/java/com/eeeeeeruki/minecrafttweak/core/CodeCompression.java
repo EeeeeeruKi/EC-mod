@@ -36,6 +36,7 @@ public final class CodeCompression {
     private static final int V_DECIMAL = 4;
     private static final int V_TEXT = 5;      // 「%」で書いた文字を戻して、そのまま詰める
     private static final int V_RAW = 6;       // そのままの文字
+    private static final int V_TEXT_COMPACT = 7; // 日本語などを短く詰めた文字（下の writeCompact）
 
     private CodeCompression() {
     }
@@ -268,8 +269,14 @@ public final class CodeCompression {
         }
         String plain = decodeText(v);
         if (plain != null && encodeText(plain).equals(v)) {
-            bits.write(V_TEXT, 3);
-            writeString(bits, plain.getBytes(StandardCharsets.UTF_8));
+            byte[] utf8 = plain.getBytes(StandardCharsets.UTF_8);
+            if (compactLength(plain) < 8L * utf8.length) {
+                bits.write(V_TEXT_COMPACT, 3);
+                writeCompact(bits, plain);
+            } else {
+                bits.write(V_TEXT, 3);
+                writeString(bits, utf8);
+            }
             return;
         }
         bits.write(V_RAW, 3);
@@ -293,8 +300,73 @@ public final class CodeCompression {
             }
             case V_TEXT -> encodeText(new String(readString(bits), StandardCharsets.UTF_8));
             case V_RAW -> new String(readString(bits), StandardCharsets.UTF_8);
+            case V_TEXT_COMPACT -> encodeText(readCompact(bits));
             default -> throw new IllegalStateException("bad value type");
         };
+    }
+
+    // ---- 日本語などを短く詰める書き方 ----
+    // 英数字は8ビット。それ以外は、直前の文字と同じ128文字の区切り（ひらがな・カタカナなど）の中なら9ビット、
+    // ちがう区切りなら18ビット（UTF-8 だと日本語は1文字24ビット）。
+
+    private static long compactLength(String text) {
+        long total = 0;
+        int window = -1;
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            if (c < 0x80) {
+                total += 8;
+            } else if (window >= 0 && c >= window && c < window + 128) {
+                total += 9;
+            } else {
+                total += 18;
+                window = c & 0xFF80;
+            }
+        }
+        return total + 2L * (64 - Long.numberOfLeadingZeros(text.length() + 1L)) - 1;
+    }
+
+    private static void writeCompact(Bits bits, String text) {
+        bits.gamma(text.length() + 1);
+        int window = -1;
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            if (c < 0x80) {
+                bits.write(0, 1);
+                bits.write(c, 7);
+            } else if (window >= 0 && c >= window && c < window + 128) {
+                bits.write(2, 2);
+                bits.write(c - window, 7);
+            } else {
+                bits.write(3, 2);
+                bits.write(c, 16);
+                window = c & 0xFF80;
+            }
+        }
+    }
+
+    private static String readCompact(Bits bits) {
+        int n = (int) bits.readGamma() - 1;
+        if (n < 0 || n > 1_000_000) {
+            throw new IllegalStateException("bad length");
+        }
+        StringBuilder sb = new StringBuilder(n);
+        int window = -1;
+        for (int i = 0; i < n; i++) {
+            if (bits.read(1) == 0) {
+                sb.append((char) bits.read(7));
+            } else if (bits.read(1) == 0) {
+                if (window < 0) {
+                    throw new IllegalStateException("bad text");
+                }
+                sb.append((char) (window + bits.read(7)));
+            } else {
+                char c = (char) bits.read(16);
+                sb.append(c);
+                window = c & 0xFF80;
+            }
+        }
+        return sb.toString();
     }
 
     private static void writeString(Bits bits, byte[] bytes) {
