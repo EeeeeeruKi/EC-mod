@@ -400,6 +400,26 @@
       "summary": "ひじき豆とひじブロックを追加するMOD。v1.0.2 から「弱いよ」と「弱いよブロック」、v1.0.5 から「iri」と「iriブロック」、v1.1.0 から「ひじウィザー」も入っています。",
       "versions": [
         {
+          "version": "1.1.2-neoforge",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/hijiki/1.21.1-neoforge/hijiki-neoforge-1.21.1-1.1.2-neoforge.jar",
+          "fileName": "hijiki-neoforge-1.21.1-1.1.2-neoforge.jar",
+          "sha256": "60ed04202348e0699094ceefc2f3a963fe2fb32a3e8be3a6582163a20f504cf5",
+          "changelog": "v1.1.2 で、ひじき豆を右クリックしたときに出るものを、モブだけでなくすべてのエンティティ（ほかのMODのものも含む）から選ぶようにしました。エンダードラゴンやウィザー、TNT、雷なども出ます。",
+          "released": "2026-11-22"
+        },
+        {
+          "version": "1.1.2-forge",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/hijiki/1.20.1-forge/hijiki-forge-1.20.1-1.1.2-forge.jar",
+          "fileName": "hijiki-forge-1.20.1-1.1.2-forge.jar",
+          "sha256": "49e565c3f999f45eff0da352c9c0ce96a8086d11f48dafdc414960cff9bf12ef",
+          "changelog": "v1.1.2 で、ひじき豆を右クリックしたときに出るものを、モブだけでなくすべてのエンティティ（ほかのMODのものも含む）から選ぶようにしました。エンダードラゴンやウィザー、TNT、雷なども出ます。",
+          "released": "2026-11-22"
+        },
+        {
           "version": "1.1.1-neoforge",
           "mc": "1.21.1",
           "loader": "neoforge",

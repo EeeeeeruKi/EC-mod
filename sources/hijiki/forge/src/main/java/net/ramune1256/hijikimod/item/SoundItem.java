@@ -10,7 +10,6 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -18,10 +17,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
-/** ひじき豆。右クリックで声が鳴って、目の前にランダムなモブが1体出る。 */
+/** ひじき豆。右クリックで声が鳴って、目の前にランダムなエンティティが1体出る。 */
 public class SoundItem extends Item {
-    /** 出すと危なすぎるボスは候補から外す */
-    private static final List<EntityType<?>> EXCLUDED = List.of(EntityType.ENDER_DRAGON, EntityType.WITHER);
     private static List<EntityType<?>> candidates;
 
     public SoundItem(Properties properties) {
@@ -48,18 +45,22 @@ public class SoundItem extends Item {
         EntityType<?> type = list.get(level.getRandom().nextInt(list.size()));
         Vec3 look = player.getViewVector(1.0F);
         BlockPos pos = BlockPos.containing(player.getX() + look.x * 2.0D, player.getY(), player.getZ() + look.z * 2.0D);
-        type.spawn(level, pos, MobSpawnType.MOB_SUMMONED);
+        try {
+            type.spawn(level, pos, MobSpawnType.MOB_SUMMONED);
+        } catch (Throwable ignored) {
+            // 出すのに失敗するエンティティがあっても、ゲームは止めない
+        }
     }
 
-    /** /summon で出せるモブ（Mob を継承しているもの）を全部集める。他のmodのモブも入る。 */
+    /** /summon で出せるエンティティを全部集める（モブ以外も、他のmodのものも入る）。 */
     private static synchronized List<EntityType<?>> getCandidates(ServerLevel level) {
         if (candidates != null) return candidates;
         List<EntityType<?>> found = new ArrayList<>();
         for (EntityType<?> type : BuiltInRegistries.ENTITY_TYPE) {
-            if (!type.canSummon() || EXCLUDED.contains(type)) continue;
+            if (!type.canSummon()) continue;
             try {
                 Entity test = type.create(level);
-                if (test instanceof Mob) found.add(type);
+                if (test != null) found.add(type);
                 if (test != null) test.discard();
             } catch (Throwable ignored) {
                 // 作るのに失敗するモブは候補に入れない
