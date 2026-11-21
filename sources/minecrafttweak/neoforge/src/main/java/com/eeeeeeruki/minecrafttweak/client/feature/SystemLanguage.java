@@ -30,6 +30,8 @@ import java.util.Locale;
  */
 public final class SystemLanguage {
     private static boolean checkedAtStart;
+    /** 起動時の読み込み（ロード画面）が終わってから言語を切り替えるための印。 */
+    private static boolean pendingApply;
     /** いま開いている言語の画面に足した「システムの言語」の項目。 */
     private static Object addedEntry;
     private static ObjectSelectionList<?> addedList;
@@ -40,6 +42,7 @@ public final class SystemLanguage {
     public static void register() {
         NeoForge.EVENT_BUS.addListener(SystemLanguage::onScreenInit);
         NeoForge.EVENT_BUS.addListener(SystemLanguage::onScreenClosing);
+        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.client.event.ClientTickEvent.Post e) -> onTick());
     }
 
     private static boolean enabled() {
@@ -104,6 +107,18 @@ public final class SystemLanguage {
         return "en_us";
     }
 
+    private static void onTick() {
+        if (!pendingApply) {
+            return;
+        }
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.getOverlay() != null) {
+            return;
+        }
+        pendingApply = false;
+        applySystemLanguage();
+    }
+
     private static void applySystemLanguage() {
         Minecraft mc = Minecraft.getInstance();
         LanguageManager languages = mc.getLanguageManager();
@@ -123,9 +138,9 @@ public final class SystemLanguage {
         Screen screen = event.getScreen();
         if (screen instanceof TitleScreen && !checkedAtStart) {
             checkedAtStart = true;
-            if (following()) {
-                applySystemLanguage();
-            }
+            // ここではまだ起動時の読み込みの途中のことがある。そのときに読み込み直すと文字や絵が壊れるので、
+            // 読み込みが終わってから（onTick で）切り替える
+            pendingApply = following();
         }
         if (!(screen instanceof LanguageSelectScreen) || !enabled()) {
             return;
