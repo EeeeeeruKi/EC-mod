@@ -592,6 +592,26 @@
       "summary": "/tell @ai でささやくと、AI（Google の Gemini か、OpenAI・Ollama・LM Studio などの OpenAI互換API）がささやき返してくれるMOD。頼めばコマンドも実行してくれます。",
       "versions": [
         {
+          "version": "2.4.1",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/callai/1.21.1-neoforge/callai-neoforge-1.21.1-2.4.1.jar",
+          "fileName": "callai-neoforge-1.21.1-2.4.1.jar",
+          "sha256": "f9bdba18f61542ff233e6992a3699280f6dddad752c30acd6e36efcac671152f",
+          "changelog": "/ai model で Tab を押すと、使えるモデルの候補が出るようになりました（APIから「いま使えるモデル」の一覧を取ってきます）。Gemini のモデル名を大文字で打っても、自動で小文字に直すようにしました。OpenAI互換APIで「llama3:8b」のような記号の入ったモデル名も指定できるようにしました。",
+          "released": "2026-11-21"
+        },
+        {
+          "version": "2.4.1",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/callai/1.20.1-forge/callai-2.4.1.jar",
+          "fileName": "callai-2.4.1.jar",
+          "sha256": "8c8d7b8779582784edf4df92b6d2c9882c22a217d7a02029b39328927d308ae0",
+          "changelog": "/ai model で Tab を押すと、使えるモデルの候補が出るようになりました（APIから「いま使えるモデル」の一覧を取ってきます）。Gemini のモデル名を大文字で打っても、自動で小文字に直すようにしました。OpenAI互換APIで「llama3:8b」のような記号の入ったモデル名も指定できるようにしました。",
+          "released": "2026-11-21"
+        },
+        {
           "version": "2.4.0",
           "mc": "1.20.1",
           "loader": "forge",
@@ -787,6 +807,16 @@
       "name": "Call AI（旧 Gemini Tell）",
       "installable": false,
       "versions": [
+        {
+          "version": "2.4.1",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/callai/1.20.1-forge/callai-2.4.1.jar",
+          "fileName": "callai-2.4.1.jar",
+          "sha256": "8c8d7b8779582784edf4df92b6d2c9882c22a217d7a02029b39328927d308ae0",
+          "changelog": "Gemini Tell は Call AI に名前が変わりました。更新すると古い jar は消えます。設定ファイルが新しくなるので、もう一度 /gemini key set でAPIキーを設定してください。",
+          "released": "2026-11-21"
+        },
         {
           "version": "1.8.0",
           "mc": "1.20.1",

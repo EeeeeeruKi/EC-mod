@@ -277,10 +277,11 @@ public class CallAI {
                 // OP: モデル変更
                 .then(Commands.literal("model")
                         .requires(s -> s.hasPermission(2))
-                        .then(Commands.argument("name", StringArgumentType.word())
+                        .then(Commands.argument("name", StringArgumentType.greedyString())
+                                .suggests((ctx, b) -> SharedSuggestionProvider.suggest(ModelList.suggestions(ctx.getSource()), b))
                                 .executes(ctx -> {
-                                    String name = StringArgumentType.getString(ctx, "name");
                                     boolean openai = GeminiChat.useOpenAI();
+                                    String name = ModelList.normalize(StringArgumentType.getString(ctx, "name"), openai);
                                     if (openai) {
                                         GeminiConfig.OPENAI_MODEL.set(name);
                                         GeminiConfig.OPENAI_MODEL.save();
