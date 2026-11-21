@@ -2,6 +2,9 @@ package com.eeeeeeruki.minecrafttweak.mixin;
 
 import com.eeeeeeruki.minecrafttweak.client.feature.ChatImages;
 import net.minecraft.client.GuiMessage;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.ChatScreen;
+import net.minecraft.network.chat.Style;
 import net.minecraft.client.GuiMessageTag;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -16,6 +19,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
 
@@ -50,5 +54,38 @@ public abstract class ChatComponentMixin {
             return 0;
         }
         return graphics.drawString(font, text, x, y, color);
+    }
+
+    @Shadow
+    private double screenToChatX(double x) {
+        throw new AssertionError();
+    }
+
+    @Shadow
+    private double screenToChatY(double y) {
+        throw new AssertionError();
+    }
+
+    @Shadow
+    private int getMessageLineIndexAt(double chatX, double chatY) {
+        throw new AssertionError();
+    }
+
+    /** PicPop 連携: チャットの画像にマウスを乗せると説明が出て、クリックすると画面の中央に大きく表示する。 */
+    @Inject(method = "getClickedComponentStyleAt", at = @At("RETURN"), cancellable = true)
+    private void minecrafttweak$picpopImageStyle(double x, double y, CallbackInfoReturnable<Style> cir) {
+        if (cir.getReturnValue() != null || !(Minecraft.getInstance().screen instanceof ChatScreen)) {
+            return;
+        }
+        double chatX = screenToChatX(x);
+        double chatY = screenToChatY(y);
+        int index = getMessageLineIndexAt(chatX, chatY);
+        if (index < 0 || index >= trimmedMessages.size()) {
+            return;
+        }
+        Style style = ChatImages.picpopStyle(trimmedMessages.get(index).content(), chatX);
+        if (style != null) {
+            cir.setReturnValue(style);
+        }
     }
 }

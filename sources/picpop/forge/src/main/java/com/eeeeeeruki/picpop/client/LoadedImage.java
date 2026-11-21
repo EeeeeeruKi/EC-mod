@@ -8,7 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 import java.util.List;
 
 /** GPUに乗せた画像。GIFはコマが変わるたびにテクスチャを書き換えます。描画スレッド専用です。 */
-final class LoadedImage {
+final class LoadedImage implements ShownImage {
     private static int counter = 0;
 
     final ResourceLocation id;
@@ -44,6 +44,22 @@ final class LoadedImage {
         }
         reupload();
         Minecraft.getInstance().getTextureManager().register(id, texture);
+    }
+
+    @Override
+    public ResourceLocation frame(long now) {
+        tick(now);
+        return id;
+    }
+
+    @Override
+    public int width() {
+        return width;
+    }
+
+    @Override
+    public int height() {
+        return height;
     }
 
     static LoadedImage create(ImageLoader.Decoded d) {

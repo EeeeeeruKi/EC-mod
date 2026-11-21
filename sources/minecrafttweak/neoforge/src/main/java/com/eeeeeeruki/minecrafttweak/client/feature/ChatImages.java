@@ -19,11 +19,13 @@ import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.FormattedCharSink;
+import net.neoforged.fml.ModList;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ScreenEvent;
 import net.neoforged.neoforge.common.NeoForge;
@@ -799,5 +801,67 @@ public final class ChatImages {
         INCOMING.clear();
         REQUESTED.clear();
         pendingFile = null;
+    }
+
+    // ---------------------------------------------------------------- PicPop 連携
+
+    private static Boolean picpopLoaded;
+
+    /** PicPop（画像を画面に大きく出すmod）が入っているか。 */
+    public static boolean picpopLoaded() {
+        if (picpopLoaded == null) {
+            try {
+                picpopLoaded = ModList.get().isLoaded("picpop");
+            } catch (Exception e) {
+                picpopLoaded = false;
+            }
+        }
+        return picpopLoaded;
+    }
+
+    /**
+     * PicPop 連携: チャットの画像の上にマウスがあるときの文字の形（ChatComponentMixin から呼ぶ）。
+     * クリックすると PicPop の /imageview で画面の中央に大きく表示する。PicPop が無いときは null。
+     */
+    public static Style picpopStyle(FormattedCharSequence text, double chatX) {
+        if (!enabled() || !picpopLoaded() || !(text instanceof ImageLine line)) {
+            return null;
+        }
+        Img img = line.img;
+        if (img.state != LoadState.READY || line.dispWidth <= 0 || chatX < 0 || chatX > line.dispWidth) {
+            return null;
+        }
+        String arg;
+        if (img.key.startsWith("url:")) {
+            arg = img.key.substring(4);
+        } else if (img.key.startsWith("id:")) {
+            arg = "tweek:" + img.key.substring(3);
+        } else {
+            return null;
+        }
+        return Style.EMPTY
+                .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/imageview " + arg))
+                .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.translatable("minecrafttweak.chat_images.picpop")));
+    }
+
+    /** PicPop 連携: このリンクの画像をチャットの中に表示するか（表示するなら PicPop はボタンを付けない）。 */
+    public static boolean showsLinkInChat(String url) {
+        if (!enabled() || url == null || !isImageUrl(url)) {
+            return false;
+        }
+        try {
+            return ChatImageFeature.INSTANCE.loadLinks.get();
+        } catch (Exception e) {
+            return true;
+        }
+    }
+
+    /** PicPop 連携: ファイルで送られた画像のコマ {ResourceLocation[] コマ, int[] 待ち時間(ms), 幅, 高さ}。まだ無ければ null。 */
+    public static Object[] picpopFrames(String id) {
+        Img img = CACHE.get("id:" + id);
+        if (img == null || img.state != LoadState.READY || img.frames.length == 0) {
+            return null;
+        }
+        return new Object[]{img.frames.clone(), img.delays.clone(), img.width, img.height};
     }
 }

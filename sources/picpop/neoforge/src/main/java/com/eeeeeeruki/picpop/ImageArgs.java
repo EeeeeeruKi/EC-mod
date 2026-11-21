@@ -31,7 +31,7 @@ public record ImageArgs(String url, Align.H h, Align.V v, int seconds, int size)
 
     public static ImageArgs parse(String input) throws CommandSyntaxException {
         String[] t = input.trim().split("\\s+");
-        if (t.length == 0 || t[0].isEmpty() || !isHttpUrl(t[0])) throw BAD_URL.create();
+        if (t.length == 0 || t[0].isEmpty() || !(isHttpUrl(t[0]) || isTweekRef(t[0]))) throw BAD_URL.create();
         Align.H h = null;
         Align.V v = null;
         int seconds = -1, size = -1;
@@ -71,6 +71,13 @@ public record ImageArgs(String url, Align.H h, Align.V v, int seconds, int size)
         } catch (NumberFormatException e) {
             return null;
         }
+    }
+
+    /** minEcraft twEEk でファイルとして送られた画像（tweek:番号） */
+    public static boolean isTweekRef(String s) {
+        if (!s.startsWith("tweek:")) return false;
+        String id = s.substring(6);
+        return id.length() >= 4 && id.length() <= 40 && id.chars().allMatch(c -> (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f'));
     }
 
     public static boolean isHttpUrl(String s) {

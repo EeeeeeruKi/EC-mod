@@ -242,6 +242,7 @@
   "minecrafttweak.chat_images.error.read": "ファイルを読み込めませんでした。",
   "minecrafttweak.chat_images.error.bad_link": "https:// か http:// で始まるリンクを入れてください。",
   "minecrafttweak.chat_images.error.too_long": "チャットの文字数（256文字）を超えてしまいます。",
+  "minecrafttweak.chat_images.picpop": "クリックすると、画面の中央に大きく表示します（PicPop）",
   "minecrafttweak.chat_images.loading": "画像を読み込んでいます…",
   "minecrafttweak.chat_images.failed": "画像を表示できませんでした（%s）",
   "minecrafttweak.chat_images.reason.http": "HTTP %s",

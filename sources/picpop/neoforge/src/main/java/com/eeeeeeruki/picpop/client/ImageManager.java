@@ -25,7 +25,7 @@ public final class ImageManager {
 
     private record Slot(Align.H h, Align.V v) {}
 
-    private record Display(String url, LoadedImage image, int sizePercent, long start, long end) {}
+    private record Display(String url, ShownImage image, int sizePercent, long start, long end) {}
 
     private static final Map<Slot, Display> DISPLAYS = new HashMap<>();
     private static final Map<Slot, Integer> GENERATION = new HashMap<>();
@@ -41,6 +41,16 @@ public final class ImageManager {
         int size = a.size() > 0 ? a.size()
                 : (a.h() == Align.H.CENTER && a.v() == Align.V.CENTER ? PicPopConfig.CENTER_SIZE.get() : PicPopConfig.CORNER_SIZE.get());
 
+        if (ImageArgs.isTweekRef(a.url())) {
+            ExternalImage ext = TweekCompat.frames(a.url().substring(6));
+            if (ext != null) {
+                put(slot, a.url(), ext, size, seconds);
+            } else if (mc.player != null) {
+                mc.player.displayClientMessage(Component.translatable("picpop.error.load",
+                        Component.translatable("picpop.error.tweek")).withStyle(ChatFormatting.RED), false);
+            }
+            return;
+        }
         LoadedImage cached = CACHE.get(a.url());
         if (cached != null) {
             put(slot, a.url(), cached, size, seconds);
@@ -79,7 +89,7 @@ public final class ImageManager {
         }));
     }
 
-    private static void put(Slot slot, String url, LoadedImage img, int size, int seconds) {
+    private static void put(Slot slot, String url, ShownImage img, int size, int seconds) {
         long now = System.currentTimeMillis();
         long end = seconds == 0 ? Long.MAX_VALUE : now + seconds * 1000L;
         DISPLAYS.put(slot, new Display(url, img, size, now, end));
@@ -125,13 +135,13 @@ public final class ImageManager {
         for (Map.Entry<Slot, Display> e : DISPLAYS.entrySet()) {
             Slot s = e.getKey();
             Display d = e.getValue();
-            LoadedImage img = d.image;
-            img.tick(now);
+            ShownImage img = d.image;
+            int iw = img.width(), ih = img.height();
 
             double maxW = sw * d.sizePercent / 100.0, maxH = sh * d.sizePercent / 100.0;
-            double scale = Math.min(maxW / img.width, maxH / img.height);
-            int w = Math.max(1, (int) Math.round(img.width * scale));
-            int h = Math.max(1, (int) Math.round(img.height * scale));
+            double scale = Math.min(maxW / iw, maxH / ih);
+            int w = Math.max(1, (int) Math.round(iw * scale));
+            int h = Math.max(1, (int) Math.round(ih * scale));
             int bottomMargin = (s.h == Align.H.CENTER && hotbar) ? 52 : MARGIN; // ホットバーと重ならないように
             int x = switch (s.h) {
                 case LEFT -> MARGIN;
@@ -149,7 +159,7 @@ public final class ImageManager {
             if (age < FADE_IN) alpha = age / (float) FADE_IN;
             if (d.end != Long.MAX_VALUE && d.end - now < FADE_OUT) alpha = Math.min(alpha, (d.end - now) / (float) FADE_OUT);
             RenderSystem.setShaderColor(1f, 1f, 1f, Math.max(0f, Math.min(1f, alpha)));
-            g.blit(img.id, x, y, w, h, 0f, 0f, img.width, img.height, img.width, img.height);
+            g.blit(img.frame(now), x, y, w, h, 0f, 0f, iw, ih, iw, ih);
         }
         RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
         RenderSystem.disableBlend();

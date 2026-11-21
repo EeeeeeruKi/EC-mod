@@ -9,6 +9,7 @@
   "picpop.error.http": "The server returned an error (HTTP %s)",
   "picpop.error.format": "Unsupported format (PNG, JPEG, GIF and BMP are supported)",
   "picpop.error.network": "Connection failed (%s)",
+  "picpop.error.tweek": "The minEcraft twEEk image has not been loaded yet. Try again after it appears in chat",
   "picpop.command.shown": "Showed the image to %s player(s)",
   "picpop.command.missing": "%s player(s) do not have PicPop installed and could not see it",
   "picpop.command.cleared": "Cleared images for %s player(s)",

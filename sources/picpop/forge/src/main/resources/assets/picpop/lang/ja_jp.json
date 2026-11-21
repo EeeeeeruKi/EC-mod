@@ -9,6 +9,7 @@
   "picpop.error.http": "サーバーからエラーが返されました（HTTP %s）",
   "picpop.error.format": "対応していない形式です（PNG・JPEG・GIF・BMP に対応しています）",
   "picpop.error.network": "通信に失敗しました（%s）",
+  "picpop.error.tweek": "minEcraft twEEk の画像がまだ読み込まれていません。チャットに画像が表示されてから、もう一度押してください",
   "picpop.command.shown": "%s 人に画像を表示しました",
   "picpop.command.missing": "%s 人は PicPop が入っていないため表示できませんでした",
   "picpop.command.cleared": "%s 人の画像を消しました",

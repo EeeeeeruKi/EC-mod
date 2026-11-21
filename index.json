@@ -1682,6 +1682,26 @@
       "summary": "Quark を前提MODにして、Quark にない小さな改善をたくさん詰め込んでいくためのMODです。機能は最初はすべてオフで、ひとつずつオンにできます。このMOD・Quark・バニラ・Sodium の設定を、短い設定コードでまとめてやりとりできます。",
       "versions": [
         {
+          "version": "1.13.0",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/minecrafttweak/1.21.1-neoforge/minecrafttweak-neoforge-1.21.1-1.13.0.jar",
+          "fileName": "minecrafttweak-neoforge-1.21.1-1.13.0.jar",
+          "sha256": "f07b2ef1e25dc9ae4966f5f58d17a1789056eef2369001d35bd014517d9ad7fe",
+          "changelog": "PicPop と連携しました。PicPop が入っていると、「チャットの画像」でチャットに表示された画像にマウスを乗せると説明が出て、クリックすると画面の中央に大きく表示されます。",
+          "released": "2026-11-21"
+        },
+        {
+          "version": "1.13.0",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/minecrafttweak/1.20.1-forge/minecrafttweak-forge-1.20.1-1.13.0.jar",
+          "fileName": "minecrafttweak-forge-1.20.1-1.13.0.jar",
+          "sha256": "e09799a85facf7b1dcf7d46fe36650542c99918a6339766b40a640ec77bdfe28",
+          "changelog": "PicPop と連携しました。PicPop が入っていると、「チャットの画像」でチャットに表示された画像にマウスを乗せると説明が出て、クリックすると画面の中央に大きく表示されます。",
+          "released": "2026-11-21"
+        },
+        {
           "version": "1.12.0",
           "mc": "1.21.1",
           "loader": "neoforge",
@@ -2027,6 +2047,26 @@
       "name": "PicPop",
       "summary": "画像やGIFを画面に表示するMOD。/image コマンドで好きなプレイヤーの画面の左・中・右／下・中・上に画像を出せます。チャットに流れた画像リンクはボタン1つで画面の中央に表示できます。",
       "versions": [
+        {
+          "version": "1.1.0",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/picpop/1.21.1-neoforge/picpop-neoforge-1.21.1-1.1.0.jar",
+          "fileName": "picpop-neoforge-1.21.1-1.1.0.jar",
+          "sha256": "dab2262a09bef3cdafb4bd59ac96f69663ef881ddecc918a5b9453075b1828f6",
+          "changelog": "minEcraft twEEk の「チャットの画像」と連携しました。twEEk がチャットの中に表示した画像（リンクも、ファイルで送られた画像も）をクリックすると、画面の中央に大きく表示します。twEEk がチャットに表示するリンクには［画像を表示］ボタンを付けないようにしました。/imageview tweek:番号 でも開けます。",
+          "released": "2026-11-21"
+        },
+        {
+          "version": "1.1.0",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/picpop/1.20.1-forge/picpop-forge-1.20.1-1.1.0.jar",
+          "fileName": "picpop-forge-1.20.1-1.1.0.jar",
+          "sha256": "8b64ecdac14b56c08330c17df13f113e9a827a208e090b0be584d2711282f255",
+          "changelog": "minEcraft twEEk の「チャットの画像」と連携しました。twEEk がチャットの中に表示した画像（リンクも、ファイルで送られた画像も）をクリックすると、画面の中央に大きく表示します。twEEk がチャットに表示するリンクには［画像を表示］ボタンを付けないようにしました。/imageview tweek:番号 でも開けます。",
+          "released": "2026-11-21"
+        },
         {
           "version": "1.0.0",
           "mc": "1.21.1",

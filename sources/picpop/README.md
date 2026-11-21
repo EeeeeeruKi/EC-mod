@@ -8,3 +8,4 @@
 - チャットに流れた画像リンクには ［画像を表示］ ボタンが付き、押すと中央に表示します
 
 ビルド: `forge/`（Java 17）、`neoforge/`（Java 21）でそれぞれ `gradle build`。
+- minEcraft twEEk（1.13.0 以降）と連携: twEEk の「チャットの画像」でチャットに出た画像をクリックすると、画面の中央に大きく表示します（`/imageview tweek:<番号>`）

@@ -242,6 +242,7 @@
   "minecrafttweak.chat_images.error.read": "Could not read the file.",
   "minecrafttweak.chat_images.error.bad_link": "Enter a link that starts with https:// or http://.",
   "minecrafttweak.chat_images.error.too_long": "This would be longer than the chat limit (256 characters).",
+  "minecrafttweak.chat_images.picpop": "Click to show it large in the center of the screen (PicPop)",
   "minecrafttweak.chat_images.loading": "Loading image…",
   "minecrafttweak.chat_images.failed": "Could not show the image (%s)",
   "minecrafttweak.chat_images.reason.http": "HTTP %s",

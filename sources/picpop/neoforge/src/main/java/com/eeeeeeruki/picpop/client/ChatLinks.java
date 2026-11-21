@@ -32,7 +32,7 @@ final class ChatLinks {
         boolean all = PicPopConfig.CHAT_BUTTON_ALL_LINKS.get();
         while (m.find() && urls.size() < 3) {
             String u = trim(m.group());
-            if (ImageArgs.isHttpUrl(u) && (all || looksLikeImage(u))) urls.add(u);
+            if (ImageArgs.isHttpUrl(u) && (all || looksLikeImage(u)) && !TweekCompat.showsLinkInChat(u)) urls.add(u);
         }
         if (urls.isEmpty()) return null;
         MutableComponent out = message.copy();
