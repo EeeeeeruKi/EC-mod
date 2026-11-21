@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "hijiki:yowaiyo_block"
+    }
+  ],
+  "result": {
+    "item": "hijiki:yowaiyo",
+    "count": 9
+  }
+}

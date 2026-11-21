@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "###",
+    "###",
+    "###"
+  ],
+  "key": {
+    "#": {
+      "item": "hijiki:hijiki"
+    }
+  },
+  "result": {
+    "item": "hijiki:hijiki_block"
+  }
+}

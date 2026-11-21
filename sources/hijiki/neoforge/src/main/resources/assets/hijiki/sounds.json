@@ -1,0 +1,10 @@
+{
+  "hijiki_voice": {
+    "sounds": [
+      {
+        "name": "hijiki:hijiki_voice",
+        "stream": false
+      }
+    ]
+  }
+}

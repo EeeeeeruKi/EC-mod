@@ -400,6 +400,26 @@
       "summary": "ひじき豆とひじブロックを追加するMOD。v1.0.2 から「弱いよ」と「弱いよブロック」、v1.0.5 から「iri」と「iriブロック」、v1.1.0 から「ひじウィザー」も入っています。",
       "versions": [
         {
+          "version": "1.1.1-neoforge",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/hijiki/1.21.1-neoforge/hijiki-neoforge-1.21.1-1.1.1-neoforge.jar",
+          "fileName": "hijiki-neoforge-1.21.1-1.1.1-neoforge.jar",
+          "sha256": "31e2a50e42848c3ad903455be9487ce4c52051b77bf8a451f70ae154e9d24237",
+          "changelog": "v1.1.1 で、ひじき豆を右クリックすると目の前にランダムなモブが1体出るようにしました（エンダードラゴンとウィザーは出ません）。ほかに、ひじウィザーの位置のずれ、Forge 1.20.1 版で弱体化のレベルが129以上だとワールドに入り直したときに壊れる不具合、iri をオフハンドで使ったときに反対の手を振る不具合を直しました。",
+          "released": "2026-11-21"
+        },
+        {
+          "version": "1.1.1-forge",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/hijiki/1.20.1-forge/hijiki-forge-1.20.1-1.1.1-forge.jar",
+          "fileName": "hijiki-forge-1.20.1-1.1.1-forge.jar",
+          "sha256": "0a1c0a29891e34a744f4b237d5aaec334bb146ba21a88c62290ab6c225484f8c",
+          "changelog": "v1.1.1 で、ひじき豆を右クリックすると目の前にランダムなモブが1体出るようにしました（エンダードラゴンとウィザーは出ません）。ほかに、ひじウィザーの位置のずれ、Forge 1.20.1 版で弱体化のレベルが129以上だとワールドに入り直したときに壊れる不具合、iri をオフハンドで使ったときに反対の手を振る不具合を直しました。",
+          "released": "2026-11-21"
+        },
+        {
           "version": "1.1.0-neoforge",
           "mc": "1.21.1",
           "loader": "neoforge",

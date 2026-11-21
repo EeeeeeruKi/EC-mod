@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": ["iri", "ioi", "iri"],
+  "key": {
+    "i": { "item": "minecraft:netherite_ingot" },
+    "r": { "item": "hijiki:yowaiyo" },
+    "o": { "item": "hijiki:hijiki_block" }
+  },
+  "result": { "id": "hijiki:iri" }
+}

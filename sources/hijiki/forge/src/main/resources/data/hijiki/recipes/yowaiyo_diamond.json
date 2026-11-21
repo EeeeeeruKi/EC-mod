@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": ["aba", "bcb", "aba"],
+  "key": {
+    "a": { "item": "minecraft:diamond" },
+    "b": { "item": "hijiki:hijiki" },
+    "c": { "item": "hijiki:hijiki_block" }
+  },
+  "result": { "item": "hijiki:yowaiyo" }
+}

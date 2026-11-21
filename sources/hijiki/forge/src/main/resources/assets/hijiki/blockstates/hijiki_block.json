@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "hijiki:block/hijiki_block"
+    }
+  }
+}

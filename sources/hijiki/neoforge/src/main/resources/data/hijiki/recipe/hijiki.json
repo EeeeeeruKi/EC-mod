@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "hijiki:hijiki_block"
+    }
+  ],
+  "result": {
+    "id": "hijiki:hijiki",
+    "count": 9
+  }
+}
