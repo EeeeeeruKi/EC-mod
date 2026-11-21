@@ -1,0 +1,27 @@
+modLoader="javafml"
+loaderVersion="${loader_version_range}"
+license="${mod_license}"
+
+[[mods]]
+modId="${mod_id}"
+version="${mod_version}"
+displayName="${mod_name}"
+authors="${mod_authors}"
+description='''画像やGIFを画面に表示するmodです。
+/image <プレイヤー> <URL> [left|center|right] [down|center|up] [秒数] [大きさ%] で、指定したプレイヤーの画面の好きな位置に画像を出せます（サーバーにも入れてください）。
+チャットに画像のリンクが流れると［画像を表示］ボタンが付き、押すと画面の中央に表示されます。/imageview <URL> で自分だけに表示することもできます。'''
+displayTest="IGNORE_ALL_VERSION"
+
+[[dependencies.${mod_id}]]
+    modId="forge"
+    mandatory=true
+    versionRange="${forge_version_range}"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.${mod_id}]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"

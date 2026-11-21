@@ -2022,6 +2022,32 @@
           "released": "2026-11-17"
         }
       ]
+    },
+    "picpop": {
+      "name": "PicPop",
+      "summary": "画像やGIFを画面に表示するMOD。/image コマンドで好きなプレイヤーの画面の左・中・右／下・中・上に画像を出せます。チャットに流れた画像リンクはボタン1つで画面の中央に表示できます。",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/picpop/1.21.1-neoforge/picpop-neoforge-1.21.1-1.0.0.jar",
+          "fileName": "picpop-neoforge-1.21.1-1.0.0.jar",
+          "sha256": "1f4cb416e26b567ccd4010f9f2f20e747c86bd2111520bf2846efa2a13e3f936",
+          "changelog": "最初の版です。/image コマンド、/imageview コマンド、チャットの［画像を表示］ボタン、GIFアニメーションの表示に対応しています。",
+          "released": "2026-11-21"
+        },
+        {
+          "version": "1.0.0",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/picpop/1.20.1-forge/picpop-forge-1.20.1-1.0.0.jar",
+          "fileName": "picpop-forge-1.20.1-1.0.0.jar",
+          "sha256": "efd12f7cf616e275293fa965d8522ef56922c47c5cf5a1e1bb2119fc88c72508",
+          "changelog": "最初の版です。/image コマンド、/imageview コマンド、チャットの［画像を表示］ボタン、GIFアニメーションの表示に対応しています。",
+          "released": "2026-11-21"
+        }
+      ]
     }
   }
 }
