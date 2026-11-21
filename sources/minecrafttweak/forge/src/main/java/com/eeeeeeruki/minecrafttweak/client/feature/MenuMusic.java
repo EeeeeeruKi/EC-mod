@@ -84,7 +84,19 @@ public final class MenuMusic {
     }
 
     private static Path cacheDir() {
-        return Minecraft.getInstance().gameDirectory.toPath().resolve("config").resolve("minecrafttweak").resolve("music_cache");
+        // ダウンロードした曲は設定ではないので、config ではなく cache/minecrafttweak/music に置く（前の場所からは移す）
+        Path game = Minecraft.getInstance().gameDirectory.toPath();
+        Path dir = game.resolve("cache").resolve("minecrafttweak").resolve("music");
+        Path old = game.resolve("config").resolve("minecrafttweak").resolve("music_cache");
+        try {
+            if (java.nio.file.Files.isDirectory(old) && !java.nio.file.Files.exists(dir)) {
+                java.nio.file.Files.createDirectories(dir.getParent());
+                java.nio.file.Files.move(old, dir);
+            }
+        } catch (java.io.IOException ignored) {
+            // 移せなければ新しい場所でダウンロードし直す
+        }
+        return dir;
     }
 
     private static void startLoad(String source) {

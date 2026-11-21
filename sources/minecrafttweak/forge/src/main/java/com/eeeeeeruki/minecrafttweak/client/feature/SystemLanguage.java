@@ -55,8 +55,22 @@ public final class SystemLanguage {
 
     // ------------------------------------------------------------------ 「合わせる」の保存
 
+    /** 設定はまとめて config/minecrafttweak/ に置く（前の場所 config/minecrafttweak-system-language.txt からは移す）。 */
     private static Path stateFile() {
-        return Minecraft.getInstance().gameDirectory.toPath().resolve("config").resolve("minecrafttweak-system-language.txt");
+        Path config = Minecraft.getInstance().gameDirectory.toPath().resolve("config");
+        Path file = config.resolve("minecrafttweak").resolve("system_language.txt");
+        Path old = config.resolve("minecrafttweak-system-language.txt");
+        try {
+            if (Files.exists(old) && !Files.exists(file)) {
+                Files.createDirectories(file.getParent());
+                Files.move(old, file);
+            } else if (Files.exists(old)) {
+                Files.delete(old);
+            }
+        } catch (IOException ignored) {
+            // 移せなければそのまま
+        }
+        return file;
     }
 
     private static boolean following() {

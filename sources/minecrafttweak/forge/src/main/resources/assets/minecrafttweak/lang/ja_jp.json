@@ -157,7 +157,7 @@
   "minecrafttweak.feature.custom_menu_music": "カスタムメニューBGM",
   "minecrafttweak.feature.custom_menu_music.desc": "タイトル画面などのメニューで、URL かファイルの曲を流します（.ogg・.mp3・.wav に対応）。詳細設定で曲の場所を入れるか、「参照」でファイルを選んでください。",
   "minecrafttweak.feature.custom_menu_music.url": "曲のURL・ファイル",
-  "minecrafttweak.feature.custom_menu_music.url.desc": ".ogg・.mp3・.wav のファイルのURL（https://～）か、パソコンの中のファイルの場所です。「参照」でファイルを選べます。URLの曲は1回ダウンロードしたら config/minecrafttweak/music_cache に保存して、次からはそれを使います。",
+  "minecrafttweak.feature.custom_menu_music.url.desc": ".ogg・.mp3・.wav のファイルのURL（https://～）か、パソコンの中のファイルの場所です。「参照」でファイルを選べます。URLの曲は1回ダウンロードしたら cache/minecrafttweak/music に保存して、次からはそれを使います。",
   "minecrafttweak.feature.custom_menu_music.volume": "音量（%）",
   "minecrafttweak.feature.custom_menu_music.volume.desc": "音楽の音量の設定に、さらにこの割合をかけます。",
   "minecrafttweak.feature.custom_menu_music.loop": "くり返す",

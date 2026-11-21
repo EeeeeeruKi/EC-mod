@@ -43,6 +43,16 @@ Quark にある機能は入れません。機能は最初はすべてオフで�
 
 イベントの処理の最初で `isEnabled()` を確認すれば、設定画面でオフにした瞬間から止まります。
 
+## 設定ファイルの場所
+
+設定はすべて `config` フォルダ（ランチャーが「MODの設定」として扱う場所）に置きます。
+
+- `config/minecrafttweak.toml` … 機能のオン/オフと詳細設定
+- `config/minecrafttweak/system_language.txt` … 「システムの言語」に合わせるかどうか
+- `config/minecrafttweak/mod_safety.json` … modの安全チェックの前回の結果
+
+ダウンロードしたメニューBGMの曲は設定ではないので、`cache/minecrafttweak/music` に置きます。
+
 ## 設定コード（インポート/エクスポート）
 
 「項目番号-値」を「,」でつないだ文字列で、まとめて設定できます。

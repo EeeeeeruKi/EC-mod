@@ -157,7 +157,7 @@
   "minecrafttweak.feature.custom_menu_music": "Custom Menu Music",
   "minecrafttweak.feature.custom_menu_music.desc": "Plays your own music (.ogg, .mp3 or .wav, from a URL or a file) on the menu screens. Set the location in the details, or press Browse to pick a file.",
   "minecrafttweak.feature.custom_menu_music.url": "Music URL / file",
-  "minecrafttweak.feature.custom_menu_music.url.desc": "A URL (https://...) or a file path of an .ogg, .mp3 or .wav file. Press Browse to pick a file. Downloaded music is kept in config/minecrafttweak/music_cache.",
+  "minecrafttweak.feature.custom_menu_music.url.desc": "A URL (https://...) or a file path of an .ogg, .mp3 or .wav file. Press Browse to pick a file. Downloaded music is kept in cache/minecrafttweak/music.",
   "minecrafttweak.feature.custom_menu_music.volume": "Volume (%)",
   "minecrafttweak.feature.custom_menu_music.volume.desc": "Multiplied by the music volume.",
   "minecrafttweak.feature.custom_menu_music.loop": "Loop",

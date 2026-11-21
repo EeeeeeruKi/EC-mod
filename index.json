@@ -1792,6 +1792,26 @@
       "summary": "Quark を前提MODにして、Quark にない小さな改善をたくさん詰め込んでいくためのMODです。機能は最初はすべてオフで、ひとつずつオンにできます。このMOD・Quark・バニラ・Sodium の設定を、短い設定コードでまとめてやりとりできます。",
       "versions": [
         {
+          "version": "1.16.5",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/minecrafttweak/1.21.1-neoforge/minecrafttweak-neoforge-1.21.1-1.16.5.jar",
+          "fileName": "minecrafttweak-neoforge-1.21.1-1.16.5.jar",
+          "sha256": "21f6185e982dede9ae472e5e4a11305694f6d0ec141780423c3b12a9c166b26f",
+          "changelog": "設定ファイルの置き場所を整理しました。設定はすべて config/minecrafttweak.toml と config/minecrafttweak/ にまとめ、ダウンロードしたメニューBGMの曲（設定ではないもの）は cache/minecrafttweak/music に移しました。前の場所にあるファイルは自動で移します。",
+          "released": "2026-11-21"
+        },
+        {
+          "version": "1.16.5",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/minecrafttweak/1.20.1-forge/minecrafttweak-forge-1.20.1-1.16.5.jar",
+          "fileName": "minecrafttweak-forge-1.20.1-1.16.5.jar",
+          "sha256": "b522da1fdd3448d2af74913ebd873a813d64f406381efb9aa83cd5a2cc617d29",
+          "changelog": "設定ファイルの置き場所を整理しました。設定はすべて config/minecrafttweak.toml と config/minecrafttweak/ にまとめ、ダウンロードしたメニューBGMの曲（設定ではないもの）は cache/minecrafttweak/music に移しました。前の場所にあるファイルは自動で移します。",
+          "released": "2026-11-21"
+        },
+        {
           "version": "1.16.4",
           "mc": "1.21.1",
           "loader": "neoforge",
