@@ -142,7 +142,7 @@
   "minecrafttweak.config.copy_client": "Video Code",
   "minecrafttweak.config.copy_client.tooltip": "Copy the vanilla, Sodium and Sodium Extra settings that differ from the defaults.",
   "minecrafttweak.config.compress": "Compress",
-  "minecrafttweak.config.compress.tooltip": "When on, copied codes are compressed into short text made of kanji characters (MT3.~). Paste them as is to import.",
+  "minecrafttweak.config.compress.tooltip": "When on, copied codes are compressed into short text made of kanji characters (〆~). Paste them as is to import.",
   "minecrafttweak.config.reset_first": "Reset",
   "minecrafttweak.config.reset_first.tooltip": "When on, every setting on the side the code covers (mod / video) is reset to its default before importing.",
   "minecrafttweak.config.copied_mod": "Copied the mod code (%s characters).",

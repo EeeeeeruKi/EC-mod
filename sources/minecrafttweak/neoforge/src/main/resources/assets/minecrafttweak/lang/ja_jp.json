@@ -142,7 +142,7 @@
   "minecrafttweak.config.copy_client": "描画のコード",
   "minecrafttweak.config.copy_client.tooltip": "バニラ・Sodium・Sodium Extra の設定のうち、初期値と違うものだけをコードにしてコピーします。",
   "minecrafttweak.config.compress": "圧縮",
-  "minecrafttweak.config.compress.tooltip": "オンにすると、コピーするコードを短い漢字の文字（MT3.～）にします。読み込むときはそのまま貼れます。",
+  "minecrafttweak.config.compress.tooltip": "オンにすると、コピーするコードを短い漢字の文字（〆～）にします。読み込むときはそのまま貼れます。",
   "minecrafttweak.config.reset_first": "初期化",
   "minecrafttweak.config.reset_first.tooltip": "オンにすると、インポートの前に、コードに入っている側（MOD / 描画）の設定をすべて初期値に戻します。初期値と違う設定だけのコードを、そのとおりに再現したいときに使います。",
   "minecrafttweak.config.copied_mod": "MODのコードをコピーしました（%s 文字）。",

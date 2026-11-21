@@ -23,7 +23,7 @@ import java.util.regex.Pattern;
  * コードは2つに分かれる。
  * - MODのコード … このMODの機能と Quark（サーバーでも使える設定）
  * - 描画のコード … バニラ・Sodium・Sodium Extra（クライアントの設定）
- * 「MT3.」（前の形の「MT2.」「MT1.」も）で始まるものは圧縮コード。中身は普通のコード。
+ * 「〆」（前の形の「MT3.」「MT2.」「MT1.」も）で始まるものは圧縮コード。中身は普通のコード。
  */
 public final class TextSettings {
     private static final List<CodeProvider> PROVIDERS = new ArrayList<>();
