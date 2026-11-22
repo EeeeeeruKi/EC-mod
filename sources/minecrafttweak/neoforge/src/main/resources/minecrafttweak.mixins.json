@@ -12,6 +12,7 @@
     "defaultRequire": 0
   },
   "mixins": [
-    "mekanism.EnergyCubeContainerMixin"
+    "mekanism.EnergyCubeContainerMixin",
+    "compat.DeepAetherEotsGoalMixin"
   ]
 }

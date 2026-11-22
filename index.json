@@ -1832,6 +1832,26 @@
       "summary": "Quark を前提MODにして、Quark にない小さな改善をたくさん詰め込んでいくためのMODです。機能は最初はすべてオフで、ひとつずつオンにできます。このMOD・Quark・バニラ・Sodium の設定を、短い設定コードでまとめてやりとりできます。",
       "versions": [
         {
+          "version": "1.16.6",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/minecrafttweak/1.21.1-neoforge/minecrafttweak-neoforge-1.21.1-1.16.6.jar",
+          "fileName": "minecrafttweak-neoforge-1.21.1-1.16.6.jar",
+          "sha256": "2703e7b5997683ad0871551a30416cf20a6758fddadba44c67fce147dc172159",
+          "changelog": "Deep Aether（1.21.1-1.1.5.1）のボス「EOTS」と戦っているときに、攻撃の途中で狙う相手がいなくなるとサーバーが止まる（ワールドに入るたびにクラッシュする）不具合をよけるようにしました。",
+          "released": "2026-11-22"
+        },
+        {
+          "version": "1.16.6",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/minecrafttweak/1.20.1-forge/minecrafttweak-forge-1.20.1-1.16.6.jar",
+          "fileName": "minecrafttweak-forge-1.20.1-1.16.6.jar",
+          "sha256": "e3d394448ed9f6baa1f3cc8075560268fb0cd8fdb279a3cdf2bfca4851442c88",
+          "changelog": "NeoForge 版の修正（Deep Aether のクラッシュよけ）に合わせて版を上げました。Forge 版の動きは変わりません。",
+          "released": "2026-11-22"
+        },
+        {
           "version": "1.16.5",
           "mc": "1.21.1",
           "loader": "neoforge",
