@@ -1,0 +1,701 @@
+{
+"mekanism:advanced_universal_cable": null,
+"mekanism:antiprotonic_nucleosynthesizer": [
+[
+0,
+0,
+0
+],
+[
+16,
+16,
+16.008
+]
+],
+"mekanism:basic_bin": [
+[
+0,
+0,
+-0.02
+],
+[
+16,
+16,
+16
+]
+],
+"mekanism:basic_chemical_tank": [
+[
+3,
+0,
+3
+],
+[
+13,
+16,
+13
+]
+],
+"mekanism:basic_energy_cube": null,
+"mekanism:basic_enriching_factory": [
+[
+0,
+0,
+0
+],
+[
+16,
+16,
+16
+]
+],
+"mekanism:basic_fluid_tank": [
+[
+2,
+0,
+2
+],
+[
+14,
+16,
+14
+]
+],
+"mekanism:basic_logistical_transporter": null,
+"mekanism:basic_mechanical_pipe": null,
+"mekanism:basic_pressurized_tube": null,
+"mekanism:basic_thermodynamic_conductor": null,
+"mekanism:basic_universal_cable": null,
+"mekanism:chargepad": [
+[
+0,
+0,
+0
+],
+[
+16,
+12,
+16
+]
+],
+"mekanism:chemical_crystallizer": [
+[
+-0.01,
+0,
+0
+],
+[
+16.008,
+16,
+16
+]
+],
+"mekanism:chemical_dissolution_chamber": [
+[
+-0.01,
+0,
+0
+],
+[
+16.01,
+16,
+16
+]
+],
+"mekanism:chemical_infuser": [
+[
+0,
+0,
+0
+],
+[
+16,
+16,
+16
+]
+],
+"mekanism:chemical_injection_chamber": [
+[
+0,
+0,
+0
+],
+[
+16,
+16,
+16
+]
+],
+"mekanism:chemical_oxidizer": [
+[
+0,
+0,
+0
+],
+[
+16,
+16,
+16
+]
+],
+"mekanism:chemical_washer": [
+[
+0,
+0,
+0
+],
+[
+16,
+16,
+16
+]
+],
+"mekanism:combiner": [
+[
+0,
+0,
+0
+],
+[
+16,
+16,
+16
+]
+],
+"mekanism:creative_energy_cube": null,
+"mekanism:crusher": [
+[
+0,
+0,
+0
+],
+[
+16,
+16,
+16
+]
+],
+"mekanism:digital_miner": [
+[
+-16,
+0,
+-16
+],
+[
+32,
+32,
+32
+]
+],
+"mekanism:dimensional_stabilizer": null,
+"mekanism:diversion_transporter": null,
+"mekanism:electric_pump": [
+[
+4,
+0,
+0
+],
+[
+12,
+16,
+12
+]
+],
+"mekanism:electrolytic_separator": [
+[
+-0.01,
+0,
+-0.01
+],
+[
+16,
+16,
+16.01
+]
+],
+"mekanism:elite_universal_cable": null,
+"mekanism:energized_smelter": [
+[
+0,
+0,
+0
+],
+[
+16,
+16,
+16
+]
+],
+"mekanism:enrichment_chamber": [
+[
+0,
+0,
+0
+],
+[
+16,
+16,
+16
+]
+],
+"mekanism:fluidic_plenisher": [
+[
+2,
+0,
+2
+],
+[
+14,
+16,
+16
+]
+],
+"mekanism:formulaic_assemblicator": [
+[
+0,
+0,
+0
+],
+[
+16,
+16,
+16
+]
+],
+"mekanism:fuelwood_heater": [
+[
+0,
+0,
+0
+],
+[
+16,
+16,
+16
+]
+],
+"mekanism:isotopic_centrifuge": [
+[
+0,
+0,
+0
+],
+[
+16,
+32,
+16
+]
+],
+"mekanism:laser": [
+[
+4,
+0,
+4
+],
+[
+12,
+16,
+12
+]
+],
+"mekanism:laser_amplifier": [
+[
+0,
+0,
+0
+],
+[
+16,
+16,
+16
+]
+],
+"mekanism:logistical_sorter": [
+[
+2,
+2,
+0
+],
+[
+14,
+14,
+17
+]
+],
+"mekanism:metallurgic_infuser": [
+[
+0,
+0,
+0
+],
+[
+16,
+16,
+16
+]
+],
+"mekanism:modification_station": [
+[
+-16,
+0,
+0
+],
+[
+16,
+30,
+16.008
+]
+],
+"mekanism:nutritional_liquifier": [
+[
+0,
+0,
+0
+],
+[
+16,
+16,
+16
+]
+],
+"mekanism:oredictionificator": [
+[
+0,
+0,
+0
+],
+[
+16,
+16,
+16
+]
+],
+"mekanism:osmium_compressor": [
+[
+0,
+0,
+0
+],
+[
+16,
+16,
+16
+]
+],
+"mekanism:painting_machine": [
+[
+0,
+0,
+0
+],
+[
+16,
+16,
+16
+]
+],
+"mekanism:pigment_extractor": [
+[
+0,
+0,
+0
+],
+[
+16,
+16,
+16
+]
+],
+"mekanism:pigment_mixer": [
+[
+0,
+0,
+0
+],
+[
+16,
+32,
+16
+]
+],
+"mekanism:precision_sawmill": [
+[
+0,
+0,
+0
+],
+[
+16,
+16,
+16
+]
+],
+"mekanism:pressurized_reaction_chamber": [
+[
+0,
+0,
+0
+],
+[
+16,
+16,
+16
+]
+],
+"mekanism:purification_chamber": [
+[
+0,
+0,
+0
+],
+[
+16,
+16,
+16
+]
+],
+"mekanism:quantum_entangloporter": [
+[
+0,
+0,
+0
+],
+[
+16,
+16,
+16
+]
+],
+"mekanism:resistive_heater": [
+[
+-0.008,
+0,
+0
+],
+[
+16.008,
+16,
+16
+]
+],
+"mekanism:restrictive_transporter": null,
+"mekanism:rotary_condensentrator": [
+[
+-0.01,
+0,
+0
+],
+[
+16.01,
+16,
+16
+]
+],
+"mekanism:seismic_vibrator": [
+[
+-0.57,
+0,
+-0.57071
+],
+[
+25.8,
+32,
+16.52
+]
+],
+"mekanism:solar_neutron_activator": [
+[
+-1,
+-0.01,
+-0.01
+],
+[
+17,
+29,
+16
+]
+],
+"mekanism:teleporter": [
+[
+0,
+0,
+0
+],
+[
+16,
+16,
+16
+]
+],
+"mekanism:ultimate_universal_cable": null,
+"mekanismadditions:obsidian_tnt": [
+[
+0,
+-1,
+0
+],
+[
+16,
+13.8,
+16
+]
+],
+"mekanismadditions:white_glow_panel": [
+[
+4,
+0,
+4
+],
+[
+12,
+2.5,
+12
+]
+],
+"mekanismadditions:white_plastic": [
+[
+0,
+0,
+0
+],
+[
+16,
+16,
+16
+]
+],
+"mekanismadditions:white_plastic_glow": [
+[
+0,
+0,
+0
+],
+[
+16,
+16,
+16
+]
+],
+"mekanismadditions:white_plastic_road": [
+[
+0,
+0,
+0
+],
+[
+16,
+16,
+16
+]
+],
+"mekanismadditions:white_plastic_transparent": [
+[
+0,
+0,
+0
+],
+[
+16,
+16,
+16
+]
+],
+"mekanismadditions:white_reinforced_plastic": [
+[
+0,
+0,
+0
+],
+[
+16,
+16,
+16
+]
+],
+"mekanismadditions:white_slick_plastic": [
+[
+0,
+0,
+0
+],
+[
+16,
+16,
+16
+]
+],
+"mekanismgenerators:advanced_solar_generator": [
+[
+-16,
+-16,
+-16
+],
+[
+32,
+32,
+32
+]
+],
+"mekanismgenerators:bio_generator": [
+[
+0,
+0,
+0
+],
+[
+16,
+16,
+16
+]
+],
+"mekanismgenerators:fusion_reactor_controller": [
+[
+0,
+0,
+0
+],
+[
+16,
+16,
+16
+]
+],
+"mekanismgenerators:gas_burning_generator": [
+[
+0,
+0,
+0
+],
+[
+16,
+18.08579,
+16
+]
+],
+"mekanismgenerators:heat_generator": [
+[
+0,
+0,
+0
+],
+[
+16,
+16,
+16
+]
+],
+"mekanismgenerators:solar_generator": [
+[
+0,
+0,
+0
+],
+[
+16,
+8,
+16
+]
+],
+"mekanismgenerators:turbine_rotor": null,
+"mekanismgenerators:wind_generator": null
+}

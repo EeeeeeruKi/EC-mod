@@ -10,6 +10,7 @@ import io.github.eeeeeeruki.ponderererer.element.PlayerElement;
 import java.util.ArrayList;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.Property;
 import org.joml.Vector3f;
@@ -33,6 +34,7 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
@@ -52,6 +54,8 @@ final class SceneRunner {
     private boolean placed;
     private ElementLink<BeamElement> laser;
     private ElementLink<PlayerElement> player;
+    private Vec3 moveTo = new Vec3(3.5, 1, 3.5);
+    private final List<ElementLink<BeamElement>> beams = new ArrayList<>();
     private Vec3 playerAt = Vec3.ZERO;
     private final java.util.Map<EquipmentSlot, ItemStack> worn = new java.util.EnumMap<>(EquipmentSlot.class);
     private ElementLink<EntityElement> mob;
@@ -76,7 +80,7 @@ final class SceneRunner {
         scene.configureBasePlate(0, 0, 7);
         scene.showBasePlate();
         scene.idle(10);
-        scene.world().showSection(util.select().fromTo(0, 1, 0, 6, 3, 6), Direction.DOWN);
+        scene.world().showSection(util.select().fromTo(0, 1, 0, 6, 4, 6), Direction.DOWN);
         if (data.get("main").isJsonNull()) {
             ItemStack hero = stack(data.get("item").getAsString(), 1);
             if (!hero.isEmpty()) scene.world().createItemEntity(new Vec3(0.5, 1.3, 0.5), Vec3.ZERO, hero);
@@ -120,13 +124,17 @@ final class SceneRunner {
 
     /** Puts a block in place the way a player would: it just appears, with its place sound. */
     private void place(BlockPos pos, BlockState state) {
-        scene.world().setBlock(pos, face(state), false);
+        place(pos, state, false);
+    }
+
+    private void place(BlockPos pos, BlockState state, boolean keepFacing) {
+        scene.world().setBlock(pos, keepFacing ? state : face(state), false);
         fx.sound(state.getSoundType().getPlaceSound(), 1f, 0.8f);
         if (BuiltInRegistries.BLOCK.getKey(state.getBlock()).getPath().endsWith("energy_cube")) {
             // energy cubes: show every side as an output (looks only)
             fx.setSideConfig(pos, MekanismSides.ENERGY, MekanismSides.OUTPUT);
         }
-        fx.connectTransmitters(util.select().fromTo(0, 1, 0, 6, 3, 6));
+        fx.connectTransmitters(util.select().fromTo(0, 1, 0, 6, 4, 6));
         if (pos.equals(CENTER)) placed = true;
     }
 
@@ -154,9 +162,107 @@ final class SceneRunner {
             case "block" -> {
                 BlockPos pos = pos(o.getAsJsonArray("pos"));
                 BlockState state = block(o.get("id").getAsString());
+                if (state == null && o.has("alt")) state = block(o.get("alt").getAsString()); // an addon block, when the addon is missing
                 if (state == null) return;
-                place(pos, state);
-                scene.idle(8);
+                boolean keep = o.has("facing") || o.has("props");
+                place(pos, props(state, o), keep);
+                scene.idle(o.has("wait") ? o.get("wait").getAsInt() : 8);
+            }
+            case "floor" -> {
+                // blocks in the ground (y = 0): ores, water, holes
+                String id = o.get("id").getAsString();
+                BlockState state = id.equals("minecraft:air") ? Blocks.AIR.defaultBlockState() : block(id);
+                if (state == null) return;
+                for (JsonElement c : o.getAsJsonArray("cells")) {
+                    JsonArray a = c.getAsJsonArray();
+                    scene.world().setBlock(new BlockPos(a.get(0).getAsInt(), 0, a.get(1).getAsInt()), state, false);
+                    if (o.has("step")) scene.idle(o.get("step").getAsInt());
+                }
+                scene.idle(10);
+            }
+            case "remove" -> {
+                for (JsonElement c : o.getAsJsonArray("cells")) {
+                    BlockPos p = pos(c.getAsJsonArray());
+                    scene.world().setBlock(p, Blocks.AIR.defaultBlockState(), false);
+                    if (p.equals(CENTER)) placed = false;
+                }
+                scene.idle(5);
+            }
+            case "destroy" -> {
+                for (JsonElement c : o.getAsJsonArray("cells")) {
+                    BlockPos p = pos(c.getAsJsonArray());
+                    breakNow(p);
+                    if (p.equals(CENTER)) placed = false;
+                    if (o.has("step")) scene.idle(o.get("step").getAsInt());
+                }
+                scene.idle(10);
+            }
+            case "carry" -> carry(o);
+            case "blocks" -> {
+                // many blocks at once: [[x, y, z], id] pairs, one place sound
+                SoundEvent sound = null;
+                for (JsonElement e : o.getAsJsonArray("list")) {
+                    JsonArray a = e.getAsJsonArray();
+                    BlockState st = block(a.get(1).getAsString());
+                    if (st == null) continue;
+                    scene.world().setBlock(pos(a.get(0).getAsJsonArray()), face(st), false);
+                    if (sound == null) sound = st.getSoundType().getPlaceSound();
+                    if (o.has("step")) scene.idle(o.get("step").getAsInt());
+                }
+                if (sound != null) fx.sound(sound, 1f, 0.8f);
+                fx.connectTransmitters(util.select().fromTo(0, 1, 0, 6, 4, 6));
+                scene.idle(10);
+            }
+            case "sound" -> {
+                SoundEvent se = BuiltInRegistries.SOUND_EVENT.get(rl(o.get("id").getAsString()));
+                if (se != null) fx.sound(se, 1f, 1f);
+            }
+            case "stream" -> stream(o);
+            case "active" -> {
+                setActive(pos(o.getAsJsonArray("pos")), o.get("on").getAsBoolean());
+                scene.idle(o.has("wait") ? o.get("wait").getAsInt() : 10);
+            }
+            case "lever" -> {
+                BlockPos p = pos(o.getAsJsonArray("pos"));
+                boolean on = o.get("on").getAsBoolean();
+                scene.world().modifyBlock(p, st -> st.hasProperty(BlockStateProperties.POWERED) ? st.setValue(BlockStateProperties.POWERED, on) : st, false);
+                fx.sound(SoundEvents.LEVER_CLICK, 0.6f, on ? 0.6f : 0.5f);
+                scene.idle(15);
+            }
+            case "beam" -> {
+                int col = o.has("color") ? o.get("color").getAsInt() : 0xFFFF3030;
+                beams.add(fx.laserShoot(vec(o.getAsJsonArray("from")), vec(o.getAsJsonArray("to")), col,
+                        o.has("width") ? o.get("width").getAsFloat() : 0.06f, 10));
+                scene.idle(o.has("wait") ? o.get("wait").getAsInt() : 15);
+            }
+            case "beamsoff" -> {
+                for (var b : beams) fx.hide(b, 5);
+                beams.clear();
+                scene.idle(10);
+            }
+            case "actor" -> actor(o);
+            case "indicate" -> {
+                scene.effects().indicateSuccess(pos(o.getAsJsonArray("pos")));
+                scene.idle(o.has("wait") ? o.get("wait").getAsInt() : 15);
+            }
+            case "item" -> {
+                ItemStack s = stack(o.get("id").getAsString(), o.has("count") ? o.get("count").getAsInt() : 1);
+                if (s.isEmpty()) return;
+                Vec3 motion = o.has("motion") ? vec(o.getAsJsonArray("motion")) : Vec3.ZERO;
+                ElementLink<EntityElement> link = scene.world().createItemEntity(vec(o.getAsJsonArray("at")), motion, s);
+                if (o.has("float") && o.get("float").getAsBoolean()) {
+                    scene.world().modifyEntity(link, e -> {
+                        e.setNoGravity(true);
+                        e.setDeltaMovement(Vec3.ZERO);
+                    });
+                }
+                drops.add(link);
+                scene.idle(o.has("wait") ? o.get("wait").getAsInt() : 6);
+            }
+            case "wait" -> scene.idle(o.get("ticks").getAsInt());
+            case "flash" -> {
+                fx.flash(o.has("color") ? o.get("color").getAsInt() : 0x60FFFFFF, 10);
+                scene.idle(10);
             }
             case "line" -> {
                 BlockState state = block(o.get("id").getAsString());
@@ -180,7 +286,7 @@ final class SceneRunner {
                 BlockState state = block(o.get("id").getAsString());
                 if (state == null) return;
                 for (JsonElement c : o.getAsJsonArray("cells")) scene.world().setBlock(pos(c.getAsJsonArray()), state, true);
-                fx.connectTransmitters(util.select().fromTo(0, 1, 0, 6, 3, 6));
+                fx.connectTransmitters(util.select().fromTo(0, 1, 0, 6, 4, 6));
                 scene.idle(15);
             }
             case "machineon" -> {
@@ -196,7 +302,7 @@ final class SceneRunner {
             case "gauge" -> {
                 List<Integer> colors = new ArrayList<>();
                 for (JsonElement g : o.getAsJsonArray("gauges")) colors.add(g.getAsJsonArray().get(1).getAsInt());
-                flow(colors, o.get("drain").getAsBoolean());
+                flow(colors, o.get("drain").getAsBoolean(), o.has("src") ? vec(o.getAsJsonArray("src")) : null);
                 setActive(CENTER, true);
                 scene.idle(40);
                 setActive(CENTER, false);
@@ -218,7 +324,7 @@ final class SceneRunner {
             }
             case "explode" -> {
                 scene.idle(20);
-                fx.explosion(new Vec3(3.5, 1.5, 3.5), o.get("r").getAsFloat(), o.get("break").getAsBoolean());
+                fx.explosion(o.has("at") ? vec(o.getAsJsonArray("at")) : new Vec3(3.5, 1.5, 3.5), o.get("r").getAsFloat(), o.get("break").getAsBoolean());
                 scene.idle(20);
             }
             case "player" -> player(o);
@@ -255,7 +361,10 @@ final class SceneRunner {
                 }
                 scene.idle(20);
             }
-            case "mobact" -> mobAct(o.get("kind").getAsString());
+            case "mobact" -> {
+                moveTo = o.has("to") ? vec(o.getAsJsonArray("to")) : new Vec3(3.5, 1, 3.5);
+                mobAct(o.get("kind").getAsString());
+            }
             case "show" -> {
                 for (JsonElement id : o.getAsJsonArray("ids")) {
                     Vec3 spot = nextSpot();
@@ -295,7 +404,8 @@ final class SceneRunner {
             BlockState st = block(title);
             if (st != null) { place(CENTER, st); scene.idle(10); }
         }
-        Vec3 top = Vec3.atCenterOf(target).add(0, 1.1, 0);
+        Vec3 top = o.has("top") ? new Vec3(target.getX() + 0.5, o.get("top").getAsDouble(), target.getZ() + 0.5)
+                : Vec3.atCenterOf(target).add(0, 1.1, 0);
         for (JsonElement e : o.getAsJsonArray("in")) {
             JsonArray a = e.getAsJsonArray();
             ItemStack s = stack(a.get(0).getAsString(), a.get(1).getAsInt());
@@ -309,25 +419,27 @@ final class SceneRunner {
         if (o.has("gauge") && !o.get("gauge").isJsonNull())
             for (JsonElement g : o.getAsJsonArray("gauge")) colors.add(g.getAsJsonArray().get(1).getAsInt());
         boolean drain = o.has("drain") && o.get("drain").getAsBoolean();
-        if (!colors.isEmpty()) flow(colors, drain);
+        boolean fedByItem = o.getAsJsonArray("in").size() > 0 && !o.has("src");
+        if (!colors.isEmpty()) flow(colors, drain || fedByItem, o.has("src") ? vec(o.getAsJsonArray("src")) : null);
         setActive(target, true);
         scene.idle(40);
         setActive(target, false);
-        Vec3 front = Vec3.atCenterOf(target).add(0, -0.1, -0.65);
+        Vec3 front = o.has("front") ? vec(o.getAsJsonArray("front")) : Vec3.atCenterOf(target).add(0, -0.1, -0.65);
+        Vec3 push = o.has("push") ? vec(o.getAsJsonArray("push")) : new Vec3(0, 0.18, -0.12);
         for (JsonElement e : o.getAsJsonArray("out")) {
             JsonArray a = e.getAsJsonArray();
             ItemStack s = stack(a.get(0).getAsString(), a.get(1).getAsInt());
             if (s.isEmpty()) continue;
-            drops.add(scene.world().createItemEntity(front, new Vec3(0, 0.18, -0.12), s));
+            drops.add(scene.world().createItemEntity(front, push, s));
             scene.idle(6);
         }
         scene.idle(25);
     }
 
     /** Chemicals and fluids: coloured particles running through the tube or pipe into the machine. */
-    private void flow(List<Integer> colors, boolean out) {
+    private void flow(List<Integer> colors, boolean out, Vec3 src) {
         Vec3 c = Vec3.atCenterOf(CENTER);
-        Vec3 tube = new Vec3(3.5, 1.5, 6.5);
+        Vec3 tube = src != null ? src : new Vec3(6.5, 1.5, 3.5);
         for (int col : colors) {
             Vector3f rgb = new Vector3f(((col >> 16) & 255) / 255f, ((col >> 8) & 255) / 255f, (col & 255) / 255f);
             DustParticleOptions dust = new DustParticleOptions(rgb, 1.2f);
@@ -513,6 +625,191 @@ final class SceneRunner {
         scene.world().destroyBlock(pos);
     }
 
+    /** Sets the block's "facing" and any other named properties (string values, as in a blockstate file). */
+    private static BlockState props(BlockState st, JsonObject o) {
+        if (o.has("facing")) st = setNamed(st, "facing", o.get("facing").getAsString());
+        if (o.has("props")) {
+            for (var en : o.getAsJsonObject("props").entrySet()) st = setNamed(st, en.getKey(), en.getValue().getAsString());
+        }
+        return st;
+    }
+
+    private static BlockState setNamed(BlockState st, String name, String value) {
+        for (Property<?> p : st.getProperties()) {
+            if (p.getName().equals(name)) return setProp(st, p, value);
+        }
+        return st;
+    }
+
+    private static <T extends Comparable<T>> BlockState setProp(BlockState st, Property<T> p, String value) {
+        return p.getValue(value).map(v -> st.setValue(p, v)).orElse(st);
+    }
+
+    /**
+     * Items moving along a path (through transporters, into a machine, an arrow in flight): no gravity, set each tick.
+     * Either one "item" with "path" (and "count" copies "gap" ticks apart), or "movers": [{item, path, delay}] started together.
+     * "trail" leaves particles behind; "mob" moves the scene's mob along with the item (a balloon lifting a chicken).
+     */
+    private void carry(JsonObject o) {
+        record Mover(ItemStack stack, List<Vec3> path, double[] cum, double len, int start, int travel) {
+        }
+        int speed = o.has("speed") ? o.get("speed").getAsInt() : 6; // ticks per block
+        List<Mover> movers = new ArrayList<>();
+        java.util.function.BiConsumer<JsonObject, Integer> add = (m, start) -> {
+            ItemStack s = stack(m.get("item").getAsString(), 1);
+            if (s.isEmpty()) return;
+            List<Vec3> path = new ArrayList<>();
+            for (JsonElement e : m.getAsJsonArray("path")) path.add(vec(e.getAsJsonArray()));
+            if (path.size() < 2) return;
+            double[] cum = new double[path.size()];
+            for (int i = 1; i < path.size(); i++) cum[i] = cum[i - 1] + path.get(i).distanceTo(path.get(i - 1));
+            double len = cum[cum.length - 1];
+            movers.add(new Mover(s, path, cum, len, start, Math.max(2, (int) Math.round(len * speed))));
+        };
+        if (o.has("movers")) {
+            for (JsonElement e : o.getAsJsonArray("movers")) {
+                JsonObject m = e.getAsJsonObject();
+                add.accept(m, m.has("delay") ? m.get("delay").getAsInt() : 0);
+            }
+        } else {
+            int count = o.has("count") ? o.get("count").getAsInt() : 1;
+            int gap = o.has("gap") ? o.get("gap").getAsInt() : speed * 2;
+            for (int i = 0; i < count; i++) add.accept(o, i * gap);
+        }
+        if (movers.isEmpty()) return;
+        boolean keep = o.has("keep") && o.get("keep").getAsBoolean();
+        net.minecraft.core.particles.ParticleOptions trail = null;
+        if (o.has("trail")) {
+            String t = o.get("trail").getAsString();
+            trail = t.equals("flame") ? ParticleTypes.FLAME : t.equals("portal") ? ParticleTypes.PORTAL
+                    : new DustParticleOptions(new Vector3f(0.9f, 0.15f, 0.15f), 1.0f);
+        }
+        Vec3 mobOffset = o.has("mob") && mob != null ? vec(o.getAsJsonArray("mob")) : null;
+        List<ElementLink<EntityElement>> links = new ArrayList<>();
+        for (int i = 0; i < movers.size(); i++) links.add(null);
+        int total = 0;
+        for (Mover m : movers) total = Math.max(total, m.start() + m.travel());
+        for (int t = 0; t <= total; t++) {
+            for (int i = 0; i < movers.size(); i++) {
+                Mover m = movers.get(i);
+                int lt = t - m.start();
+                if (lt == 0) {
+                    ElementLink<EntityElement> link = scene.world().createItemEntity(m.path().get(0), Vec3.ZERO, m.stack().copy());
+                    scene.world().modifyEntity(link, e -> {
+                        e.setNoGravity(true);
+                        e.setDeltaMovement(Vec3.ZERO);
+                    });
+                    links.set(i, link);
+                } else if (lt > 0 && lt <= m.travel() && links.get(i) != null) {
+                    Vec3 p = along(m.path(), m.cum(), m.len() * lt / m.travel());
+                    scene.world().modifyEntity(links.get(i), e -> {
+                        e.setPos(p.x, p.y, p.z);
+                        e.setDeltaMovement(Vec3.ZERO);
+                    });
+                    if (trail != null) fx.particleLine(trail, p, p, 1);
+                    if (mobOffset != null && i == 0) {
+                        Vec3 q = p.add(mobOffset);
+                        scene.world().modifyEntity(mob, e -> {
+                            e.setNoGravity(true);
+                            e.setPos(q.x, q.y, q.z);
+                            e.setDeltaMovement(Vec3.ZERO);
+                        });
+                    }
+                    if (lt == m.travel()) {
+                        if (keep) drops.add(links.get(i));
+                        else scene.world().modifyEntity(links.get(i), Entity::discard);
+                    }
+                }
+            }
+            scene.idle(1);
+        }
+        scene.idle(o.has("wait") ? o.get("wait").getAsInt() : 5);
+    }
+
+    private static Vec3 along(List<Vec3> path, double[] cum, double d) {
+        for (int i = 1; i < path.size(); i++) {
+            if (d <= cum[i] || i == path.size() - 1) {
+                double seg = cum[i] - cum[i - 1];
+                double f = seg <= 0 ? 1 : Math.min(1, (d - cum[i - 1]) / seg);
+                return path.get(i - 1).lerp(path.get(i), f);
+            }
+        }
+        return path.get(path.size() - 1);
+    }
+
+    /** Particles running along a path: chemicals and fluids in tubes and pipes, heat in conductors, power in cables. */
+    private void stream(JsonObject o) {
+        List<Vec3> path = new ArrayList<>();
+        for (JsonElement e : o.getAsJsonArray("path")) path.add(vec(e.getAsJsonArray()));
+        net.minecraft.core.particles.ParticleOptions particle;
+        String kind = o.has("particle") ? o.get("particle").getAsString() : "dust";
+        particle = switch (kind) {
+            case "flame" -> ParticleTypes.FLAME;
+            case "portal" -> ParticleTypes.PORTAL;
+            case "smoke" -> ParticleTypes.SMOKE;
+            case "bubble" -> ParticleTypes.BUBBLE_POP;
+            case "end_rod" -> ParticleTypes.END_ROD;
+            case "crit" -> ParticleTypes.CRIT;
+            default -> {
+                int col = o.has("color") ? o.get("color").getAsInt() : 0x3CFE9A;
+                yield new DustParticleOptions(new Vector3f(((col >> 16) & 255) / 255f, ((col >> 8) & 255) / 255f, (col & 255) / 255f), 1.2f);
+            }
+        };
+        int rounds = o.has("rounds") ? o.get("rounds").getAsInt() : 2;
+        int per = o.has("speed") ? o.get("speed").getAsInt() : 3; // ticks per block
+        for (int r = 0; r < rounds; r++) {
+            for (int i = 1; i < path.size(); i++) {
+                Vec3 a = path.get(i - 1), b = path.get(i);
+                int n = Math.max(2, (int) Math.round(a.distanceTo(b) * 4));
+                fx.particleLine(particle, a, b, n);
+                scene.idle(Math.max(1, (int) Math.round(a.distanceTo(b) * per)));
+            }
+        }
+        scene.idle(o.has("wait") ? o.get("wait").getAsInt() : 5);
+    }
+
+    /**
+     * A player figure for hand-made steps: appears at "at", wears "equip", takes a "pose", follows "path"
+     * ([x, y, z, ticks] or [x, y, z, ticks, yaw]), swings "swing" times, or goes away with "hide".
+     */
+    private void actor(JsonObject o) {
+        if (o.has("hide") && o.get("hide").getAsBoolean()) {
+            if (player != null) fx.hide(player, 6);
+            player = null;
+            worn.clear();
+            scene.idle(8);
+            return;
+        }
+        float yaw = o.has("yaw") ? o.get("yaw").getAsFloat() : 135;
+        Vec3 at = o.has("at") ? vec(o.getAsJsonArray("at")) : (player == null ? new Vec3(0.5, 1, 5.5) : playerAt);
+        if (o.has("jump") && player != null) { // instant move (teleport)
+            fx.playerMove(player, at, 1);
+            playerAt = at;
+            scene.idle(2);
+        }
+        ensurePlayer(at, yaw);
+        if (o.has("equip")) wear(o.getAsJsonArray("equip"));
+        fx.playerPose(player, o.has("pose") ? PlayerElement.PlayerPose.valueOf(o.get("pose").getAsString()) : PlayerElement.PlayerPose.STAND);
+        if (o.has("look")) fx.playerLook(player, o.get("look").getAsFloat());
+        if (o.has("path")) {
+            for (JsonElement e : o.getAsJsonArray("path")) {
+                JsonArray a = e.getAsJsonArray();
+                Vec3 p = new Vec3(a.get(0).getAsDouble(), a.get(1).getAsDouble(), a.get(2).getAsDouble());
+                int ticks = a.get(3).getAsInt();
+                if (a.size() > 4) fx.playerTurn(player, a.get(4).getAsFloat(), Math.min(ticks, 6));
+                fx.playerMove(player, p, ticks);
+                scene.idle(ticks);
+                playerAt = p;
+            }
+        }
+        int swings = o.has("swing") ? o.get("swing").getAsInt() : 0;
+        for (int i = 0; i < swings; i++) {
+            fx.playerSwing(player);
+            scene.idle(6);
+        }
+        scene.idle(o.has("wait") ? o.get("wait").getAsInt() : 10);
+    }
+
     private void mobAct(String kind) {
         if (mob == null) return;
         ElementLink<EntityElement> m = mob;
@@ -530,8 +827,8 @@ final class SceneRunner {
                     scene.idle(2);
                 }
             }
-            default -> { // move to the center
-                double dx = (3.5 - mobPos.x) / 20, dz = (3.5 - mobPos.z) / 20;
+            default -> { // move to the center (or to "to")
+                double dx = (moveTo.x - mobPos.x) / 20, dz = (moveTo.z - mobPos.z) / 20;
                 for (int i = 0; i < 20; i++) {
                     scene.world().modifyEntity(m, e -> e.setPos(e.getX() + dx, e.getY() + (e.getY() < 1.15 ? 0.01 : 0), e.getZ() + dz));
                     scene.idle(2);

@@ -1,5 +1,7 @@
 """Turn data.txt (editor export) into scenes.json + lang files for More MekaPonder."""
 import json, re, sys
+sys.path.insert(0, '/home/claude/mmp')
+from overrides import OVERRIDES
 D = '/home/claude/dl/mek/'
 OUT = sys.argv[1]
 
@@ -75,7 +77,8 @@ for k, v in EXTRA.items():
 for k, v in CHEM_EXTRA.items(): chems[k] = v
 for k in [k for k in chems if len(k) < 2]: del chems[k]
 for k in list(names):
-    if names[k] is None or k in chems: del names[k]
+    # レッドストーン / ダイヤモンド are both an item and an infuse type: compile_action decides from the words around them
+    if names[k] is None or (k in chems and k not in ('レッドストーン', 'ダイヤモンド')): del names[k]
 
 def items_spec(eid, spec):
     if not spec: return [eid]
@@ -166,43 +169,90 @@ def mine_op(e, text, found, main, state):
     return {'op':'mine','tool':tool or 'minecraft:iron_pickaxe','place':[[c, t] for c, t in zip(cells, targets)],'targets':cells,
             'mode':'fast' if 'すばやく' in text or '速' in text else 'each','stand':[1.5,1,2.4],'yaw':180,'drop':None}
 
+WIDE = {'mekanism:modification_station', 'mekanism:digital_miner'}
+sys.path.insert(0, '/home/claude/mekx')
+import ext as _ext
+def model_box(bid):
+    m = _ext.block_model(bid) if bid and ':' in bid and not bid.startswith('minecraft:') else None
+    b = _ext.model_bounds(m) if m else None
+    if not b or not isinstance(b[0], list): return None
+    if bid in ('mekanismgenerators:advanced_solar_generator',): return None
+    return b[0], b[1]
+
+def shape(po, title, at):
+    """Where items drop in (on top of the machine) and pop out (in front of it), for machines that are not one plain block."""
+    mb = model_box(title)
+    if not mb: return
+    lo, hi = mb
+    pos = at or [3, 1, 3]
+    h = min(2.5, hi[1] / 16)
+    if abs(h - 1) > 0.05: po['top'] = round(pos[1] + h + 0.1, 2)
+    if lo[2] < -0.5:
+        po['front'] = [pos[0] + 0.5, pos[1] + 0.4, round(pos[2] + lo[2] / 16 - 0.15, 2)]
+
+def gauge_src(text, state):
+    if ('電力' in text) and state.get('power'): return [0.5, 1.5, 3.5]
+    if ('チューブ' in text or 'パイプ' in text or '送' in text) and state.get('src'): return state['src']
+    return None
+
+def sync_state(ops, state):
+    """After hand-made ops replace an action, record what they put in the scene."""
+    for o in ops:
+        if o['op'] == 'block' and o['pos'] == [3, 1, 3]:
+            state['placed'] = True; state['center'] = o['id']
+            if is_machine(o['id']): state['machine'] = o['id']
+        if o['op'] == 'swap':
+            state['center'] = o['id']; state['machine'] = o['id']
+        if o['op'] == 'block' and o['id'] == 'mekanism:creative_energy_cube' and o['pos'] in ([0, 1, 3], [3, 1, 0]):
+            state['power'] = True
+        if o['op'] in ('remove', 'destroy') and [3, 1, 3] in o['cells']:
+            state['placed'] = False
+
 def compile_action(e, text, state):
     ops = []
     main = e['id'] if e['id'] in blocks else None
     cfound = find_all(text, chems)
     cspans = [(p, p+len(n)) for p, n, _ in cfound]
-    found = [f for f in find_all(text, names) if not any(a <= f[0] and f[0]+len(f[1]) <= b and (b-a) > len(f[1]) for a, b in cspans)]
+    def chem_context(p, n):
+        after = text[p+len(n):p+len(n)+6]
+        return after.startswith(('のゲージ', 'を送', 'が溜ま', 'を吹き込', 'が流れ', 'を流')) or 'ゲージ' in after[:4]
+    found = [f for f in find_all(text, names)
+             if not any(a <= f[0] and f[0]+len(f[1]) <= b and ((b-a) > len(f[1]) or chem_context(f[0], f[1])) for a, b in cspans)]
     ispans = [(p, p+len(n)) for p, n, _ in found]
     cfound = [c for c in cfound if not any(a <= c[0] and c[0]+len(c[1]) <= b and (b-a) >= len(c[1]) for a, b in ispans)]
     # infrastructure
     def place_main():
         if main and not state.get('placed'):
-            ops.append({'op':'block','pos':[3,1,3],'id':main}); state['placed'] = True
+            ops.append({'op':'block','pos':[3,1,3],'id':main}); state['placed'] = True; state['center'] = main
     def infra(kind):
         if kind in state: return
         state[kind] = True
-        P = {'power':('mekanism:creative_energy_cube','mekanism:basic_universal_cable',[0,1,3],[[1,1,3],[2,1,3]]),
-             'tube':('mekanism:basic_chemical_tank','mekanism:basic_pressurized_tube',[3,1,6],[[3,1,5],[3,1,4]]),
-             'pipe':('mekanism:basic_fluid_tank','mekanism:basic_mechanical_pipe',[6,1,3],[[5,1,3],[4,1,3]]),
-             'item':('minecraft:chest','mekanism:basic_logistical_transporter',[3,1,0],[[3,1,1],[3,1,2]])}[kind]
+        east, north = ([6,1,3],[[5,1,3],[4,1,3]]), ([3,1,0],[[3,1,1],[3,1,2]])
+        wide = state.get('center') in WIDE
+        P = {'power':('mekanism:creative_energy_cube','mekanism:basic_universal_cable',[0,1,3],[[1,1,3]] if wide else [[1,1,3],[2,1,3]]),
+             'tube':('mekanism:basic_chemical_tank','mekanism:basic_pressurized_tube')+east,
+             'pipe':('mekanism:basic_fluid_tank','mekanism:basic_mechanical_pipe')+(north if e.get('tube_and_pipe') else east),
+             'item':('minecraft:chest','mekanism:basic_logistical_transporter')+north}[kind]
         ops.append({'op':'block','pos':P[2],'id':P[0]})
         ops.append({'op':'line','id':P[1],'cells':P[3]})
+        if kind in ('tube','pipe') and 'src' not in state:
+            state['src'] = [P[2][0]+0.5, 1.5, P[2][2]+0.5]
     focus = None
     if main:
         first = not state.get('placed')
         place_main(); focus = main
         if first and powered(main): infra('power')
     elif found and found[0][2] in blocks and is_machine(found[0][2]) and not state.get('placed'):
-        focus = found[0][2]; ops.append({'op':'block','pos':[3,1,3],'id':focus}); state['placed'] = True; state['machine'] = focus
+        focus = found[0][2]; ops.append({'op':'block','pos':[3,1,3],'id':focus}); state['placed'] = True; state['machine'] = focus; state['center'] = focus
         if powered(focus): infra('power')
     else:
         focus = state.get('machine')
         for _, n, rid in found:
             if is_machine(rid) and rid != state.get('machine') and not state.get('placed'):
-                ops.append({'op':'block','pos':[3,1,3],'id':rid}); state['placed'] = True; state['machine'] = focus = rid
+                ops.append({'op':'block','pos':[3,1,3],'id':rid}); state['placed'] = True; state['machine'] = focus = rid; state['center'] = rid
                 if powered(rid): infra('power')
                 break
-    if '電力' in text or 'ユニバーサルケーブル' in text or 'ケーブル' in text: infra('power')
+    if ('電力' in text and '電力が減る' not in text and '電力がない' not in text) or 'ユニバーサルケーブル' in text or 'ケーブル' in text: infra('power')
     if '加圧チューブ' in text: infra('tube')
     if 'メカニカルパイプ' in text: infra('pipe')
     if '物流トランスポーター' in text or 'トランスポーター' in text: infra('item')
@@ -253,11 +303,13 @@ def compile_action(e, text, state):
             equip.append([slot_for(rid), rid])
         if not equip and e['id'] not in blocks:
             equip.append([slot_for(e['id']), e['id']])
+        if 'MekaSuit' in text:
+            equip = [['HEAD','mekanism:mekasuit_helmet'],['CHEST','mekanism:mekasuit_bodyarmor'],['LEGS','mekanism:mekasuit_pants'],['FEET','mekanism:mekasuit_boots']]
         if '防護服' in text:
             equip = [['HEAD','mekanism:hazmat_mask'],['CHEST','mekanism:hazmat_gown'],['LEGS','mekanism:hazmat_pants'],['FEET','mekanism:hazmat_boots']]
         if 'スキューバマスク' in text: equip = [['HEAD','mekanism:scuba_mask'],['CHEST','mekanism:scuba_tank']]
         move = pose in ('WALK','SPRINT')
-        po = {'op':'player','pose':pose,'equip':equip,'move':move,'rise':pose == 'FLY'}
+        po = {'op':'player','pose':pose,'equip':equip,'move':move,'rise':pose == 'FLY' and 'とどまる' not in text}
         if '上に乗' in text or 'そばに立' in text: po['at'] = [3.5,1.1,3.5] if '上に乗' in text else [2.5,1,4.5]
         ops.append(po)
         return ops
@@ -272,6 +324,7 @@ def compile_action(e, text, state):
         if not outs and ins: outs = [ins.pop()]
         if not outs: outs = [[e['items'][0], 1]]
         ops.append({'op':'panel','title':'minecraft:crafting_table','in':ins[:9],'out':outs[:2],'gauge':None})
+        state['crafter'] = True
         return ops
     split = max(text.rfind('と、'), text.rfind('ると'), text.rfind('すと'))
     if ('入れ' in text or '送' in text or '吹き込' in text) and split > 0:
@@ -294,9 +347,9 @@ def compile_action(e, text, state):
                 if powered(ms[-1]): ops.append({'op':'block','pos':[6,1,1],'id':'mekanism:creative_energy_cube'})
             side_at = [5,1,1]
         elif ms and state.get('placed') and ms[-1] != (state.get('machine') or main):
-            ops.append({'op':'swap','id':ms[-1]}); state['machine'] = ms[-1]
+            ops.append({'op':'swap','id':ms[-1]}); state['machine'] = ms[-1]; state['center'] = ms[-1]
         elif ms and not state.get('placed'):
-            ops.append({'op':'block','pos':[3,1,3],'id':ms[-1]}); state['placed'] = True; state['machine'] = ms[-1]
+            ops.append({'op':'block','pos':[3,1,3],'id':ms[-1]}); state['placed'] = True; state['machine'] = ms[-1]; state['center'] = ms[-1]
             if powered(ms[-1]): infra('power')
         title = side_at and ms[-1] or mach_title()
         seen = set(); g2 = []
@@ -307,13 +360,20 @@ def compile_action(e, text, state):
         if not gauges and ('ゲージ' in text or '溜ま' in text):
             col = 0xB30505 if 'レッドストーン' in text else 0x3CFE9A if '電力' in text else 0x52BDCA if 'オスミウム' in text else 0x55AAFF
             gauges = [['', None]]; gcol = col
-        ops.append({'op':'panel','title':title,'at':side_at,'in':ins[:4],'out':outs[:3],'gauge':[[n, (gcol if c is None else CHEM_COLOR.get(c.split(':')[-1], 0x55AAFF))] for n, c in gauges[:2]] or None,
-                    'drain':'減' in text})
+        po = {'op':'panel','title':title,'at':side_at,'in':ins[:4],'out':outs[:3],'gauge':[[n, (gcol if c is None else CHEM_COLOR.get(c.split(':')[-1], 0x55AAFF))] for n, c in gauges[:2]] or None,
+                    'drain':'減' in text}
+        src = gauge_src(text, state)
+        if src and po['gauge'] and not po['in']: po['src'] = src
+        shape(po, title, side_at)
+        ops.append(po)
         return ops
     if 'ゲージ' in text or '溜ま' in text:
         cfound = [x for i, x in enumerate(cfound) if x[2] not in [y[2] for y in cfound[:i]]]
         gs = [[n.replace('のゲージ',''), CHEM_COLOR.get(c.split(':')[-1], 0x55AAFF)] for p, n, c in cfound] or [['', 0x3CFE9A]]
-        ops.append({'op':'gauge','gauges':gs[:2],'drain':'減' in text})
+        go = {'op':'gauge','gauges':gs[:2],'drain':'減' in text}
+        src = gauge_src(text, state)
+        if src: go['src'] = src
+        ops.append(go)
         return ops
     if '右クリック' in text or '左クリック' in text:
         held = None
@@ -325,9 +385,9 @@ def compile_action(e, text, state):
         if m and 'ユニバーサル' in text:
             a = find_all(m.group(1), names); b = find_all(m.group(2), names)
             if a and b:
-                ops.append({'op':'line','id':a[-1][2],'cells':[[4,1,5],[5,1,5],[6,1,5]]})
-                ops.append({'op':'click','left':False,'sneak':False,'item':held,'at':[5.5,2,5.5]})
-                ops.append({'op':'swapcells','id':b[-1][2],'cells':[[4,1,5],[5,1,5],[6,1,5]]})
+                ops.append({'op':'line','id':a[-1][2],'cells':[[4,1,1],[5,1,1],[6,1,1]]})
+                ops.append({'op':'click','left':False,'sneak':False,'item':held,'at':[5.5,2,1.5]})
+                ops.append({'op':'swapcells','id':b[-1][2],'cells':[[4,1,1],[5,1,1],[6,1,1]]})
                 return ops
         ops.append({'op':'click','left':'左クリック' in text,'sneak':'スニーク' in text or 'しゃがみ' in text,'item':held})
         # tier upgrades / transformations
@@ -354,13 +414,25 @@ for e in entries:
     state = {}
     steps = []
     n = 0
+    acts = ' '.join(v for k, v in e['steps'] if k == 'A')
+    e['tube_and_pipe'] = '加圧チューブ' in acts and 'メカニカルパイプ' in acts
+    hand = OVERRIDES.get(sid, {})
+    ai = 0
     for kind, val in e['steps']:
         if kind == 'T':
             n += 1; steps.append({'t': n}); lang[f'moremekaponder.ponder.{sid}.text_{n}'] = val
         else:
+            snap = dict(state)
             ops = compile_action(e, val, state)
             ops = [o for o in ops if o['op'] != 'mobact'] + [o for o in ops if o['op'] == 'mobact']
+            if ai in hand:
+                state.clear(); state.update(snap)
+                ops = hand[ai]
+                sync_state(ops, state)
+            ai += 1
             steps.append({'a': ops})
+    unused = set(hand) - set(range(ai))
+    assert not unused, (sid, unused)
     lang[f'moremekaponder.ponder.{sid}.header'] = e['title']
     out_entries.append({'id': sid, 'items': e['items'], 'main': e['id'] if e['id'] in blocks else None, 'item': e['items'][0], 'steps': steps})
 
