@@ -266,5 +266,8 @@
   "minecrafttweak.longer_chat.server_off": "Longer Chat is turned off on this server.",
   "minecrafttweak.longer_chat.too_long": "Too long (up to %s characters on this server).",
   "minecrafttweak.longer_chat.wait": "Please wait a moment before sending again.",
-  "minecrafttweak.longer_chat.splitting": "This server does not have minEcraft twEEk, so the long message is sent in %s parts, one per second."
+  "minecrafttweak.longer_chat.splitting": "This server does not have minEcraft twEEk, so the long message is sent in %s parts, one per second.",
+  "minecrafttweak.category.fixes": "Fixes",
+  "minecrafttweak.feature.deep_aether_eots_fix": "Deep Aether: EOTS crash fix",
+  "minecrafttweak.feature.deep_aether_eots_fix.desc": "Stops the game from crashing when Deep Aether's EOTS boss loses its target in the middle of an attack. Does nothing without Deep Aether."
 }

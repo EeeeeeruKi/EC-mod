@@ -10,7 +10,9 @@ public enum FeatureCategory {
     TOOLS("tools"),
     MANAGEMENT("management"),
     WORLD("world"),
-    CLIENT("client");
+    CLIENT("client"),
+    /** ほかのmodやバニラの不具合をよける修正（最初からオン） */
+    FIXES("fixes");
 
     private final String id;
 

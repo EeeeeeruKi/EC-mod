@@ -1832,6 +1832,26 @@
       "summary": "Quark を前提MODにして、Quark にない小さな改善をたくさん詰め込んでいくためのMODです。機能は最初はすべてオフで、ひとつずつオンにできます。このMOD・Quark・バニラ・Sodium の設定を、短い設定コードでまとめてやりとりできます。",
       "versions": [
         {
+          "version": "1.17.0",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/minecrafttweak/1.21.1-neoforge/minecrafttweak-neoforge-1.21.1-1.17.0.jar",
+          "fileName": "minecrafttweak-neoforge-1.21.1-1.17.0.jar",
+          "sha256": "d978bafff458b2b5f8f4ed15016dae72edc104029a2dd3acb0bd055f19307eed",
+          "changelog": "設定画面に「修正」の分類を作り、Deep Aether のボス「EOTS」のクラッシュ修正（11）をそこに入れました。最初からオンで、設定でオフにもできます。",
+          "released": "2026-11-23"
+        },
+        {
+          "version": "1.17.0",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/minecrafttweak/1.20.1-forge/minecrafttweak-forge-1.20.1-1.17.0.jar",
+          "fileName": "minecrafttweak-forge-1.20.1-1.17.0.jar",
+          "sha256": "0b0809ade8d301b51a0a412c130bf54c672ee466e110d7c360107938b9c8a559",
+          "changelog": "設定画面に「修正」の分類を作りました（11番は NeoForge 1.21.1 版用の Deep Aether の修正なので、Forge 版では何もしません）。",
+          "released": "2026-11-23"
+        },
+        {
           "version": "1.16.6",
           "mc": "1.21.1",
           "loader": "neoforge",

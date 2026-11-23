@@ -266,5 +266,8 @@
   "minecrafttweak.longer_chat.server_off": "このサーバーでは「チャットの文字数を増やす」がオフになっています。",
   "minecrafttweak.longer_chat.too_long": "長すぎます（このサーバーでは%s文字まで）。",
   "minecrafttweak.longer_chat.wait": "少し待ってから送ってください。",
-  "minecrafttweak.longer_chat.splitting": "このサーバーには minEcraft twEEk が入っていないため、長いチャットを%s回に分けて1秒ごとに送ります。"
+  "minecrafttweak.longer_chat.splitting": "このサーバーには minEcraft twEEk が入っていないため、長いチャットを%s回に分けて1秒ごとに送ります。",
+  "minecrafttweak.category.fixes": "修正",
+  "minecrafttweak.feature.deep_aether_eots_fix": "Deep Aether: EOTSのクラッシュ修正",
+  "minecrafttweak.feature.deep_aether_eots_fix.desc": "Deep Aether のボス「EOTS」が、攻撃の途中で狙う相手がいなくなったときに、ゲームが止まる（クラッシュする）のを防ぎます。Deep Aether が入っていないときは何もしません。"
 }

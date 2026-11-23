@@ -1,5 +1,6 @@
 package com.eeeeeeruki.minecrafttweak.mixin.compat;
 
+import com.eeeeeeruki.minecrafttweak.feature.fixes.DeepAetherEotsFixFeature;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.world.entity.LivingEntity;
@@ -21,7 +22,7 @@ public abstract class DeepAetherEotsGoalMixin {
             at = @At(value = "INVOKE", remap = false,
                     target = "Lnet/minecraft/world/entity/LivingEntity;setDeltaMovement(Lnet/minecraft/world/phys/Vec3;)V"))
     private void minecrafttweak$skipMissingTarget(LivingEntity target, Vec3 motion, Operation<Void> original) {
-        if (target != null) {
+        if (target != null || !DeepAetherEotsFixFeature.active()) {
             original.call(target, motion);
         }
     }

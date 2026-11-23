@@ -40,6 +40,7 @@ public class TweakConfigScreen extends Screen {
             case MANAGEMENT -> Items.CHEST;
             case WORLD -> Items.GRASS_BLOCK;
             case CLIENT -> Items.ENDER_EYE;
+            case FIXES -> Items.ANVIL;
         });
     }
 
