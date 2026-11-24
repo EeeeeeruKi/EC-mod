@@ -16,6 +16,8 @@ public final class PondererererClient {
     public PondererererClient(IEventBus modBus) {
         PonderIndex.addPlugin(new DemoPlugin());
         NeoForge.EVENT_BUS.addListener(PondererererClient::hideFakePlayerNames);
+        NeoForge.EVENT_BUS.addListener(PonderSpriteAnimator::onOpen);
+        NeoForge.EVENT_BUS.addListener(PonderSpriteAnimator::onRender);
     }
 
     private static void hideFakePlayerNames(RenderNameTagEvent event) {
