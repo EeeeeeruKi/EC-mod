@@ -9,5 +9,9 @@
  "ponderererer.ponder.ponderererer_demo_gauges.text_3": "FX.tint darkens the view, e.g. for night",
  "ponderererer.ponder.ponderererer_demo_players.header": "Ponderererer: Player Figures",
  "ponderererer.ponder.ponderererer_demo_players.text_1": "FX.player places a posable player",
- "ponderererer.ponder.ponderererer_demo_players.text_2": "It can wear armor (mod armor too) and move around"
+ "ponderererer.ponder.ponderererer_demo_players.text_2": "It can wear armor (mod armor too) and move around",
+ "ponderererer.ponder.ponderererer_demo_cards.header": "Ponderererer: Cards, Labels and Light",
+ "ponderererer.ponder.ponderererer_demo_cards.text_1": "FX.card shows a machine-style card on the left, linked to its block",
+ "ponderererer.ponder.ponderererer_demo_cards.text_2": "FX.label puts a name tag above a point",
+ "ponderererer.ponder.ponderererer_demo_cards.text_3": "FX.darkness and FX.lightSource light the scene like the real world"
 }

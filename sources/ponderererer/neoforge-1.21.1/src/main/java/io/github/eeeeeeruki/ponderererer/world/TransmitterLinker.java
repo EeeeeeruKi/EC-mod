@@ -71,6 +71,12 @@ public final class TransmitterLinker {
         CompoundTag tag = new CompoundTag();
         tag.putByte("connections", connections);
         tag.putByte("acceptors", acceptors);
+        // keep a painted transporter's colour: a tag without "color" would clear it
+        try {
+            CompoundTag current = be.getUpdateTag(world.registryAccess());
+            if (current.contains("color")) tag.put("color", current.get("color").copy());
+        } catch (RuntimeException ignored) {
+        }
         try {
             be.handleUpdateTag(tag, world.registryAccess());
             be.requestModelDataUpdate();

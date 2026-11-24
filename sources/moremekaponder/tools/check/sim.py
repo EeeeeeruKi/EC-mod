@@ -246,6 +246,20 @@ def op(w, o):
         if 'pos' in o and tuple(o['pos']) in w.blocks: w.subjects.append(('b', tuple(o['pos'])))
     elif t in ('click', 'pulse', 'lightning'):
         if w.placed: w.subjects.append(('b', CENTER))
+    elif t == 'clear':
+        for d in w.drops: w.ents.pop(d, None)
+        w.drops = []
+    elif t == 'paint':
+        for c in o['cells']:
+            if 'transporter' not in w.blocks.get(tuple(c), ''): w.note('paint-nothing', f'paint at {c} but no transporter there')
+            else: w.subjects.append(('b', tuple(c)))
+    elif t == 'tag':
+        for c in o['cells']:
+            if tuple(c) not in w.blocks: w.note('tag-nothing', f'tag at {c} but no block there')
+            else: w.subjects.append(('b', tuple(c)))
+    elif t in ('spin', 'light'):
+        if tuple(o['pos']) not in w.blocks: w.note(t + '-nothing', f'{t} at {o["pos"]} but no block there')
+        else: w.subjects.append(('b', tuple(o['pos'])))
 
 ITEMS_NOT_BLOCKS = set()
 def is_block_item(i):

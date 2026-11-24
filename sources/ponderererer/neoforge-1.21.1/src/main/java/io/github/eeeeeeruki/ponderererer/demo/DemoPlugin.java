@@ -28,7 +28,8 @@ public final class DemoPlugin implements PonderPlugin {
         helper.forComponents(BuiltInRegistries.ITEM.getKey(Items.LIGHTNING_ROD))
                 .addStoryBoard("demo", DemoScenes::beamsAndArcs)
                 .addStoryBoard("demo", DemoScenes::gaugesAndPanels)
-                .addStoryBoard("demo", DemoScenes::players);
+                .addStoryBoard("demo", DemoScenes::players)
+                .addStoryBoard("demo", DemoScenes::cardsAndLight);
     }
 
     /** The scenes are registered before NeoForge loads client configs, so look at the file itself. */

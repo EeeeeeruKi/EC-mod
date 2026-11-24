@@ -9,5 +9,9 @@
  "ponderererer.ponder.ponderererer_demo_gauges.text_3": "FX.tint で、夜のように画面を暗くできます。",
  "ponderererer.ponder.ponderererer_demo_players.header": "Ponderererer: プレイヤー",
  "ponderererer.ponder.ponderererer_demo_players.text_1": "FX.player で、動きを付けられるプレイヤーを置けます。",
- "ponderererer.ponder.ponderererer_demo_players.text_2": "防具（MODの防具も）を着せたり、動かしたりできます。"
+ "ponderererer.ponder.ponderererer_demo_players.text_2": "防具（MODの防具も）を着せたり、動かしたりできます。",
+ "ponderererer.ponder.ponderererer_demo_cards.header": "Ponderererer: カード・名札・明るさ",
+ "ponderererer.ponder.ponderererer_demo_cards.text_1": "FX.card で、機械の画面のようなカードを左側に出し、ブロックと線でつなげます。",
+ "ponderererer.ponder.ponderererer_demo_cards.text_2": "FX.label で、場所に名札を付けられます。",
+ "ponderererer.ponder.ponderererer_demo_cards.text_3": "FX.darkness と FX.lightSource で、本物のように暗くしたり照らしたりできます。"
 }

@@ -1,7 +1,7 @@
 """Turn data.txt (editor export) into scenes.json + lang files for More MekaPonder."""
 import json, re, sys
 sys.path.insert(0, '/home/claude/mmp')
-from overrides import OVERRIDES
+from overrides import OVERRIDES, SCENE_PROPS
 D = '/home/claude/dl/mek/'
 OUT = sys.argv[1]
 
@@ -60,7 +60,7 @@ EXTRA = {  # editor wording -> id
 }
 CHEM_EXTRA = {'きれいな鉄のスラリー':'mekanism:clean_iron','汚れた鉄のスラリー':'mekanism:dirty_iron','スラリー':'mekanism:dirty_iron','液体の水素':'mekanism:hydrogen',
  '液体のエチレン':'mekanism:ethene','エチレン':'mekanism:ethene','炭素':'mekanism:carbon','反物質':'mekanism:antimatter','核廃棄物':'mekanism:nuclear_waste',
- 'プルトニウム':'mekanism:plutonium','三重水素':'mekanism:tritium','D-T燃料':'mekanismgenerators:fusion_fuel','栄養ペースト':'mekanism:nutritional_paste',
+ 'プルトニウム':'mekanism:plutonium','三重水素':'mekanismgenerators:tritium','D-T燃料':'mekanismgenerators:fusion_fuel','栄養ペースト':'mekanism:nutritional_paste',
  '赤色の顔料':'mekanism:red','白色の顔料':'mekanism:white','桃色の顔料':'mekanism:pink','重水':'mekanism:heavy_water','水':'minecraft:water','塩水':'mekanism:brine',
  '二酸化硫黄':'mekanism:sulfur_dioxide','三酸化硫黄':'mekanism:sulfur_trioxide','硫酸':'mekanism:sulfuric_acid','酸素':'mekanism:oxygen','水素':'mekanism:hydrogen',
  '塩素':'mekanism:chlorine','塩化水素':'mekanism:hydrogen_chloride','ナトリウム':'mekanism:sodium','リチウム':'mekanism:lithium','気体':'mekanism:hydrogen','液体':'minecraft:water',
@@ -75,7 +75,7 @@ CHEM_COLOR = {'hydrogen':0xFFFFFF,'oxygen':0x6CE2FF,'chlorine':0xCFE800,'hydroge
 for k, v in EXTRA.items():
     if v: names[k] = v
 for k, v in CHEM_EXTRA.items(): chems[k] = v
-for k in [k for k in chems if len(k) < 2]: del chems[k]
+for k in [k for k in chems if len(k) < 2 and k != '水']: del chems[k]  # water stays: longer names (水素, 重水...) match first
 for k in list(names):
     # レッドストーン / ダイヤモンド are both an item and an infuse type: compile_action decides from the words around them
     if names[k] is None or (k in chems and k not in ('レッドストーン', 'ダイヤモンド')): del names[k]
@@ -137,7 +137,7 @@ NOPOWER = {'mekanism:fuelwood_heater','mekanism:solar_neutron_activator','mekani
 def powered(rid):
     if not rid or not rid.startswith('mekanism:') or rid in NOPOWER: return False
     p = rid.split(':')[1]
-    if any(k in p for k in ('bin','tank','energy_cube','cable','pipe','tube','transporter','conductor')): return False
+    if any(p == k or p.endswith('_'+k) for k in ('bin','tank','energy_cube','cable','pipe','tube','transporter','conductor')): return False
     return is_machine(rid) or p in ('chargepad','laser','seismic_vibrator','dimensional_stabilizer','digital_miner','electric_pump',
                                     'fluidic_plenisher','formulaic_assemblicator','modification_station','resistive_heater')
 MAT_NAMES = [('オスミウム','osmium'),('青銅','bronze'),('ラピスラズリ','lapis_lazuli'),('精製グロウストーン','refined_glowstone'),('精製黒曜石','refined_obsidian'),('鋼鉄','steel')]
@@ -170,6 +170,26 @@ def mine_op(e, text, found, main, state):
             'mode':'fast' if 'すばやく' in text or '速' in text else 'each','stand':[1.5,1,2.4],'yaw':180,'drop':None}
 
 WIDE = {'mekanism:modification_station', 'mekanism:digital_miner'}
+MEK_LANG = {}
+for _f in ['mek_ja.json', 'generators_ja.json', 'additions_ja.json']:
+    MEK_LANG.update(json.load(open(D + _f)))
+def label_spec(cid, name, color=None):
+    """How a gauge is named on screen: the game's own translation where there is one."""
+    if cid == 'energy' or (cid is None and color == 0x3CFE9A): return '@moremekaponder.ui.energy'
+    if cid == 'minecraft:water': return '@block.minecraft.water'
+    if cid and ':' in cid:
+        ns, path = cid.split(':')
+        for k in (f'chemical.{ns}.{path}', f'block.{ns}.{path}'):
+            if k in MEK_LANG: return '@' + k
+    if cid is None and color == 0xB30505: return '@chemical.mekanism.redstone'
+    if cid is None and color == 0x52BDCA: return '@chemical.mekanism.osmium'
+    if cid is None and color == 0x3F76E4: return '@block.minecraft.water'
+    return name if name else '@moremekaponder.ui.contents'
+GENERATORS = ('heat_generator', 'bio_generator', 'gas_burning_generator', 'solar_generator', 'advanced_solar_generator', 'wind_generator')
+def machine_flags(po, title, state):
+    if not title or title == 'minecraft:crafting_table': return
+    if powered(title) and state.get('power'): po['energy'] = True
+    if title.startswith('mekanismgenerators:') and title.split(':')[1] in GENERATORS: po['gen'] = True
 sys.path.insert(0, '/home/claude/mekx')
 import ext as _ext
 def model_box(bid):
@@ -207,6 +227,20 @@ def sync_state(ops, state):
             state['power'] = True
         if o['op'] in ('remove', 'destroy') and [3, 1, 3] in o['cells']:
             state['placed'] = False
+
+def chem_role(text, p, n):
+    """'in' when the chemical is sent into the machine, 'out' when the machine makes or stores it."""
+    rest = text[p+len(n):]
+    if rest.startswith('の代わり'): return 'none'  # "instead of hydrogen, send ethene"
+    clause = re.split('。|と、|ると|すと', rest, maxsplit=1)[0]
+    if rest.startswith(('が溜', 'を溜', 'のゲージ', 'が出', 'ができ', 'に分', 'が補給', 'が入')): return 'out'
+    if any(k in clause for k in ('送', '吹き込', 'を流', 'を使')): return 'in'
+    return 'out'
+
+FLUIDS = {'minecraft:water', 'mekanism:heavy_water'}
+def channel(text, p, cid):
+    """How a chemical reaches the machine: a mechanical pipe (liquids) or a pressurized tube."""
+    return 'pipe' if cid in FLUIDS or text[max(0, p-3):p].endswith('液体の') or text[p:p+3] == '液体の' else 'tube'
 
 def compile_action(e, text, state):
     ops = []
@@ -266,6 +300,14 @@ def compile_action(e, text, state):
         state['heat'] = True
         ops.append({'op':'line','id':'mekanism:basic_thermodynamic_conductor','cells':[[4,1,3],[5,1,3]]})
 
+    # chemicals piped in now keep feeding this machine in the next steps (shown on its card)
+    if ('チューブ' in text or 'パイプ' in text) and cfound:
+        fm = state.get('machine') or main or focus
+        feeds = [(label_spec(c, n), CHEM_COLOR.get(c.split(':')[-1], 0x55AAFF), channel(text, p, c)) for p, n, c in cfound if chem_role(text, p, n) == 'in']
+        if fm and feeds:
+            if state.get('feeds_for') != fm: state['feeds'] = []
+            chans = {f[2] for f in feeds}
+            state['feeds'] = [f for f in state.get('feeds', []) if f[2] not in chans] + feeds; state['feeds_for'] = fm
     machine_names = set()
     def mach_title():
         return state.get('machine') or main or (focus if focus else None)
@@ -334,8 +376,9 @@ def compile_action(e, text, state):
                 continue
             (ins if p < split else outs).append([rid, count_after(text, p+len(n))])
         for p, n, cid in cfound:
-            if p >= split or '送' in text[p:p+8] or 'ゲージ' in n:
-                gauges.append([n, cid])
+            role = chem_role(text, p, n)
+            if p >= split or role == 'in' or 'ゲージ' in n or text[p+len(n):].startswith(('が溜', 'を溜')):
+                gauges.append([n, cid, role, channel(text, p, cid)])
         if '溜ま' in text and not gauges and outs:
             pass
         ms = [rid for p, n, rid in found if is_machine(rid) and not text[p+len(n):p+len(n)+2].startswith('から')]
@@ -353,15 +396,34 @@ def compile_action(e, text, state):
             if powered(ms[-1]): infra('power')
         title = side_at and ms[-1] or mach_title()
         seen = set(); g2 = []
-        for n, c in gauges:
+        for n, c, r, ch in gauges:
             if c in seen: continue
-            seen.add(c); g2.append([n.replace('のゲージ',''), c])
+            seen.add(c); g2.append([n.replace('のゲージ',''), c, r, ch])
         gauges = g2
+        # chemicals sent in an earlier step keep flowing into the same machine (unless this step sends another one the same way)
+        if title and state.get('feeds_for') == title:
+            busy = {ch for n, c, r, ch in gauges if r == 'in'}
+            for lab, col, ch in reversed(state.get('feeds', [])):
+                if ch in busy or any(label_spec(c, n) == lab for n, c, r, _ in gauges): continue
+                gauges.insert(0, ['@feed', (lab, col), 'in', ch])
         if not gauges and ('ゲージ' in text or '溜ま' in text):
             col = 0xB30505 if 'レッドストーン' in text else 0x3CFE9A if '電力' in text else 0x52BDCA if 'オスミウム' in text else 0x55AAFF
-            gauges = [['', None]]; gcol = col
-        po = {'op':'panel','title':title,'at':side_at,'in':ins[:4],'out':outs[:3],'gauge':[[n, (gcol if c is None else CHEM_COLOR.get(c.split(':')[-1], 0x55AAFF))] for n, c in gauges[:2]] or None,
-                    'drain':'減' in text}
+            gauges = [['', None, 'out', 'tube']]; gcol = col
+        def gspec(n, c, r):
+            if n == '@feed': return [c[0], c[1], r]
+            return [label_spec(c, n, gcol if c is None else None), (gcol if c is None else CHEM_COLOR.get(c.split(':')[-1], 0x55AAFF)), r]
+        po = {'op':'panel','title':title,'at':side_at,'in':ins[:4],'out':outs[:3],
+              'gauge':[gspec(n, c, r) for n, c, r, ch in gauges[:3]] or None,
+              'drain':'減' in text}
+        if po.get('gauge') and powered(title) and state.get('power'):
+            # the machine's own energy bar is already on its card
+            po['gauge'] = [g for g in po['gauge'] if g[0] != '@moremekaponder.ui.energy'] or None
+        if 'スロット' in text and any(k in text for k in ('が入る', '補給', '充電')) and not po['out']:
+            po['fill'] = True  # an item put in a slot gets filled or charged
+        if title == 'mekanism:modification_station' and po['in']:
+            # the suit or tool comes back out with the module inside
+            po['out'] = [po['in'][0]]
+        machine_flags(po, title, state)
         src = gauge_src(text, state)
         if src and po['gauge'] and not po['in']: po['src'] = src
         shape(po, title, side_at)
@@ -369,8 +431,8 @@ def compile_action(e, text, state):
         return ops
     if 'ゲージ' in text or '溜ま' in text:
         cfound = [x for i, x in enumerate(cfound) if x[2] not in [y[2] for y in cfound[:i]]]
-        gs = [[n.replace('のゲージ',''), CHEM_COLOR.get(c.split(':')[-1], 0x55AAFF)] for p, n, c in cfound] or [['', 0x3CFE9A]]
-        go = {'op':'gauge','gauges':gs[:2],'drain':'減' in text}
+        gs = [[label_spec(c, n.replace('のゲージ','')), CHEM_COLOR.get(c.split(':')[-1], 0x55AAFF), chem_role(text, p, n)] for p, n, c in cfound] or [['@moremekaponder.ui.energy', 0x3CFE9A, 'out']]
+        go = {'op':'gauge','gauges':gs[:3],'drain':'減' in text}
         src = gauge_src(text, state)
         if src: go['src'] = src
         ops.append(go)
@@ -387,7 +449,7 @@ def compile_action(e, text, state):
             if a and b:
                 ops.append({'op':'line','id':a[-1][2],'cells':[[4,1,1],[5,1,1],[6,1,1]]})
                 ops.append({'op':'click','left':False,'sneak':False,'item':held,'at':[5.5,2,1.5]})
-                ops.append({'op':'swapcells','id':b[-1][2],'cells':[[4,1,1],[5,1,1],[6,1,1]]})
+                ops.append({'op':'swapcells','id':b[-1][2],'cells':[[4,1,1],[5,1,1],[6,1,1]],'from':a[-1][2],'held':held})
                 return ops
         ops.append({'op':'click','left':'左クリック' in text,'sneak':'スニーク' in text or 'しゃがみ' in text,'item':held})
         # tier upgrades / transformations
@@ -434,11 +496,15 @@ for e in entries:
     unused = set(hand) - set(range(ai))
     assert not unused, (sid, unused)
     lang[f'moremekaponder.ponder.{sid}.header'] = e['title']
-    out_entries.append({'id': sid, 'items': e['items'], 'main': e['id'] if e['id'] in blocks else None, 'item': e['items'][0], 'steps': steps})
+    entry = {'id': sid, 'items': e['items'], 'main': e['id'] if e['id'] in blocks else None, 'item': e['items'][0], 'steps': steps}
+    entry.update(SCENE_PROPS.get(sid, {}))
+    out_entries.append(entry)
 
 import os
+from ui_lang import UI_LANG
 os.makedirs(OUT+'/assets/moremekaponder/lang', exist_ok=True)
 json.dump(out_entries, open(OUT+'/assets/moremekaponder/scenes.json','w'), ensure_ascii=False, separators=(',',':'))
 for l in ['ja_jp','en_us']:
-    json.dump(lang, open(OUT+f'/assets/moremekaponder/lang/{l}.json','w'), ensure_ascii=False, indent=1)
+    out = dict(lang); out.update(UI_LANG[l])
+    json.dump(out, open(OUT+f'/assets/moremekaponder/lang/{l}.json','w'), ensure_ascii=False, indent=1)
 print(len(out_entries), 'scenes', len(lang), 'lang keys')

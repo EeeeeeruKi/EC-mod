@@ -1677,8 +1677,18 @@
     },
     "ponderererer": {
       "name": "Ponderererer",
-      "summary": "Ponder（思案画面）に、レーザー・稲妻・爆発・ゲージ・機械の画面・プレイヤーなどの描画を追加するライブラリMODです。思案画面を作るMODから使います。",
+      "summary": "Ponder（思案画面）に、レーザー・稲妻・爆発・ゲージ・機械の画面・プレイヤー・情報カード・名札などの描画を追加するライブラリMODです。思案画面を作るMODから使います。",
       "versions": [
+        {
+          "version": "1.3.0",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/ponderererer/1.21.1-neoforge/ponderererer-neoforge-1.21.1-1.3.0.jar",
+          "fileName": "ponderererer-neoforge-1.21.1-1.3.0.jar",
+          "sha256": "554fea2264f2ae20b2e5f2e17ed467bed627c0226e07e1ca0740ad4e261639fe",
+          "changelog": "機械の画面のような情報カード（FX.card）と、ブロックの上に出す名札（FX.label）を追加しました。思案画面を暗くして光るブロックで照らす機能、風力発電機の羽根などを回す機能、タービンの羽や物流トランスポーターの色のようなブロックの見た目のデータを変える機能も追加しました。",
+          "released": "2026-11-24"
+        },
         {
           "version": "1.2.0",
           "mc": "1.21.1",
@@ -1745,6 +1755,16 @@
       "name": "More MekaPonder",
       "summary": "Mekanism の機械・ケーブル・アイテム・道具・防具の使い方を、思案画面（Ponder）で解説するMODです。公式アドオン（Generators・Additions・Tools）にも対応しています。",
       "versions": [
+        {
+          "version": "1.0.9",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/moremekaponder/1.21.1-neoforge/moremekaponder-neoforge-1.21.1-1.0.9.jar",
+          "fileName": "moremekaponder-neoforge-1.21.1-1.0.9.jar",
+          "sha256": "e3b05470e35780239527a096ff426914db7919cdc0ce097d710453e5b1d4e039",
+          "changelog": "機械の画面のような情報カードを画面の左に出すようにしました（入れたもの・できたもの・電力や化学物質のゲージ・本物のクラフトレシピ）。風力発電機・輝くプラスチックブロック・発光パネル・タービンの羽・物流ソーターの思案画面を作り直し、発電機の電力が出る面、コンダクターの先の機械、改造ステーションから出てくるもの、2つのレシピが混ざった場面などの間違いを直しました。Ponderererer 1.3.0 以上が必要です。",
+          "released": "2026-11-24"
+        },
         {
           "version": "1.0.8",
           "mc": "1.21.1",

@@ -2,6 +2,12 @@ package io.github.eeeeeeruki.ponderererer.api;
 
 import io.github.eeeeeeruki.ponderererer.world.MekanismSides;
 import io.github.eeeeeeruki.ponderererer.world.TransmitterLinker;
+import io.github.eeeeeeruki.ponderererer.world.BlockEntityTags;
+import io.github.eeeeeeruki.ponderererer.world.SceneLight;
+import io.github.eeeeeeruki.ponderererer.element.CardElement;
+import io.github.eeeeeeruki.ponderererer.element.LabelElement;
+import io.github.eeeeeeruki.ponderererer.element.SpinElement;
+import net.minecraft.nbt.CompoundTag;
 import net.createmod.ponder.api.scene.Selection;
 import net.minecraft.core.Direction;
 
@@ -285,6 +291,98 @@ public final class FX {
     /** Shows a cursor over a slot. click=true makes it look like it is being clicked. slot -1 removes it. */
     public void panelCursor(ElementLink<PanelElement> link, int slot, boolean click) {
         modify(link, p -> p.highlightSlot(slot, click));
+    }
+
+    // ------------------------------------------------------------------ information cards and labels
+
+    /** An information card in the column on the left of the screen (see {@link CardBuilder}). */
+    public ElementLink<CardElement> card(CardBuilder builder) {
+        return add(CardElement.class, builder::build);
+    }
+
+    public void cardSlot(ElementLink<CardElement> link, int slot, ItemStack stack) {
+        ItemStack copy = stack.copy();
+        modify(link, c -> c.setSlot(slot, copy.copy()));
+    }
+
+    public void cardBar(ElementLink<CardElement> link, int bar, float value, int ticks) {
+        modify(link, c -> c.setBar(bar, value, ticks));
+    }
+
+    public void cardProgress(ElementLink<CardElement> link, float value, int ticks) {
+        modify(link, c -> c.setProgress(value, ticks));
+    }
+
+    public void cardText(ElementLink<CardElement> link, int text, Component value) {
+        modify(link, c -> c.setText(text, value));
+    }
+
+    /** A small name tag above a point in the scene. color is ARGB, used for the frame. */
+    public ElementLink<LabelElement> label(Vec3 at, Component text, int color) {
+        return add(LabelElement.class, () -> new LabelElement(at, text, color));
+    }
+
+    // ------------------------------------------------------------------ block entities
+
+    /**
+     * Hands a block entity an update tag (merged into its current one), like a client receiving a change:
+     * e.g. {"blades": 2} for a Mekanism turbine rotor. Redraws the scene.
+     */
+    public void updateTag(BlockPos pos, CompoundTag tag) {
+        CompoundTag copy = tag.copy();
+        scene.addInstruction(ps -> {
+            if (BlockEntityTags.apply(ps.getWorld(), pos, copy))
+                ps.forEach(WorldSectionElement.class, WorldSectionElement::queueRedraw);
+        });
+    }
+
+    /** Paints a Mekanism logistical transporter. colorIndex is the EnumColor index (e.g. RED = 12). */
+    public void transporterColor(BlockPos pos, int colorIndex) {
+        CompoundTag tag = new CompoundTag();
+        tag.putInt("color", Math.max(0, colorIndex));
+        updateTag(pos, tag);
+    }
+
+    /**
+     * Turns a moving part of a block entity: writes {@code degreesPerTick} * time into the named float fields every
+     * frame (e.g. "angle" for a Mekanism wind generator). Stays until hidden.
+     */
+    public ElementLink<SpinElement> spin(BlockPos pos, float degreesPerTick, String... fields) {
+        return add(SpinElement.class, () -> new SpinElement(pos, degreesPerTick, fields));
+    }
+
+    public void setSpin(ElementLink<SpinElement> link, float degreesPerTick) {
+        modify(link, s -> s.setSpeed(degreesPerTick));
+    }
+
+    // ------------------------------------------------------------------ light
+
+    /**
+     * Darkens the scene: sky light becomes {@code skyLight} (0 = night, 15 = normal) and block light comes only
+     * from {@link #lightSource}. Reset when the scene restarts.
+     */
+    public void darkness(int skyLight) {
+        scene.addInstruction(ps -> {
+            SceneLight.setSky(ps.getWorld(), skyLight);
+            ps.forEach(WorldSectionElement.class, WorldSectionElement::queueRedraw);
+        });
+    }
+
+    /** A light source for {@link #darkness}: light level at the block, one less per block away. 0 removes it. */
+    public void lightSource(BlockPos pos, int level) {
+        BlockPos p = pos.immutable();
+        scene.addInstruction(ps -> {
+            SceneLight.addSource(ps.getWorld(), p, level);
+            ps.forEach(WorldSectionElement.class, WorldSectionElement::queueRedraw);
+        });
+    }
+
+    /** Back to Ponder's normal full brightness. */
+    public void clearLight() {
+        scene.addInstruction(ps -> {
+            SceneLight.clear(ps.getWorld());
+            ps.forEach(WorldSectionElement.class, WorldSectionElement::queueRedraw);
+        });
     }
 
     // ------------------------------------------------------------------ players
