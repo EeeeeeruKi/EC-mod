@@ -13,7 +13,7 @@ MATS = ['osmium','bronze','lapis_lazuli','refined_glowstone','refined_obsidian',
 names = {}   # japanese name -> registry id
 chems = {}   # japanese name -> chemical id
 blocks = set()
-for f in ['mek_ja.json','generators_ja.json','additions_ja.json','tools_ja.json']:
+for f in ['mek_ja.json','generators_ja.json','additions_ja.json','tools_ja.json','extras_ja.json']:
     for k, v in json.load(open(D+f)).items():
         m = re.match(r'^(item|block)\.(mekanism\w*)\.(\w+)$', k)
         if m:
@@ -70,7 +70,7 @@ CHEM_COLOR = {'hydrogen':0xFFFFFF,'oxygen':0x6CE2FF,'chlorine':0xCFE800,'hydroge
  'sulfur_trioxide':0xCE6C6C,'brine':0xFEEF9C,'sodium':0xE9FEF4,'lithium':0xEBA400,'ethene':0xEACCF9,'carbon':0x404040,'redstone':0xB30505,'diamond':0x6CEDD8,
  'gold':0xF2CD67,'tin':0xCCCCD9,'refined_obsidian':0x7C00ED,'osmium':0x52BDCA,'antimatter':0xA464B3,'nuclear_waste':0x4F412A,'plutonium':0x1F919C,
  'tritium':0x64FF70,'fusion_fuel':0x7E007D,'nutritional_paste':0xEB6B63,'clean_iron':0xC9C9C9,'dirty_iron':0x7F6E5C,'red':0xB02E26,'white':0xF9FFFE,'pink':0xF38BAA,
- 'heavy_water':0x2A3FA0,'water':0x3F76E4,'energy':0x3CFE9A}
+ 'heavy_water':0x2A3FA0,'radiance':0xC4C604,'thermonuclear':0x810C0C,'shining':0xFAD1FE,'spectrum':0xBF3314,'lead':0x627370,'molten_thermonuclear':0xD04020,'uranium_oxide':0xE1F573,'water':0x3F76E4,'energy':0x3CFE9A}
 
 for k, v in EXTRA.items():
     if v: names[k] = v
@@ -80,13 +80,25 @@ for k in list(names):
     # レッドストーン / ダイヤモンド are both an item and an infuse type: compile_action decides from the words around them
     if names[k] is None or (k in chems and k not in ('レッドストーン', 'ダイヤモンド')): del names[k]
 
+XTIERS = ['absolute', 'supreme', 'cosmic', 'infinite']  # Mekanism Extras
+# machines whose factories only Mekanism Extras (with More Machines) adds
+X_FACTORY = {'mekanism:chemical_oxidizer': 'oxidizing', 'mekanism:chemical_dissolution_chamber': 'dissolving',
+             'mekanism:chemical_washer': 'washing', 'mekanism:chemical_crystallizer': 'crystallizing',
+             'mekanism:pressurized_reaction_chamber': 'pressurised_reacting', 'mekanism:isotopic_centrifuge': 'centrifuging',
+             'mekanism:nutritional_liquifier': 'liquifying', 'mekanism:pigment_extractor': 'pigment_extracting',
+             'mekanism:painting_machine': 'painting'}
 def items_spec(eid, spec):
-    if not spec: return [eid]
+    if not spec:
+        if eid in X_FACTORY: return [eid] + [f'mekanism_extras:{t}_{X_FACTORY[eid]}_factory' for t in XTIERS]
+        return [eid]
     if spec.startswith('F:'):
-        kind = spec[2:]; return [eid] + [f'mekanism:{t}_{kind}_factory' for t in TIERS]
+        kind = spec[2:]; return [eid] + [f'mekanism:{t}_{kind}_factory' for t in TIERS] + [f'mekanism_extras:{t}_{kind}_factory' for t in XTIERS]
     if spec.startswith('T'):
         base = spec.split(':')[1]; l = [f'mekanism:{t}_{base}' for t in TIERS]
-        return l + ([f'mekanism:creative_{base}'] if spec.startswith('T+') else [])
+        x = [] if base in ('tier_installer', 'control_circuit') else [f'mekanism_extras:{t}_{base}' for t in XTIERS]  # those have their own scenes
+        return l + ([f'mekanism:creative_{base}'] if spec.startswith('T+') else []) + x
+    if spec.startswith('X:'):  # one Mekanism Extras item per tier / kind: X:{t}_control_circuit
+        return [f'mekanism_extras:' + spec[2:].replace('{t}', t) for t in XTIERS] if '{t}' in spec else ['mekanism_extras:' + spec[2:]]
     if spec.startswith('C:'):
         return [f'mekanismadditions:' + spec[2:].replace('{c}', c) for c in COLORS]
     if spec == 'A:armor':
@@ -171,7 +183,7 @@ def mine_op(e, text, found, main, state):
 
 WIDE = {'mekanism:modification_station', 'mekanism:digital_miner'}
 MEK_LANG = {}
-for _f in ['mek_ja.json', 'generators_ja.json', 'additions_ja.json']:
+for _f in ['mek_ja.json', 'generators_ja.json', 'additions_ja.json', 'extras_ja.json']:
     MEK_LANG.update(json.load(open(D + _f)))
 def label_spec(cid, name, color=None):
     """How a gauge is named on screen: the game's own translation where there is one."""
@@ -502,10 +514,11 @@ for e in entries:
 
 import os
 from ui_lang import UI_LANG
-import screens
+import screens, extras_lang
 os.makedirs(OUT+'/assets/moremekaponder/lang', exist_ok=True)
 json.dump(out_entries, open(OUT+'/assets/moremekaponder/scenes.json','w'), ensure_ascii=False, separators=(',',':'))
 screens.write(OUT)
+extras_lang.write(OUT)
 for l in ['ja_jp','en_us']:
     out = dict(lang); out.update(UI_LANG[l])
     json.dump(out, open(OUT+f'/assets/moremekaponder/lang/{l}.json','w'), ensure_ascii=False, indent=1)

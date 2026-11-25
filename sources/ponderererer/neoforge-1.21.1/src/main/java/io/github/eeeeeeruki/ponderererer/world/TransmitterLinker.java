@@ -41,15 +41,15 @@ public final class TransmitterLinker {
     /** Updates one transmitter. Returns false when there is no transmitter at {@code pos}. */
     public static boolean linkOne(PonderLevel world, BlockPos pos) {
         BlockEntity be = world.getBlockEntity(pos);
-        Class<?> family = family(be);
+        Object family = family(be);
         if (family == null) return false;
         byte connections = 0, acceptors = 0;
         for (Direction side : Direction.values()) {
             BlockEntity other = world.getBlockEntity(pos.relative(side));
             if (other == null) continue;
-            Class<?> otherFamily = family(other);
+            Object otherFamily = family(other);
             if (otherFamily == null) acceptors |= (byte) (1 << side.ordinal());
-            else if (otherFamily == family) connections |= (byte) (1 << side.ordinal());
+            else if (otherFamily.equals(family)) connections |= (byte) (1 << side.ordinal());
         }
         return set(world, be, connections, acceptors);
     }
@@ -92,13 +92,26 @@ public final class TransmitterLinker {
      * so all tiers of a cable match, and logistical / diversion / restrictive transporters match each other.
      * Returns null for anything that is not a transmitter.
      */
-    private static Class<?> family(BlockEntity be) {
+    /**
+     * What kind of transmitter this is (cable, pipe, tube, transporter, conductor), or null for anything else.
+     * Goes by the class name, so add-on tiers (e.g. Mekanism Extras' cables) join the same kind as Mekanism's own.
+     */
+    private static Object family(BlockEntity be) {
         if (be == null) return null;
         Class<?> below = null;
+        boolean transmitter = false;
         for (Class<?> c = be.getClass(); c != null && c != Object.class; c = c.getSuperclass()) {
-            if (c.getSimpleName().equals(TRANSMITTER_BASE)) return below;
+            if (c.getSimpleName().equals(TRANSMITTER_BASE)) {
+                transmitter = true;
+                break;
+            }
             below = c;
         }
-        return null;
+        if (!transmitter) return null;
+        String name = be.getClass().getSimpleName();
+        for (String kind : KINDS) if (name.contains(kind)) return kind;
+        return below;
     }
+
+    private static final String[] KINDS = {"UniversalCable", "MechanicalPipe", "PressurizedTube", "Transporter", "ThermodynamicConductor"};
 }

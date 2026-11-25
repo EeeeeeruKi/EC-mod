@@ -1710,6 +1710,16 @@
       "summary": "Ponder（思案画面）に、レーザー・稲妻・爆発・ゲージ・機械の画面・プレイヤー・情報カード・名札などの描画を追加するライブラリMODです。思案画面を作るMODから使います。",
       "versions": [
         {
+          "version": "1.4.1",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/ponderererer/1.21.1-neoforge/ponderererer-neoforge-1.21.1-1.4.1.jar",
+          "fileName": "ponderererer-neoforge-1.21.1-1.4.1.jar",
+          "sha256": "a0eb7eeb26acab635da1e11978d9bf32ba186eb5dee4c2428ea7d8309ca92083",
+          "changelog": "Mekanism Extras などのアドオンのケーブル・パイプ・チューブも、Mekanism のものと同じ種類としてつながるようにしました。",
+          "released": "2026-11-25"
+        },
+        {
           "version": "1.4.0",
           "mc": "1.21.1",
           "loader": "neoforge",
@@ -1805,6 +1815,16 @@
       "name": "More MekaPonder",
       "summary": "Mekanism の機械・ケーブル・アイテム・道具・防具の使い方を、思案画面（Ponder）で解説するMODです。公式アドオン（Generators・Additions・Tools）にも対応しています。",
       "versions": [
+        {
+          "version": "1.0.11",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/moremekaponder/1.21.1-neoforge/moremekaponder-neoforge-1.21.1-1.0.11.jar",
+          "fileName": "moremekaponder-neoforge-1.21.1-1.0.11.jar",
+          "sha256": "6d704d1408aec15dde7b62e30d3556c789c68c5800cf4cdd588dd46f36f94878",
+          "changelog": "Mekanism Extras に対応しました（合金・制御回路・ティアインストーラー・濃縮素材・ナクアダ・アップグレード・発展型電動ポンプの思案画面を15個追加し、Extras の日本語名も入れました）。Ponderererer 1.4.1 以上が必要です。",
+          "released": "2026-11-25"
+        },
         {
           "version": "1.0.10",
           "mc": "1.21.1",

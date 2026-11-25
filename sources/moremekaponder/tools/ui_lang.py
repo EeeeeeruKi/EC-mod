@@ -105,6 +105,7 @@ _JA = {
     'side_before': 'この面：入力（青）',
     'side_after': '右クリックで：出力（橙）に変わりました',
     'mode_decondense': '液体から気体に戻すモードです',
+    'creative_fast': '電力を使わず、すぐに加工されます',
 }
 
 _EN = {
@@ -204,6 +205,7 @@ _EN = {
     'side_before': 'This side: input (blue)',
     'side_after': 'Right-clicked: now output (orange)',
     'mode_decondense': 'Mode: liquid back to gas',
+    'creative_fast': 'No energy used, done at once',
 }
 
 missing = set(_JA) ^ set(_EN)

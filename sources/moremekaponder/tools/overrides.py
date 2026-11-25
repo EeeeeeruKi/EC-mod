@@ -1015,3 +1015,117 @@ UI_STEPS = {
 
 for _sid, _steps in UI_STEPS.items():
     OVERRIDES.setdefault(_sid, {}).update(_steps)
+
+
+# ================================================================ 1.0.11: Mekanism Extras
+X = 'mekanism_extras:'
+X_COLORS = {'radiance': 0xC4C604, 'thermonuclear': 0x810C0C, 'shining': 0xFAD1FE, 'spectrum': 0xBF3314}
+OSMIUM_COMPRESSOR = 'mekanism:osmium_compressor'
+PRC_ID = 'mekanism:pressurized_reaction_chamber'
+NUCLEO_ID = 'mekanism:antiprotonic_nucleosynthesizer'
+ABS_FACTORY = X + 'absolute_enriching_factory'
+ADV_PUMP = X + 'advanced_electric_pump'
+CABLE_LINE = [[4, 1, 1], [5, 1, 1], [6, 1, 1]]
+
+
+def xchem(name):
+    return ['@chemical.mekanism_extras.' + name, X_COLORS[name]]
+
+
+def alloy_scene(prev, alloy, chem, cable_from, cable_to):
+    return {
+        0: [B([3, 1, 3], INFUSER_M), *power_west(),
+            gpanel(INFUSER_M, ins=[[prev, 1]], outs=[[alloy, 1]], gauge=[xchem(chem) + ['in']], energy=True)],
+        1: [L(cable_from, CABLE_LINE), click([5.5, 1.6, 1.0], item=alloy),
+            {'op': 'swapcells', 'id': cable_to, 'cells': CABLE_LINE, 'from': cable_from, 'held': alloy}],
+    }
+
+
+def infuse_step(item, chem):
+    return [{'op': 'swap', 'id': INFUSER_M}, gpanel(INFUSER_M, ins=[[item, 1]], gauge=[xchem(chem) + ['out']], energy=True)]
+
+
+def tube_east():
+    return [B([6, 1, 3], CTANK), L(TUBE, [[5, 1, 3], [4, 1, 3]])]
+
+
+EXTRAS_STEPS = {
+    'mekanism_extras_alloy_radiance': alloy_scene('mekanism:alloy_atomic', X + 'alloy_radiance', 'radiance',
+                                                  'mekanism:ultimate_universal_cable', X + 'absolute_universal_cable'),
+    'mekanism_extras_alloy_thermonuclear': alloy_scene(X + 'alloy_radiance', X + 'alloy_thermonuclear', 'thermonuclear',
+                                                       X + 'absolute_universal_cable', X + 'supreme_universal_cable'),
+    'mekanism_extras_alloy_shining': alloy_scene(X + 'alloy_thermonuclear', X + 'alloy_shining', 'shining',
+                                                 X + 'supreme_universal_cable', X + 'cosmic_universal_cable'),
+    'mekanism_extras_alloy_spectrum': alloy_scene(X + 'alloy_shining', X + 'alloy_spectrum', 'spectrum',
+                                                  X + 'cosmic_universal_cable', X + 'infinite_universal_cable'),
+    'mekanism_extras_absolute_control_circuit': {
+        0: [panel('minecraft:crafting_table', ins=[['mekanism:ultimate_control_circuit', 1], [X + 'alloy_radiance', 2]],
+                  outs=[[X + 'absolute_control_circuit', 1]])],
+        1: [B([3, 1, 3], INFUSER_M), *power_west(),
+            gpanel(INFUSER_M, ins=[['mekanism:ultimate_control_circuit', 1]], outs=[[X + 'absolute_control_circuit', 1]],
+                   gauge=[xchem('radiance') + ['in']], energy=True)],
+    },
+    'mekanism_extras_absolute_tier_installer': {
+        0: [B([3, 1, 3], 'mekanism:ultimate_enriching_factory'), *power_west(),
+            click([3.5, 2.0, 3.0], sneak=True, item=X + 'absolute_tier_installer'), {'op': 'swap', 'id': ABS_FACTORY}, indicate([3, 1, 3])],
+        1: [click([3.5, 2.0, 3.0], sneak=True, item=X + 'supreme_tier_installer'), {'op': 'swap', 'id': X + 'supreme_enriching_factory'},
+            indicate([3, 1, 3])],
+    },
+    'mekanism_extras_enriched_radiance': {
+        0: [B([3, 1, 3], OSMIUM_COMPRESSOR), *power_west(), *tube_east(),
+            gpanel(OSMIUM_COMPRESSOR, ins=[['minecraft:glowstone_dust', 1]], outs=[[X + 'dust_radiance', 1]],
+                   gauge=[['@chemical.mekanism.uranium_oxide', 0xE1F573, 'in']], energy=True, src=[6.5, 1.5, 3.5])],
+        1: [{'op': 'swap', 'id': CHAMBER}, gpanel(CHAMBER, ins=[[X + 'dust_radiance', 1]], outs=[[X + 'enriched_radiance', 1]], energy=True)],
+        2: infuse_step(X + 'enriched_radiance', 'radiance'),
+    },
+    'mekanism_extras_enriched_thermonuclear': {
+        0: [B([3, 1, 3], PRC_ID), *power_west(), *tube_east(), B([3, 1, 6], FTANK), L(PIPE, [[3, 1, 5], [3, 1, 4]]),
+            gpanel(PRC_ID, ins=[[X + 'enriched_radiance', 1]], outs=[[X + 'enriched_thermonuclear', 1]],
+                   gauge=[['@block.minecraft.lava', 0xFF7A1A, 'in'], ['@chemical.mekanism_extras.molten_thermonuclear', 0xD04020, 'in']],
+                   energy=True)],
+        1: infuse_step(X + 'enriched_thermonuclear', 'thermonuclear'),
+    },
+    'mekanism_extras_enriched_shining': {
+        0: [B([3, 1, 3], NUCLEO_ID), *power_west(), {'op': 'lightning'},
+            gpanel(NUCLEO_ID, ins=[[X + 'enriched_thermonuclear', 1]], outs=[[X + 'enriched_shining', 1]],
+                   gauge=[['@chemical.mekanism.antimatter', ANTIMATTER_C, 'in']], energy=True)],
+        1: infuse_step(X + 'enriched_shining', 'shining'),
+    },
+    'mekanism_extras_enriched_spectrum': {
+        0: [B([3, 1, 3], OSMIUM_COMPRESSOR), *power_west(), *tube_east(),
+            gpanel(OSMIUM_COMPRESSOR, ins=[[X + 'enriched_shining', 1]], outs=[[X + 'enriched_spectrum', 1]],
+                   gauge=[['@chemical.mekanism.antimatter', ANTIMATTER_C, 'in']], energy=True, src=[6.5, 1.5, 3.5])],
+        1: infuse_step(X + 'enriched_spectrum', 'spectrum'),
+    },
+    'mekanism_extras_naquadah_ore': {
+        0: [floor('minecraft:bedrock', [[x, z] for x in range(7) for z in (5, 6)]),
+            floor(X + 'naquadah_ore', [[1, 4], [3, 4], [5, 4]], step=3),
+            label([3.5, 1.3, 4.5], '#item:mekanism_extras:naquadah_ore', 0x7FD36B, wait=5),
+            label([3.5, 1.3, 6.0], '#item:minecraft:bedrock', 0xB0B0B0, wait=20)],
+        1: [B([3, 1, 2], CHAMBER), B([0, 1, 2], CUBE), L(CABLE, [[1, 1, 2], [2, 1, 2]]),
+            gpanel(CHAMBER, ins=[[X + 'naquadah_ore', 1]], outs=[[X + 'dust_naquadah', 2]], energy=True, at=[3, 1, 2])],
+        2: [L(CABLE, [[2, 1, 1]]), B([3, 1, 1], SMELTER), gpanel(SMELTER, ins=[[X + 'dust_naquadah', 1]], outs=[[X + 'ingot_naquadah', 1]], energy=True, at=[3, 1, 1])],
+    },
+    'mekanism_extras_upgrade_stack': {
+        0: [B([3, 1, 3], ABS_FACTORY), *power_west(), gpanel(ABS_FACTORY, ins=[[X + 'upgrade_stack', 1]], energy=True)],
+    },
+    'mekanism_extras_upgrade_creative': {
+        0: [B([3, 1, 3], ABS_FACTORY), gpanel(ABS_FACTORY, ins=[[X + 'upgrade_creative', 1]]), CLEAR,
+            gpanel(ABS_FACTORY, ins=[['minecraft:iron_ore', 1]], outs=[['mekanism:dust_iron', 2]], note='@moremekaponder.ui.creative_fast')],
+    },
+    'mekanism_extras_advanced_electric_pump': {
+        0: [floor('minecraft:water', [[x, z] for x in (2, 3, 4) for z in (2, 3, 4)]), B([3, 1, 3], ADV_PUMP), *power_west(),
+            active([3, 1, 3]), stream([[3.5, 0.9, 3.5], [3.5, 1.8, 3.5]], color=WATER, rounds=3),
+            gpanel(ADV_PUMP, gauge=[['@block.minecraft.water', WATER, 'out']], energy=True, src=[3.5, 0.9, 3.5])],
+        1: [panel('minecraft:crafting_table', ins=[['mekanism:electric_pump', 1], [X + 'alloy_thermonuclear', 2], ['minecraft:bucket', 3],
+                                                   ['mekanism:block_osmium', 3]], outs=[[ADV_PUMP, 1]])],
+    },
+    'mekanism_extras_upgrade_ionic_membrane': {
+        0: [floor('mekanism:uranium_hexafluoride', [[x, z] for x in (2, 3, 4) for z in (2, 3, 4)]), B([3, 1, 3], ADV_PUMP), *power_west(),
+            gpanel(ADV_PUMP, ins=[[X + 'upgrade_ionic_membrane', 1]], gauge=[['@block.mekanism_extras.rich_uranium_fuel', 0x9ACD32, 'out']],
+                   energy=True, src=[3.5, 0.9, 3.5])],
+    },
+}
+
+for _sid, _steps in EXTRAS_STEPS.items():
+    OVERRIDES.setdefault(_sid, {}).update(_steps)

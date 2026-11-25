@@ -709,9 +709,9 @@ final class SceneRunner {
             ui.consume = false;
             ui.arrow = false;
             b.process(ints(left), new int[]{slot}, false, new int[0], ints(right));
-            String type = key(upgrade).getPath().substring("upgrade_".length());
-            b.text(Component.translatable("upgrade.mekanism." + type).withStyle(net.minecraft.ChatFormatting.BOLD), upgrade, DARK);
-            b.text(Component.translatable("upgrade.mekanism." + type + ".description"));
+            String type = key(upgrade).getPath().substring("upgrade_".length()), ns = key(upgrade).getNamespace();
+            b.text(Component.translatable("upgrade." + ns + "." + type).withStyle(net.minecraft.ChatFormatting.BOLD), upgrade, DARK);
+            b.text(Component.translatable("upgrade." + ns + "." + type + ".description"));
         } else {
             boolean hasIn = !ins.isEmpty(), hasOut = !outs.isEmpty() || ui.gen >= 0;
             for (Gauge g : gauges) {

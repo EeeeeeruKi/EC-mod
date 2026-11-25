@@ -132,7 +132,7 @@ SCREENS.update({
     'mekanism:chemical_washer': WASHER, 'mekanism:chemical_crystallizer': CRYSTALLIZER, 'mekanism:isotopic_centrifuge': CENTRIFUGE,
     'mekanism:solar_neutron_activator': SNA, 'mekanism:electrolytic_separator': SEPARATOR, 'mekanism:pressurized_reaction_chamber': PRC,
     'mekanism:rotary_condensentrator': ROTARY, 'mekanism:nutritional_liquifier': LIQUIFIER, 'mekanism:painting_machine': PAINTING,
-    'mekanism:antiprotonic_nucleosynthesizer': NUCLEO, 'mekanism:electric_pump': PUMP, 'mekanism:fluidic_plenisher': PUMP,
+    'mekanism:antiprotonic_nucleosynthesizer': NUCLEO, 'mekanism:electric_pump': PUMP, 'mekanism_extras:advanced_electric_pump': PUMP, 'mekanism:fluidic_plenisher': PUMP,
     'mekanism:fuelwood_heater': FUELWOOD, 'mekanism:resistive_heater': RESISTIVE,
     'mekanismgenerators:wind_generator': WIND, 'mekanismgenerators:solar_generator': SOLAR,
     'mekanismgenerators:advanced_solar_generator': SOLAR,
