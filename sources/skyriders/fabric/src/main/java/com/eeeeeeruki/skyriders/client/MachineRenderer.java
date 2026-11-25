@@ -37,8 +37,13 @@ public class MachineRenderer extends EntityRenderer<MachineEntity> {
             float p = (MachineEntity.spinDuration() - spin + tickDelta) / MachineEntity.spinDuration();
             matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(p * 360f));
         }
+        // 前後の傾き（+で機首が下がる）。真ん中あたりを軸にする
+        float tilt = MathHelper.lerp(tickDelta, entity.prevVisPitch, entity.visPitch);
+        matrices.translate(0f, 0.18f, 0f);
+        matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(tilt));
         float roll = MathHelper.lerp(tickDelta, entity.prevRoll, entity.roll);
         matrices.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(roll));
+        matrices.translate(0f, -0.18f, 0f);
 
         BlockState body = Blocks.GOLD_BLOCK.getDefaultState();
         BlockState tip = Blocks.YELLOW_CONCRETE.getDefaultState();

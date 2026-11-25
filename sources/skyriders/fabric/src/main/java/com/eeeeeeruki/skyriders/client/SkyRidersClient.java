@@ -2,7 +2,13 @@ package com.eeeeeeruki.skyriders.client;
 
 import com.eeeeeeruki.skyriders.SkyRiders;
 import com.eeeeeeruki.skyriders.entity.MachineEntity;
+import com.eeeeeeruki.skyriders.item.PatchItem;
 import com.eeeeeeruki.skyriders.net.MachineActionPayload;
+import com.eeeeeeruki.skyriders.net.MachineHitPayload;
+import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
+import net.minecraft.item.Item;
+import java.util.ArrayList;
+import java.util.List;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -27,6 +33,20 @@ public class SkyRidersClient implements ClientModInitializer {
                 ClientPlayNetworking.send(new MachineActionPayload(action));
             }
         };
+
+        // 攻撃を受けた時の吹っ飛び
+        ClientPlayNetworking.registerGlobalReceiver(MachineHitPayload.ID, (payload, context) -> context.client().execute(() -> {
+            if (context.client().world != null
+                    && context.client().world.getEntityById(payload.entityId()) instanceof MachineEntity m) {
+                m.applyHitClient(payload.vx(), payload.vy(), payload.vz(), payload.stun());
+            }
+        }));
+
+        // パッチの色
+        List<Item> patches = new ArrayList<>(SkyRiders.PATCHES.values());
+        patches.add(SkyRiders.PATCH_ALL);
+        ColorProviderRegistry.ITEM.register((stack, tintIndex) -> tintIndex == 0 && stack.getItem() instanceof PatchItem p
+                ? 0xFF000000 | p.color() : 0xFFFFFFFF, patches.toArray(new Item[0]));
 
         // ワールドより先に入力を読む（バニラのQ・Eより先に横取りする）
         ClientTickEvents.START_CLIENT_TICK.register(SkyRidersClient::readInput);

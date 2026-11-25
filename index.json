@@ -2737,8 +2737,28 @@
     },
     "skyriders": {
       "name": "Sky Riders",
-      "summary": "エアライド系のマシンに乗って走るMOD（試作版）。マシンは自動で前に進み、ボタンひとつでチャージ・ブースト・ドリフト・吸い込みができます。空中では滑空し、スペシャルやクイックスピンで攻撃もできます。",
+      "summary": "エアライド系のマシンに乗って走るMOD（試作版）。マシンは自動で前に進み、ボタンひとつでチャージ・ブースト・ドリフト・吸い込みができます。空中では速度と高度を交換しながら滑空し、パッチを集めてマシンを強くできます。",
       "versions": [
+        {
+          "version": "0.2.0",
+          "mc": "1.21.1",
+          "loader": "fabric",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/skyriders/1.21.1-fabric/skyriders-0.2.0.jar",
+          "fileName": "skyriders-0.2.0.jar",
+          "sha256": "546b1488acb26b81a865b86804d24c18affc64c4271cc7ccf6522b33396f1c87",
+          "changelog": "本家の内部の仕組みをもとに、移動とステータスを作り直しました。速度は最高速へ収束する方式になり、加速の値はブーストのあとの戻り方にも効きます。滑空では機首の角度で速度と高度を交換し、遅くなりすぎると失速します。着地は機首の角度で判定します。パッチ9種（最高速・加速・チャージ・旋回・飛行・攻撃・防御・重量・HP）とオールパッチ・偽パッチ、マシンのHP、体当たりを追加しました。HPが0になるとマシンがこわれ、ためたパッチをまわりにばらまきます。アイテムはクリエイティブの「Sky Riders」タブに移りました。",
+          "released": "2026-11-26"
+        },
+        {
+          "version": "0.1.2",
+          "mc": "1.21.1",
+          "loader": "fabric",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/skyriders/1.21.1-fabric/skyriders-0.1.2.jar",
+          "fileName": "skyriders-0.1.2.jar",
+          "sha256": "fb4ca08a0b4c3944b443bd98673848b42033a77ca60d15b7232de1c7fdabd8fc",
+          "changelog": "空中では慣性をほとんどなくし、向いた方へすぐ進むようにして、加速も強めにしました。W/Sを押している間はマシンが前後に傾きます。空中にいる間はチャージがじわじわたまります。ナイス着地と着地失敗を追加しました。",
+          "released": "2026-11-26"
+        },
         {
           "version": "0.1.1",
           "mc": "1.21.1",
