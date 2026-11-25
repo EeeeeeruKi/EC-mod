@@ -2,6 +2,8 @@ package com.eeeeeeruki.minecrafttweak.core;
 
 import com.eeeeeeruki.minecrafttweak.feature.client.ChatImageFeature;
 import com.eeeeeeruki.minecrafttweak.feature.client.LongChatFeature;
+import com.eeeeeeruki.minecrafttweak.feature.client.DiceBotFeature;
+import com.eeeeeeruki.minecrafttweak.feature.client.McreatorFinderFeature;
 import com.eeeeeeruki.minecrafttweak.feature.fixes.DeepAetherEotsFixFeature;
 import com.eeeeeeruki.minecrafttweak.feature.client.MenuMusicFeature;
 import com.eeeeeeruki.minecrafttweak.feature.client.ModSafetyFeature;
@@ -46,6 +48,10 @@ public final class Features {
         add(new LongChatFeature());
         // 11
         add(new DeepAetherEotsFixFeature());
+        // 12
+        add(new DiceBotFeature());
+        // 13
+        add(new McreatorFinderFeature());
     }
 
     private Features() {

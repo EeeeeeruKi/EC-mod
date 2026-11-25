@@ -269,5 +269,19 @@
   "minecrafttweak.longer_chat.splitting": "This server does not have minEcraft twEEk, so the long message is sent in %s parts, one per second.",
   "minecrafttweak.category.fixes": "Fixes",
   "minecrafttweak.feature.deep_aether_eots_fix": "Deep Aether: EOTS crash fix",
-  "minecrafttweak.feature.deep_aether_eots_fix.desc": "Stops the game from crashing when Deep Aether's EOTS boss loses its target in the middle of an attack. Does nothing without Deep Aether. (Does nothing in the Forge 1.20.1 version.)"
+  "minecrafttweak.feature.deep_aether_eots_fix.desc": "Stops the game from crashing when Deep Aether's EOTS boss loses its target in the middle of an attack. Does nothing without Deep Aether. (Does nothing in the Forge 1.20.1 version.)",
+  "minecrafttweak.feature.dice_bot": "Dice Bot (BCDice)",
+  "minecrafttweak.feature.dice_bot.desc": "Dice commands in chat (2D6, 1D100<=50, CCB<=60, ...) are rolled with BCDice and the result is shown in chat. 'rccb' rolls a success value and then a CCB check with it. Commands starting with 'S' are secret rolls. Runs on the server, so the server also needs this feature on. Uses the BCDice-API (internet).",
+  "minecrafttweak.feature.dice_bot.game_system": "Game system",
+  "minecrafttweak.feature.dice_bot.game_system.desc": "BCDice game system ID (Cthulhu, Cthulhu7th, SwordWorld2.5, DiceBot for common commands only, ...).",
+  "minecrafttweak.feature.dice_bot.api_url": "BCDice-API URL",
+  "minecrafttweak.feature.dice_bot.api_url.desc": "The BCDice-API server that rolls the dice.",
+  "minecrafttweak.dicebot.secret_self": "(secret) %s",
+  "minecrafttweak.dicebot.secret_others": "%s made a secret roll",
+  "minecrafttweak.dicebot.error": "Could not reach BCDice (%s)",
+  "minecrafttweak.feature.mcreator_finder": "MCreator Mod Finder",
+  "minecrafttweak.feature.mcreator_finder.desc": "/mcreator finds the installed mods made with MCreator and sends the list to chat. /mcreator check shows it only to you.",
+  "minecrafttweak.mcreator.off": "MCreator Mod Finder is turned off.",
+  "minecrafttweak.mcreator.none": "No mods made with MCreator were found.",
+  "minecrafttweak.mcreator.found": "Mods made with MCreator (%s): %s"
 }

@@ -269,5 +269,19 @@
   "minecrafttweak.longer_chat.splitting": "このサーバーには minEcraft twEEk が入っていないため、長いチャットを%s回に分けて1秒ごとに送ります。",
   "minecrafttweak.category.fixes": "修正",
   "minecrafttweak.feature.deep_aether_eots_fix": "Deep Aether: EOTSのクラッシュ修正",
-  "minecrafttweak.feature.deep_aether_eots_fix.desc": "Deep Aether のボス「EOTS」が、攻撃の途中で狙う相手がいなくなったときに、ゲームが止まる（クラッシュする）のを防ぎます。Deep Aether が入っていないときは何もしません。"
+  "minecrafttweak.feature.deep_aether_eots_fix.desc": "Deep Aether のボス「EOTS」が、攻撃の途中で狙う相手がいなくなったときに、ゲームが止まる（クラッシュする）のを防ぎます。Deep Aether が入っていないときは何もしません。",
+  "minecrafttweak.feature.dice_bot": "ダイスボット（BCDice）",
+  "minecrafttweak.feature.dice_bot.desc": "チャットにダイスのコマンド（例: 2D6、1D100<=50、CCB<=60）を書くと、BCDice で振った結果をそのままチャットに出します。「rccb」と書くと、成功値を決めるロールと、その成功値での判定ロール（CCB）をまとめて振ります。「S」から始めるとシークレットダイス（結果は自分にだけ）になります。サーバーで動くので、サーバーでもこの機能がオンになっている必要があります。BCDice-API（インターネット）を使います。",
+  "minecrafttweak.feature.dice_bot.game_system": "ゲームシステム",
+  "minecrafttweak.feature.dice_bot.game_system.desc": "BCDice のゲームシステムのID です（例: Cthulhu＝クトゥルフ神話TRPG、Cthulhu7th＝新クトゥルフ神話TRPG、SwordWorld2.5、DiceBot＝共通のコマンドだけ）。",
+  "minecrafttweak.feature.dice_bot.api_url": "BCDice-API のURL",
+  "minecrafttweak.feature.dice_bot.api_url.desc": "ダイスを振ってもらう BCDice-API のサーバーです。",
+  "minecrafttweak.dicebot.secret_self": "(シークレット) %s",
+  "minecrafttweak.dicebot.secret_others": "%s がシークレットダイスを振りました",
+  "minecrafttweak.dicebot.error": "BCDice につながりませんでした（%s）",
+  "minecrafttweak.feature.mcreator_finder": "MCreator製modさがし",
+  "minecrafttweak.feature.mcreator_finder.desc": "コマンド /mcreator で、入っているmodの中から MCreator で作られたものを探して、その一覧をチャットに送ります。/mcreator check なら、チャットに送らず自分の画面にだけ出します。",
+  "minecrafttweak.mcreator.off": "「MCreator製modさがし」がオフになっています。",
+  "minecrafttweak.mcreator.none": "MCreator製のmodは見つかりませんでした。",
+  "minecrafttweak.mcreator.found": "MCreator製のmod（%s個）: %s"
 }

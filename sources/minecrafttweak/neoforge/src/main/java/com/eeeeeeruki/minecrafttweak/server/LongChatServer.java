@@ -61,6 +61,7 @@ public final class LongChatServer {
         }
         Component message = Component.translatable("chat.type.text", player.getDisplayName(), Component.literal(clean));
         server.getPlayerList().broadcastSystemMessage(message, false);
+        DiceBot.onChat(player, clean);
     }
 
     /** バニラのチャットで使えない文字（制御文字と「§」）を取る。 */

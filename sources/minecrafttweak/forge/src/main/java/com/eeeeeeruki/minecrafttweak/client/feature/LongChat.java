@@ -92,6 +92,26 @@ public final class LongChat {
         return true;
     }
 
+    /**
+     * ほかの機能からチャットに文を送る（長さはなんでもいい）。
+     * 256文字以下ならそのまま、長いときは「チャットの文字数を増やす」がオンでサーバーにこのmodがあればまるごと、
+     * そうでなければ256文字ずつに分けて1秒ごとに送る。
+     */
+    public static void sendText(String text) {
+        Minecraft mc = Minecraft.getInstance();
+        ClientPacketListener connection = mc.getConnection();
+        if (connection == null || text == null || text.isBlank()) {
+            return;
+        }
+        if (text.length() <= VANILLA) {
+            connection.sendChat(text);
+        } else if (enabled() && serverSupports()) {
+            LongChatNetwork.send(false, text);
+        } else {
+            QUEUE.addAll(split(text));
+        }
+    }
+
     /** 256文字ずつに分ける（できれば空白のところで）。 */
     static List<String> split(String text) {
         List<String> parts = new ArrayList<>();
