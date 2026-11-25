@@ -1942,6 +1942,26 @@
       "summary": "Quark を前提MODにして、Quark にない小さな改善をたくさん詰め込んでいくためのMODです。機能は最初はすべてオフで、ひとつずつオンにできます。このMOD・Quark・バニラ・Sodium の設定を、短い設定コードでまとめてやりとりできます。",
       "versions": [
         {
+          "version": "1.18.2",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/minecrafttweak/1.21.1-neoforge/minecrafttweak-neoforge-1.21.1-1.18.2.jar",
+          "fileName": "minecrafttweak-neoforge-1.21.1-1.18.2.jar",
+          "sha256": "e02d0fde8044c15a59aaf356cea57bd6a80da1adeb2346e6bb2e0c5df3b499cc",
+          "changelog": "「ダイスボット（BCDice）」の結果を、ダイスのコマンドを書いたチャットがみんなの画面に出たあとに出すようにしました（チャットを受け取ってから少し待ってから出します）。",
+          "released": "2026-11-25"
+        },
+        {
+          "version": "1.18.2",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/minecrafttweak/1.20.1-forge/minecrafttweak-forge-1.20.1-1.18.2.jar",
+          "fileName": "minecrafttweak-forge-1.20.1-1.18.2.jar",
+          "sha256": "d8b1f20cd0745e5fc8bc5f6d942fa66bf0a70ea21433fdae49a8987d21028c9a",
+          "changelog": "「ダイスボット（BCDice）」の結果を、ダイスのコマンドを書いたチャットがみんなの画面に出たあとに出すようにしました（チャットを受け取ってから少し待ってから出します）。",
+          "released": "2026-11-25"
+        },
+        {
           "version": "1.18.1",
           "mc": "1.21.1",
           "loader": "neoforge",

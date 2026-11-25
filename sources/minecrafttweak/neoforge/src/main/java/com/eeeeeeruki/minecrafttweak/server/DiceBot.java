@@ -92,8 +92,8 @@ public final class DiceBot {
         }
         if (command.equalsIgnoreCase("rccb")) {
             String result = rccb();
-            // チャットの文が流れたあとに出すため、次の処理の順番に回す
-            server.tell(new TickTask(server.getTickCount(), () -> broadcast(server, player, Component.literal(result))));
+            long sentAt = System.currentTimeMillis();
+            POOL.submit(() -> afterChat(server, sentAt, () -> broadcast(server, player, Component.literal(result))));
             return;
         }
         if (!currentPattern().matcher(command).find()) {
@@ -101,6 +101,7 @@ public final class DiceBot {
         }
         String system = system();
         String api = api();
+        long sentAt = System.currentTimeMillis();
         POOL.submit(() -> {
             try {
                 JsonObject result = roll(api, system, command);
@@ -109,7 +110,7 @@ public final class DiceBot {
                 }
                 String out = result.get("text").getAsString();
                 boolean secret = result.has("secret") && result.get("secret").getAsBoolean();
-                server.execute(() -> {
+                afterChat(server, sentAt, () -> {
                     if (secret) {
                         player.sendSystemMessage(prefix().append(Component.translatableWithFallback(
                                 "minecrafttweak.dicebot.secret_self", "(シークレット) %s", out)));
@@ -126,6 +127,25 @@ public final class DiceBot {
                         .withStyle(ChatFormatting.RED)));
             }
         });
+    }
+
+    /** 結果を出すまでに空ける時間（チャットの文がみんなの画面に出てから結果を出すため）。 */
+    private static final long DELAY_MS = 300;
+
+    /**
+     * チャットの文が流れたあとに結果を出す。チャットを受け取ってから DELAY_MS たつまで待ってから、
+     * サーバーのメインスレッドの次の処理の順番に回す（別のスレッドから呼ぶ）。
+     */
+    private static void afterChat(MinecraftServer server, long sentAt, Runnable task) {
+        long wait = sentAt + DELAY_MS - System.currentTimeMillis();
+        if (wait > 0) {
+            try {
+                Thread.sleep(wait);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+        server.execute(() -> server.tell(new TickTask(server.getTickCount(), task)));
     }
 
     /** rccb: 成功値を 1D100 で決めて、その値で CCB（クリティカル 5 以下・ファンブル 96 以上）の判定をする。 */
