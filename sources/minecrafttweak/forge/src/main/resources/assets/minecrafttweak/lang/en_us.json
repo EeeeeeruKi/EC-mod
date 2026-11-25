@@ -283,5 +283,7 @@
   "minecrafttweak.feature.mcreator_finder.desc": "/mcreator finds the installed mods made with MCreator and sends the list to chat. /mcreator check shows it only to you.",
   "minecrafttweak.mcreator.off": "MCreator Mod Finder is turned off.",
   "minecrafttweak.mcreator.none": "No mods made with MCreator were found.",
-  "minecrafttweak.mcreator.found": "Mods made with MCreator (%s): %s"
+  "minecrafttweak.mcreator.found": "Mods made with MCreator (%s): %s",
+  "minecrafttweak.feature.recipe_viewer_ftb_fix": "EMI/JEI and FTB buttons overlap fix",
+  "minecrafttweak.feature.recipe_viewer_ftb_fix.desc": "Tells EMI and JEI where the FTB sidebar buttons (quests, teams, map, ...) are, so the item list and favorites do not overlap them."
 }

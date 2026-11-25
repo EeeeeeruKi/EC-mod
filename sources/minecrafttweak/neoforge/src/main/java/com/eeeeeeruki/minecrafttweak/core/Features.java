@@ -5,6 +5,7 @@ import com.eeeeeeruki.minecrafttweak.feature.client.LongChatFeature;
 import com.eeeeeeruki.minecrafttweak.feature.client.DiceBotFeature;
 import com.eeeeeeruki.minecrafttweak.feature.client.McreatorFinderFeature;
 import com.eeeeeeruki.minecrafttweak.feature.fixes.DeepAetherEotsFixFeature;
+import com.eeeeeeruki.minecrafttweak.feature.fixes.RecipeViewerFtbFixFeature;
 import com.eeeeeeruki.minecrafttweak.feature.client.MenuMusicFeature;
 import com.eeeeeeruki.minecrafttweak.feature.client.ModSafetyFeature;
 import com.eeeeeeruki.minecrafttweak.feature.client.EnglishSearchFeature;
@@ -52,6 +53,8 @@ public final class Features {
         add(new DiceBotFeature());
         // 13
         add(new McreatorFinderFeature());
+        // 14
+        add(new RecipeViewerFtbFixFeature());
     }
 
     private Features() {

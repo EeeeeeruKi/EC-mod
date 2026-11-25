@@ -283,5 +283,7 @@
   "minecrafttweak.feature.mcreator_finder.desc": "コマンド /mcreator で、入っているmodの中から MCreator で作られたものを探して、その一覧をチャットに送ります。/mcreator check なら、チャットに送らず自分の画面にだけ出します。",
   "minecrafttweak.mcreator.off": "「MCreator製modさがし」がオフになっています。",
   "minecrafttweak.mcreator.none": "MCreator製のmodは見つかりませんでした。",
-  "minecrafttweak.mcreator.found": "MCreator製のmod（%s個）: %s"
+  "minecrafttweak.mcreator.found": "MCreator製のmod（%s個）: %s",
+  "minecrafttweak.feature.recipe_viewer_ftb_fix": "EMI・JEIとFTBのボタンの重なり修正",
+  "minecrafttweak.feature.recipe_viewer_ftb_fix.desc": "FTB Library などが画面の端に出すボタン（クエスト・チーム・地図など）の今の場所を、EMI・JEI に「ここは避けて」と伝えて、アイテムの一覧やお気に入りが重ならないようにします。"
 }

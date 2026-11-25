@@ -1942,6 +1942,26 @@
       "summary": "Quark を前提MODにして、Quark にない小さな改善をたくさん詰め込んでいくためのMODです。機能は最初はすべてオフで、ひとつずつオンにできます。このMOD・Quark・バニラ・Sodium の設定を、短い設定コードでまとめてやりとりできます。",
       "versions": [
         {
+          "version": "1.18.1",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/minecrafttweak/1.21.1-neoforge/minecrafttweak-neoforge-1.21.1-1.18.1.jar",
+          "fileName": "minecrafttweak-neoforge-1.21.1-1.18.1.jar",
+          "sha256": "371a2b3698fd767a18e3fd0d87238b9ecb1f1f05844be83fb28f835ec7000c10",
+          "changelog": "「修正」に「EMI・JEIとFTBのボタンの重なり修正」（14）を追加しました（最初からオン）。FTB Library などが画面の端に出すボタンの今の場所を EMI・JEI に伝えて、アイテムの一覧やお気に入りと重ならないようにします。",
+          "released": "2026-11-25"
+        },
+        {
+          "version": "1.18.1",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/minecrafttweak/1.20.1-forge/minecrafttweak-forge-1.20.1-1.18.1.jar",
+          "fileName": "minecrafttweak-forge-1.20.1-1.18.1.jar",
+          "sha256": "71ca3d2d1c35e246b282be1e0d17a7f019a85ca480ec53bc26b88e5e9aae1698",
+          "changelog": "「修正」に「EMI・JEIとFTBのボタンの重なり修正」（14）を追加しました（最初からオン）。FTB Library などが画面の端に出すボタンの今の場所を EMI・JEI に伝えて、アイテムの一覧やお気に入りと重ならないようにします。",
+          "released": "2026-11-25"
+        },
+        {
           "version": "1.18.0",
           "mc": "1.21.1",
           "loader": "neoforge",
