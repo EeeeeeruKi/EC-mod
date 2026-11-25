@@ -1538,6 +1538,26 @@
       "summary": "Hyperlink / Hyperlink-E のハイパーアイテムとフメツウィザーの使い方を、Ponder の思案画面で見られるようにするMODです。アイテムを持ってWキー長押しで開きます。",
       "versions": [
         {
+          "version": "1.1.2",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/hyperponder/1.21.1-neoforge/HyperlinkPonder-1.21.1-neoforge-1.1.2.jar",
+          "fileName": "HyperlinkPonder-1.21.1-neoforge-1.1.2.jar",
+          "sha256": "23552761fedf40f7939e039548c7207324dcdb76ca20da9d90a805a7887b0751",
+          "changelog": "フメツウィザーの「フメツストーム」の説明を、実際の動きに合わせて直しました。また、Ponder の版が違っても読み込めるようにしました。",
+          "released": "2026-11-25"
+        },
+        {
+          "version": "1.1.2",
+          "mc": "1.20.1",
+          "loader": "forge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/hyperponder/1.20.1-forge/HyperlinkPonder-1.20.1-forge-1.1.2.jar",
+          "fileName": "HyperlinkPonder-1.20.1-forge-1.1.2.jar",
+          "sha256": "51a42cefc03c73f6d645494477916930114ec1e665386f5aaaae0152f8dab308",
+          "changelog": "フメツウィザーの「フメツストーム」の説明を、実際の動きに合わせて直しました。また、Ponder の版が違っても読み込めるようにしました。",
+          "released": "2026-11-25"
+        },
+        {
           "version": "1.1.1",
           "mc": "1.21.1",
           "loader": "neoforge",
