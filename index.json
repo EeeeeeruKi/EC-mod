@@ -914,6 +914,16 @@
       "summary": "Sakurafuld さんのMOD「Hyperlink」（Forge 1.20.1）の主要部分を NeoForge 1.21.1 に移植したもの。ムテキスター・ノベルカリバー・クロニクロック・ピックドクス・V.R.X.・フメツウィザー・ゲーマクラフター・Z-MAX マテリアライザーが使えます。",
       "versions": [
         {
+          "version": "1.3.1",
+          "mc": "1.21.1",
+          "loader": "neoforge",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/hyperdaimc/1.21.1-neoforge/Hyperlink-1.21.1-1.3.1.jar",
+          "fileName": "Hyperlink-1.21.1-1.3.1.jar",
+          "sha256": "218ecb427c8c71e58238d0a528aa9a67b7051cb207c7b3343483e80cc5fe2cc3",
+          "changelog": "Lithium と一緒に入れると、モブが上限なしに湧き続ける不具合を直しました（ホッパーがアイテムを吸わない不具合も同じ原因でした）。",
+          "released": "2026-11-25"
+        },
+        {
           "version": "1.3.0",
           "mc": "1.21.1",
           "loader": "neoforge",
