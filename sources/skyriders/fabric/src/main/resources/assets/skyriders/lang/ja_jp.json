@@ -1,0 +1,15 @@
+{
+  "item.skyriders.machine": "仮マシン",
+  "entity.skyriders.machine": "仮マシン",
+  "hud.skyriders.charge": "チャージ",
+  "hud.skyriders.special": "スペシャル",
+  "hud.skyriders.special_ready": "Qキーでスペシャルを発動できます！",
+  "hud.skyriders.special_active": "スペシャル発動中！",
+  "hud.skyriders.speed": "%s km/h",
+  "hud.skyriders.ability": "ほおばり中：%s（スペース/シフトではき出せます）",
+  "message.skyriders.mounted": "乗りました！ スペース/シフトでチャージ、Qでスペシャル、Eで降ります",
+  "message.skyriders.special_ready": "スペシャルの準備ができました！ Qキーで発動できます",
+  "message.skyriders.special_lost": "スペシャルの時間切れです",
+  "message.skyriders.special_start": "スペシャル発動！",
+  "message.skyriders.swap": "マシンを乗り換えました"
+}

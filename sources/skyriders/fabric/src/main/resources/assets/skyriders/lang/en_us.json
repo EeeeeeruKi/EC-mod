@@ -1,0 +1,15 @@
+{
+  "item.skyriders.machine": "Prototype Machine",
+  "entity.skyriders.machine": "Prototype Machine",
+  "hud.skyriders.charge": "Charge",
+  "hud.skyriders.special": "Special",
+  "hud.skyriders.special_ready": "Press Q to use your Special!",
+  "hud.skyriders.special_active": "Special active!",
+  "hud.skyriders.speed": "%s km/h",
+  "hud.skyriders.ability": "Holding: %s (Space/Shift to spit)",
+  "message.skyriders.mounted": "Mounted! Space/Shift: charge, Q: special, E: get off",
+  "message.skyriders.special_ready": "Special ready! Press Q to use it",
+  "message.skyriders.special_lost": "Your Special timed out",
+  "message.skyriders.special_start": "Special!",
+  "message.skyriders.swap": "Swapped machines"
+}

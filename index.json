@@ -2734,6 +2734,32 @@
           "released": "2026-11-22"
         }
       ]
+    },
+    "skyriders": {
+      "name": "Sky Riders",
+      "summary": "エアライド系のマシンに乗って走るMOD（試作版）。マシンは自動で前に進み、ボタンひとつでチャージ・ブースト・ドリフト・吸い込みができます。空中では滑空し、スペシャルやクイックスピンで攻撃もできます。",
+      "versions": [
+        {
+          "version": "0.1.1",
+          "mc": "1.21.1",
+          "loader": "fabric",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/skyriders/1.21.1-fabric/skyriders-0.1.1.jar",
+          "fileName": "skyriders-0.1.1.jar",
+          "sha256": "821d9abeb44129ef823192ae2d8d7269064ec4b89cbb075c66039c13cc7fc40f",
+          "changelog": "落下が速すぎたのを直し、空中ではふわっと滑空するようにしました（速く落ちるのはプッシュしている時だけです）。W/Sで機首を上げ下げする効きを強くしました。最高速度を約72km/hから約62km/hに下げました。慣性を追加し、プッシュ中に曲がっても前の勢いのまま滑るようにしました。1ブロックの下り段差では浮かずに地面に吸い付きます。",
+          "released": "2026-11-25"
+        },
+        {
+          "version": "0.1.0",
+          "mc": "1.21.1",
+          "loader": "fabric",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/skyriders/1.21.1-fabric/skyriders-0.1.0.jar",
+          "fileName": "skyriders-0.1.0.jar",
+          "sha256": "f55cddb1b061f027dedba38149a84106e9dc833f05bff70a4942519c21b0972b",
+          "changelog": "最初の試作版です。仮マシン、自動加速、チャージとブースト、ドリフト、滑空、クイックスピン、吸い込みとはき出し、スペシャル、降車と乗り換え、HUDを追加しました。",
+          "released": "2026-11-25"
+        }
+      ]
     }
   }
 }
