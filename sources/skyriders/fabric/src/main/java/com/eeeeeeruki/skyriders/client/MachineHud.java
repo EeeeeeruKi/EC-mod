@@ -74,9 +74,15 @@ public final class MachineHud {
             ctx.drawTextWithShadow(tr, t, w / 2 - tr.getWidth(t) / 2, h / 2 + 20, 0xFF8040);
         }
 
-        // ナイス着地／着地失敗
+        // 上昇の限界
+        if (m.isOverheated()) {
+            Text t = Text.translatable("hud.skyriders.overheat");
+            ctx.drawTextWithShadow(tr, t, w / 2 - tr.getWidth(t) / 2, h / 2 + 32, 0xFFB040);
+        }
+
+        // ナイス着地／着地失敗（通常着地は表示しない）
         int landing = m.getLandingResult();
-        if (landing != 0) {
+        if (landing == 1 || landing == 2) {
             Text t = Text.translatable(landing == 1 ? "hud.skyriders.nice_landing" : "hud.skyriders.bad_landing");
             ctx.getMatrices().push();
             ctx.getMatrices().translate(w / 2f, h / 2f - 40f, 0f);

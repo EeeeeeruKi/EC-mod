@@ -14,6 +14,8 @@ public record MachineActionPayload(int action) implements CustomPayload {
     public static final int USE = 3;
     public static final int SPECIAL = 4;
     public static final int EXIT_OR_SWAP = 5;
+    public static final int BLINK_ON = 6;
+    public static final int BLINK_OFF = 7;
 
     public static final CustomPayload.Id<MachineActionPayload> ID = new CustomPayload.Id<>(SkyRiders.id("action"));
     public static final PacketCodec<RegistryByteBuf, MachineActionPayload> CODEC =

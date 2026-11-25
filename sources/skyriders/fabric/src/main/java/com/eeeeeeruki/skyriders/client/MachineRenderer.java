@@ -27,6 +27,11 @@ public class MachineRenderer extends EntityRenderer<MachineEntity> {
     @Override
     public void render(MachineEntity entity, float yaw, float tickDelta, MatrixStack matrices,
                        VertexConsumerProvider vertexConsumers, int light) {
+        // 上昇の限界：点滅（2tickごとに消える）
+        if (entity.isBlinking() && (entity.age / 2) % 2 == 0) {
+            super.render(entity, yaw, tickDelta, matrices, vertexConsumers, light);
+            return;
+        }
         matrices.push();
 
         float bodyYaw = MathHelper.lerpAngleDegrees(tickDelta, entity.prevYaw, entity.getYaw());

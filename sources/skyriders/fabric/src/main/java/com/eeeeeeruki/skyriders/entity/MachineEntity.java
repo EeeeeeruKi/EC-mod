@@ -63,7 +63,6 @@ public class MachineEntity extends Entity {
     private static final float AIR_GRIP = 0.6f;       // 空中は慣性ほぼなし：向いた方へすぐ進む
     private static final float AIR_TURN_MUL = 0.9f;
     private static final double AIR_ACCEL_MUL = 1.6;  // 空中の加速（地上の何倍か）
-    private static final float AIR_CHARGE_MUL = 0.25f;// 空中ではチャージがじわじわたまる
     private static final double GRAVITY = 0.08;       // 地面・空中でプッシュした時（重量で変わる）
     private static final double FAST_FALL_MAX = -2.0;
     private static final float MAX_PITCH = 30f;       // 機首の上げ下げの最大角度
@@ -71,8 +70,17 @@ public class MachineEntity extends Entity {
     private static final double CLIMB_K = 0.9;        // 機首を上げた時、速さのどれだけを上昇に使うか
     private static final double STALL_SPEED = 0.28;   // これより遅くなると失速
     private static final double SNAP_DOWN = 1.05;     // これ以下の段差は地面に吸い付く
-    private static final int LANDING_MIN_AIR = 8;     // これ以上浮いてから着地したら判定する
-    private static final float NICE_ANGLE = 12f;      // 機首の角度がこれ以内ならナイス着地
+    private static final int LANDING_JUDGE_AIR = 10;  // これ以上飛んでから着地したら判定する
+    private static final float NICE_ANGLE = 10f;      // 機首の角度がこれ以内ならナイス着地
+    private static final float NORMAL_ANGLE = 20f;    // これ以内なら通常着地、超えたら着地失敗
+    private static final double NICE_BASE = 0.05;     // ナイス着地の微加速
+    private static final double NICE_FALL = 0.3;      // 下降の速さに応じた上乗せ
+    private static final double TAKEOFF_RISE = 0.12;  // 離陸した時の上昇（共通）
+    private static final double TAKEOFF_LIFT_RISE = 0.36; // 離陸した時の上昇（揚力ぶん）
+    private static final double TAKEOFF_ACCEL = 0.06; // 離陸した時の加速
+    private static final double NEUTRAL_SINK = -0.12; // 無操作の滑空：揚力0なら落ちる速さ
+    private static final double NEUTRAL_LIFT = 0.15;  // 揚力1あたり、無操作で浮く強さ
+    private static final double OVERHEAT_SINK = -0.12;// 点滅中の落ち方
     private static final double RAM_MIN = 0.55;       // 体当たりになる速さ
     /** マイクラのダメージ → マシンのHP（100）へのダメージ */
     public static final float MACHINE_DAMAGE_SCALE = 4f;
@@ -88,6 +96,7 @@ public class MachineEntity extends Entity {
     private static final TrackedData<Integer> SPIN = DataTracker.registerData(MachineEntity.class, TrackedDataHandlerRegistry.INTEGER);
     private static final TrackedData<String> ABILITY = DataTracker.registerData(MachineEntity.class, TrackedDataHandlerRegistry.STRING);
     private static final TrackedData<Boolean> CHARGING = DataTracker.registerData(MachineEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
+    private static final TrackedData<Boolean> BLINK = DataTracker.registerData(MachineEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
     private static final TrackedData<Float> HP = DataTracker.registerData(MachineEntity.class, TrackedDataHandlerRegistry.FLOAT);
     @SuppressWarnings("unchecked")
     private static final TrackedData<Integer>[] LEVELS = new TrackedData[PatchKind.ALL.length];
@@ -112,10 +121,13 @@ public class MachineEntity extends Entity {
     private int stunTicks;
     private float flightPitch;       // 機首の角度（+で下がる）
     private boolean stalled;
+    private boolean overheated;      // 上昇の限界で点滅中（着地するまで上昇できない）
+    private double climbUsed;        // 離陸してから上がった高さ
+    private int flightTicks;
     private int leftTapAge = -100, rightTapAge = -100;
     private int spinCooldown;
     private int localSpin;
-    public int landingResult, landingTimer; // 1=ナイス着地 2=着地失敗
+    public int landingResult, landingTimer; // 1=ナイス着地 2=着地失敗 3=通常着地
 
     // 見た目用（全クライアント）
     public float roll, prevRoll;
@@ -148,6 +160,7 @@ public class MachineEntity extends Entity {
         builder.add(SPIN, 0);
         builder.add(ABILITY, "");
         builder.add(CHARGING, false);
+        builder.add(BLINK, false);
         builder.add(HP, 100f);
         for (TrackedData<Integer> l : LEVELS) builder.add(l, 0);
     }
@@ -209,12 +222,30 @@ public class MachineEntity extends Entity {
         return curve(tw(), 1.6, 0.6);
     }
 
-    /** 揚力：普通に滑空している時に落ちる速さ。スター型だけ。重量で下がる */
-    public double glideSink() {
-        if (!this.spec.star()) return -0.6 * fallMul();
-        float tl = MathHelper.clamp(t(PatchKind.FLY) - 0.4f * tw(), -1f, 1f);
-        double m = tl >= 0 ? 1 - 0.8 * tl : 1 + 1.5 * -tl;
-        return this.spec.lift() * m * fallMul();
+    /**
+     * 揚力（0〜1.5くらい）：機首を上げた時の上昇力・離陸した時の上昇・飛行時間をまとめた値。
+     * スター型だけで、重いほど下がる。
+     */
+    public double lift() {
+        if (!this.spec.star()) return 0;
+        return this.spec.lift() / 100.0 * curve(t(PatchKind.FLY), 1.6, 0.4) * curve(tw(), 0.7, 1.15);
+    }
+
+    /** 飛行時間（tick）。これを過ぎると揚力がだんだん抜けていく */
+    public int flightTime() {
+        return (int) (40 + 100 * this.lift());
+    }
+
+    /** 今効いている揚力（飛行時間を過ぎると40tickかけて0になる） */
+    private double liftNow() {
+        double over = this.flightTicks - this.flightTime();
+        double fade = over <= 0 ? 1 : Math.max(0, 1 - over / 40.0);
+        return this.lift() * fade;
+    }
+
+    /** 上昇の限界（上がった高さの合計、ブロック） */
+    public double climbLimit() {
+        return 2 + 8 * this.lift();
     }
 
     /** チャージ中に止まる速さ（重いほど早く止まる） */
@@ -277,6 +308,7 @@ public class MachineEntity extends Entity {
         super.removePassenger(passenger);
         if (!this.getWorld().isClient) {
             this.dataTracker.set(CHARGING, false);
+            this.dataTracker.set(BLINK, false);
         }
     }
 
@@ -353,6 +385,9 @@ public class MachineEntity extends Entity {
             this.charge = 0f;
             this.flightPitch = 0f;
             this.stalled = false;
+            this.overheated = false;
+            this.climbUsed = 0;
+            this.flightTicks = 0;
             this.wasControlled = true;
         }
 
@@ -431,15 +466,21 @@ public class MachineEntity extends Entity {
             }
             float grip = this.spec.grip() * (charging ? DRIFT_GRIP_MUL : 1f);
             side *= (1.0 - grip);
-            vy = Math.max(vy - GRAVITY * this.fallMul(), FAST_FALL_MAX * this.fallMul());
+            // 離陸した直後の数tickは、離陸の上昇を消さないよう重力を弱くする
+            vy = onGround ? Math.max(vy - GRAVITY * this.fallMul(), FAST_FALL_MAX * this.fallMul()) : vy - 0.02;
             this.stalled = false;
         } else {
             // ===== 空中：速度と高度を交換する =====
             double theta = Math.toRadians(this.flightPitch); // +で機首が下がる
             double sin = Math.sin(theta);
             double fallMul = this.fallMul();
+            double lift = this.liftNow();
+            this.flightTicks++;
 
-            if (!special) this.charge = Math.min(1f, this.charge + AIR_CHARGE_MUL / this.chargeTicks());
+            // エアチャージ：滑空中は勝手にたまる（地上のチャージとは別の隠し値）
+            if (!special && this.spec.airChargeTicks() > 0) {
+                this.charge = Math.min(1f, this.charge + 1f / this.spec.airChargeTicks());
+            }
 
             // 失速の判定
             if (!this.stalled && fwd < STALL_SPEED && this.flightPitch < 5f) this.stalled = true;
@@ -448,7 +489,7 @@ public class MachineEntity extends Entity {
             if (special) {
                 fwd = Math.max(fwd, this.flyTop() * 1.8);
             } else {
-                // 機首を下げると速くなり、上げると遅くなる（重いほど落ちる力が強い）
+                // 上昇は減速、下降は加速（重いほど下降の加速が強い）
                 fwd += EXCHANGE * sin * (sin > 0 ? fallMul : 1.0);
                 // 機首を上げていない時だけ、飛行速へ収束する
                 if (this.flightPitch > -5f) fwd = converge(fwd, this.flyTop(), this.accelK() * AIR_ACCEL_MUL);
@@ -460,11 +501,15 @@ public class MachineEntity extends Entity {
             } else if (this.stalled || !this.spec.star()) {
                 vy = Math.max(vy - GRAVITY * 0.75 * fallMul, FAST_FALL_MAX * fallMul);
             } else {
-                // 揚力で決まる落ち方＋機首の角度ぶんの上昇／下降。重いと上がりにくい
-                double climb = -fwd * sin * CLIMB_K;
+                // 何もしなくても揚力に従って浮く。機首を上げると揚力ぶん強く上がる
+                double neutral = NEUTRAL_SINK + NEUTRAL_LIFT * lift;
+                double climb = -fwd * sin * CLIMB_K * (0.15 + 0.85 * Math.min(lift, 1.2));
                 if (climb > 0) climb /= fallMul;
-                double target = this.glideSink() + climb;
-                vy += (target - vy) * 0.15;
+                double target = neutral + climb;
+                if (target < 0) target *= fallMul; // 重いと速く落ちる
+                // 上昇の限界（点滅中）：着地するまで上がれない。機首上げはゆっくり落ちるだけ
+                if (this.overheated) target = Math.min(target, OVERHEAT_SINK * fallMul * (this.inBack ? 0.5 : 1.0));
+                vy += (target - vy) * 0.12;
                 vy = Math.max(vy, -1.6 * fallMul);
             }
             side *= (1.0 - AIR_GRIP);
@@ -478,11 +523,13 @@ public class MachineEntity extends Entity {
         this.velZ = fz * fwd + rz * side;
         this.velY = vy;
         int airBefore = this.airTicks;
+        double fallSpeed = vy;
         this.setVelocity(this.velX, this.velY, this.velZ);
         this.move(MovementType.SELF, this.getVelocity());
 
-        // 小さい下り段差では浮かずに地面に吸い付く（崖からは飛び出す）
+        // 小さい下り段差では浮かずに地面に吸い付く（速い時は、ちょっとの凹凸でも離陸する）
         if (onGround && !this.isOnGround() && this.velY <= 0 && !this.isTouchingWater()
+                && this.getSpeed() < this.topSpeed() * 1.15
                 && !this.getWorld().isSpaceEmpty(this, this.getBoundingBox().offset(0, -SNAP_DOWN, 0))) {
             this.move(MovementType.SELF, new Vec3d(0, -SNAP_DOWN, 0));
         }
@@ -493,9 +540,37 @@ public class MachineEntity extends Entity {
         this.velY = this.isOnGround() ? 0 : after.y;
         this.velZ = after.z;
 
-        // --- 着地の判定（角度） ---
-        if (!onGround && this.isOnGround() && airBefore >= LANDING_MIN_AIR && !special) {
-            land(fx, fz);
+        // --- 離陸：加速と上向きの勢いが自動で入る ---
+        if (onGround && !this.isOnGround() && !this.isTouchingWater()) {
+            takeoff(fx, fz);
+        }
+        // 上昇した量を数えて、限界を超えたら点滅（着地するまで上昇できない）
+        if (!this.isOnGround()) {
+            if (this.velY > 0) this.climbUsed += this.velY;
+            if (!this.overheated && this.climbUsed >= this.climbLimit()) {
+                this.overheated = true;
+                clientActionSender.accept(MachineActionPayload.BLINK_ON);
+                this.getWorld().playSound(this.getX(), this.getY(), this.getZ(),
+                        SoundEvents.BLOCK_NOTE_BLOCK_BIT.value(), SoundCategory.PLAYERS, 0.8f, 0.6f, false);
+            }
+        }
+
+        // --- 着地 ---
+        if (!onGround && this.isOnGround()) {
+            if (airBefore >= LANDING_JUDGE_AIR && !special) {
+                land(fx, fz, fallSpeed);
+            } else if (airBefore >= 3 && !this.inCharge) {
+                double f = this.velX * fx + this.velZ * fz; // 短い滑空：たまった分だけ解放
+                double nf = boost(f, 0.8f);
+                this.velX += fx * (nf - f);
+                this.velZ += fz * (nf - f);
+            }
+            this.climbUsed = 0;
+            this.flightTicks = 0;
+            if (this.overheated) {
+                this.overheated = false;
+                clientActionSender.accept(MachineActionPayload.BLINK_OFF);
+            }
         }
 
         // --- エフェクト ---
@@ -537,10 +612,27 @@ public class MachineEntity extends Entity {
         return fwd;
     }
 
-    /** 着地：機首の角度が地面とそろっていればナイス着地、ずれていれば失敗 */
-    private void land(double fx, double fz) {
-        boolean nice = Math.abs(this.flightPitch) <= NICE_ANGLE;
-        if (!nice) {
+    /** 離陸：マシンごとの加速と上昇。揚力が上昇の強さ、重いほど低く速く前へ飛ぶ */
+    private void takeoff(double fx, double fz) {
+        double arc = curve(tw(), 1.6, 0.7);
+        double rise = this.spec.star()
+                ? (TAKEOFF_RISE + TAKEOFF_LIFT_RISE * this.lift()) / arc
+                : (0.08 + 0.3 * this.flyTop() / this.spec.flySpeed()) / arc; // 揚力が無いタイプは飛行速でジャンプの高さが決まる
+        this.velY = Math.max(this.velY, 0) + rise;
+        this.velX += fx * TAKEOFF_ACCEL * arc;
+        this.velZ += fz * TAKEOFF_ACCEL * arc;
+        this.climbUsed = 0;
+        this.flightTicks = 0;
+    }
+
+    /**
+     * 着地は3段階。ナイス着地：微加速（よく下降してから着地するほど大きい）、
+     * 通常着地：速度が少し落ちる、着地失敗：大きく減速して、たまったチャージも消える
+     */
+    private void land(double fx, double fz, double fallSpeed) {
+        float angle = Math.abs(this.flightPitch);
+        double fwd = this.velX * fx + this.velZ * fz;
+        if (angle > NORMAL_ANGLE) {
             this.landingResult = 2;
             this.stunTicks = 12;
             this.charge = 0f;
@@ -553,11 +645,17 @@ public class MachineEntity extends Entity {
                         this.getX() + (this.random.nextDouble() - 0.5) * 1.4, this.getY() + 0.2,
                         this.getZ() + (this.random.nextDouble() - 0.5) * 1.4, 0, 0.05, 0);
             }
+        } else if (angle > NICE_ANGLE) {
+            this.landingResult = 3;
+            double nf = (this.inCharge ? fwd : boost(fwd, 0.8f)) * 0.85;
+            this.velX += fx * (nf - fwd);
+            this.velZ += fz * (nf - fwd);
+            this.velX *= 0.95;
+            this.velZ *= 0.95;
         } else {
             this.landingResult = 1;
-            // 運動量はほぼそのまま＋小さな加速。ボタンを離していれば、空中でたまったチャージでブースト
-            double fwd = this.velX * fx + this.velZ * fz;
-            double nf = (this.inCharge ? fwd : boost(fwd, 0.9f)) + 0.08;
+            double extra = Math.min(0.45, NICE_BASE + NICE_FALL * Math.max(0, -fallSpeed));
+            double nf = (this.inCharge ? fwd : boost(fwd, 1f)) + extra;
             this.velX += fx * (nf - fwd);
             this.velZ += fz * (nf - fwd);
             this.getWorld().playSound(this.getX(), this.getY(), this.getZ(),
@@ -771,6 +869,8 @@ public class MachineEntity extends Entity {
             }
             case MachineActionPayload.CHARGE_START -> this.dataTracker.set(CHARGING, true);
             case MachineActionPayload.CHARGE_STOP -> this.dataTracker.set(CHARGING, false);
+            case MachineActionPayload.BLINK_ON -> this.dataTracker.set(BLINK, true);
+            case MachineActionPayload.BLINK_OFF -> this.dataTracker.set(BLINK, false);
             case MachineActionPayload.USE -> spitStar(world, player);
             case MachineActionPayload.SPECIAL -> {
                 if (this.dataTracker.get(SPECIAL) >= 100f && this.dataTracker.get(SPECIAL_ACTIVE) <= 0) {
@@ -1059,6 +1159,15 @@ public class MachineEntity extends Entity {
 
     public int getLandingResult() {
         return this.landingTimer > 0 ? this.landingResult : 0;
+    }
+
+    /** 上昇の限界で点滅しているか（ほかの人からも見える） */
+    public boolean isBlinking() {
+        return this.overheated || this.dataTracker.get(BLINK);
+    }
+
+    public boolean isOverheated() {
+        return this.overheated;
     }
 
     public boolean isStalled() {

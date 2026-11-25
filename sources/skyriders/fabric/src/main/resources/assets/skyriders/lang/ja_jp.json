@@ -40,5 +40,6 @@
   "message.skyriders.patch_get": "%s が上がりました！（%s）",
   "message.skyriders.patch_all": "オールパッチ！ すべての能力が上がりました",
   "message.skyriders.patch_fake": "にせパッチでした！ %s が下がりました",
-  "message.skyriders.destroyed": "マシンがこわれました！"
+  "message.skyriders.destroyed": "マシンがこわれました！",
+  "hud.skyriders.overheat": "上昇の限界です（着地するまで上昇できません）"
 }
