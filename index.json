@@ -1813,7 +1813,7 @@
     },
     "moremekaponder": {
       "name": "More MekaPonder",
-      "summary": "Mekanism の機械・ケーブル・アイテム・道具・防具の使い方を、思案画面（Ponder）で解説するMODです。公式アドオン（Generators・Additions・Tools）にも対応しています。",
+      "summary": "Mekanism の機械・ケーブル・アイテム・道具・防具の使い方を、思案画面（Ponder）で解説するMODです。公式アドオン（Generators・Additions・Tools）と Mekanism Extras にも対応しています。",
       "versions": [
         {
           "version": "1.0.11",
