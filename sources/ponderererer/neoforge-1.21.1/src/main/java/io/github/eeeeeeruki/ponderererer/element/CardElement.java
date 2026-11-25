@@ -89,6 +89,7 @@ public class CardElement extends FxOverlay {
     final List<Row> rows = new ArrayList<>();
     final List<Component> texts = new ArrayList<>();
     final Bar progress = new Bar(0xFF3CFE9A, 0f, null);
+    MekScreen screen; // when set, the card is drawn as a machine screen instead of rows
     private int lastW, lastH;
 
     public CardElement(Component title, ItemStack icon, Vec3 target) {
@@ -117,6 +118,40 @@ public class CardElement extends FxOverlay {
 
     public void addRow(Row row) {
         rows.add(row);
+    }
+
+    /** Switches the card to a machine screen of this size (GUI pixels); parts are then placed with the add* methods below. */
+    public void useScreen(int width, int height, int titleX) {
+        screen = new MekScreen(width, height);
+        screen.titleX = titleX;
+    }
+
+    public void addScreenSlot(int x, int y, String kind, int slot) {
+        if (screen != null) screen.parts.add(new MekScreen.SlotPart(x, y, kind, slot));
+    }
+
+    public void addScreenGauge(int x, int y, String type, String fill, String frame, int bar) {
+        if (screen != null) screen.parts.add(new MekScreen.GaugePart(x, y, type, fill, frame, bar));
+    }
+
+    public void addScreenPower(int x, int y, boolean vertical, int bar) {
+        if (screen != null) screen.parts.add(new MekScreen.PowerPart(x, y, vertical, bar));
+    }
+
+    public void addScreenProgress(int x, int y, String type) {
+        if (screen != null) screen.parts.add(new MekScreen.ProgressPart(x, y, type));
+    }
+
+    public void addScreenInner(int x, int y, int w, int h) {
+        if (screen != null) screen.parts.add(new MekScreen.InnerScreenPart(x, y, w, h));
+    }
+
+    public void addScreenText(int x, int y, int text, int color, int maxWidth, boolean centered) {
+        if (screen != null) screen.parts.add(new MekScreen.TextPart(x, y, text, color, maxWidth, centered));
+    }
+
+    public void addScreenImage(net.minecraft.resources.ResourceLocation tex, int x, int y, int u, int v, int w, int h, int texW, int texH) {
+        if (screen != null) screen.parts.add(new MekScreen.ImagePart(tex, x, y, u, v, w, h, texW, texH));
     }
 
     // ------------------------------------------------------------------ changing
@@ -196,6 +231,17 @@ public class CardElement extends FxOverlay {
     }
 
     private void measure(Font font) {
+        if (screen != null) {
+            int legend = new LegendRow().height(this, font);
+            int extra = 0, wide = screen.width;
+            for (Row r : rows) {
+                extra += ROW_GAP + r.height(this, font);
+                wide = Math.max(wide, r.width(this, font) + 14);
+            }
+            lastW = wide;
+            lastH = screen.height + (legend > 0 ? legend + 4 : 0) + extra + (legend > 0 || extra > 0 ? 3 : 0);
+            return;
+        }
         int w = PAD * 2 + (icon.isEmpty() ? 0 : 19) + font.width(title);
         int h = PAD + 16;
         for (Row r : rows) {
@@ -207,6 +253,10 @@ public class CardElement extends FxOverlay {
     }
 
     private void drawBody(GuiGraphics g, Font font, float pt, float a) {
+        if (screen != null) {
+            drawScreen(g, font, pt, a);
+            return;
+        }
         int w = lastW, h = lastH;
         g.fill(0, 0, w, h, withAlpha(0xFFC6C6C6, a));
         g.fill(0, 0, w - 1, 1, withAlpha(0xFFFFFFFF, a));
@@ -225,6 +275,30 @@ public class CardElement extends FxOverlay {
             y += ROW_GAP;
             r.draw(this, g, font, PAD, y, pt, a);
             y += r.height(this, font);
+        }
+    }
+
+    private void drawScreen(GuiGraphics g, Font font, float pt, float a) {
+        MekScreen.nine(g, MekScreen.BASE, 0, 0, lastW, lastH, 4, 256, 256, a);
+        for (MekScreen.Part p : screen.parts) {
+            if (!(p instanceof MekScreen.ImagePart)) continue;
+            p.draw(this, g, font, pt, a);
+        }
+        int tx = screen.titleX >= 0 ? screen.titleX : (screen.width - font.width(title)) / 2;
+        g.drawString(font, title, tx, 6, withAlpha(0xFF404040, a), false);
+        for (MekScreen.Part p : screen.parts) {
+            if (p instanceof MekScreen.ImagePart) continue;
+            p.draw(this, g, font, pt, a);
+        }
+        int y = screen.height;
+        LegendRow legend = new LegendRow();
+        if (legend.height(this, font) > 0) {
+            legend.draw(this, g, font, 7, y, pt, a);
+            y += legend.height(this, font) + 4;
+        }
+        for (Row r : rows) {
+            r.draw(this, g, font, 7, y, pt, a);
+            y += ROW_GAP + r.height(this, font);
         }
     }
 

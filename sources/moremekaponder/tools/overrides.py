@@ -577,6 +577,7 @@ OSMIUM_C = 0x52BDCA
 ANTIMATTER_C = 0xA464B3
 FUSION_C = 0x7E007D
 CLEAR = {'op': 'clear'}
+SCREEN_GREEN = 0x3CFE9A
 
 SCENE_PROPS = {
     # two wind generators (one on a pillar) are tall: see more of the scene
@@ -678,10 +679,9 @@ def player_use(item, slot='MAINHAND'):
     return {'op': 'player', 'pose': 'USE_ITEM', 'equip': [[slot, item]], 'move': False, 'rise': False, 'ui': False}
 
 
-def solar_card(cid, title_item, value_ticks=30):
-    return [card(cid, '#item:' + title_item, icon=title_item, bars=[[ENERGY, 0.0, None]],
-                 rows=[['hbar', 0, '@moremekaponder.ui.generated'], T('@moremekaponder.ui.solar_sky', None, NOTE)]),
-            cbar(cid, 0, 0.6, value_ticks)]
+def solar_card(cid, title_item, at):
+    return [gpanel(title_item, at=at, gen=True, genTo=0.6, active=False,
+                   screenText=[[44, 27, '@moremekaponder.ui.solar_sky', SCREEN_GREEN, 88]])]
 
 
 UI_STEPS = {
@@ -689,9 +689,8 @@ UI_STEPS = {
     'mekanismgenerators_wind_generator': {
         0: [B([2, 1, 4], WIND), spin('low', [2, 1, 4], 3.0), wait(20),
             L(CABLE, [[2, 1, 3], [2, 1, 2]]), B([2, 1, 1], SMELTER),
-            card('wind', '#item:' + WIND, icon=WIND, at=[2.5, 1.6, 4.5], bars=[[ENERGY, 0.0, None]],
-                 rows=[['hbar', 0, '@moremekaponder.ui.generated'], T('@moremekaponder.ui.wind_note', None, NOTE)]),
-            cbar('wind', 0, 0.35, 30),
+            gpanel(WIND, at=[2, 1, 4], gen=True, genTo=0.35, active=False, top=2.6,
+                   screenText=[[52, 25, '@moremekaponder.ui.wind_note', SCREEN_GREEN, 74]]),
             stream([[2.5, 1.5, 4.0], [2.5, 1.5, 2.0]], color=ENERGY, rounds=2), active([2, 1, 1])],
         1: [blocks([[[5, 1, 1], STONE], [[5, 2, 1], STONE], [[5, 3, 1], STONE]], step=3),
             B([5, 4, 1], WIND), spin('high', [5, 4, 1], 9.0), wait(10),
@@ -706,14 +705,13 @@ UI_STEPS = {
         # a solar generator sends its power out of the bottom: it sits on the cable
         0: [L(CABLE, [[3, 1, 3]]), B([3, 2, 3], SOLAR), wait(10), L(CABLE, [[3, 1, 2], [3, 1, 1]]), B([3, 1, 0], SMELTER),
             label([3.5, 1.5, 2.3], '@moremekaponder.ui.bottom_out', ENERGY, wait=5),
-            *solar_card('solar', SOLAR), stream([[3.5, 1.5, 3.5], [3.5, 1.5, 1.0]], color=ENERGY, rounds=2), active([3, 1, 0])],
+            *solar_card('solar', SOLAR, [3, 2, 3]), stream([[3.5, 1.5, 3.5], [3.5, 1.5, 1.0]], color=ENERGY, rounds=2), active([3, 1, 0])],
         1: [B([3, 3, 3], STONE), active([3, 1, 0], False),
-            card('solar', '#item:' + SOLAR, icon=SOLAR, bars=[[ENERGY, 0.6, None]],
-                 rows=[['hbar', 0, '@moremekaponder.ui.generated'], T('@moremekaponder.ui.solar_blocked', None, RED)]),
-            cbar('solar', 0, 0.0, 20), wait(20)],
+            gpanel(SOLAR, at=[3, 2, 3], genFrom=0.6, genTo=0.0, active=False,
+                   screenText=[[44, 27, '@moremekaponder.ui.solar_blocked', 0xFF5050, 88]])],
     },
     'mekanismgenerators_advanced_solar_generator': {
-        1: [L(CABLE, [[3, 1, 2], [3, 1, 1]]), B([3, 1, 0], SMELTER), *solar_card('solar', 'mekanismgenerators:advanced_solar_generator'),
+        1: [L(CABLE, [[3, 1, 2], [3, 1, 1]]), B([3, 1, 0], SMELTER), *solar_card('solar', 'mekanismgenerators:advanced_solar_generator', [3, 1, 3]),
             stream([[3.5, 1.5, 3.0], [3.5, 1.5, 1.0]], color=ENERGY, rounds=2), active([3, 1, 0])],
     },
     'mekanismgenerators_heat_generator': {
@@ -743,10 +741,7 @@ UI_STEPS = {
     },
     'mekanism_resistive_heater': {
         0: [B([3, 1, 3], RHEATER), *power_west(),
-            card('rh', '#item:' + RHEATER, icon=RHEATER, at=[3.5, 2.1, 3.5],
-                 bars=[[ENERGY, 1.0, '@moremekaponder.ui.energy'], [HEAT, 0.05, '@moremekaponder.ui.heat']],
-                 rows=[['process', [0], [], True, [], [1]], ['legend'], T('@moremekaponder.ui.power_to_heat', None, NOTE)]),
-            active([3, 1, 3]), cprog('rh', 1.0, 40), cbar('rh', 0, 0.7, 40), cbar('rh', 1, 0.8, 40), wait(40)],
+            gpanel(RHEATER, energy=True, screenText=[[52, 27, '@moremekaponder.ui.power_to_heat', SCREEN_GREEN, 72]]), active([3, 1, 3])],
         1: [L(COND, [[4, 1, 3], [5, 1, 3]]), B([6, 1, 3], HEATGEN, alt=COND), *heat([[4, 1, 3], [5, 1, 3]], [1600, 1000]),
             stream([[4.0, 1.5, 3.5], [6.0, 1.5, 3.5]], color=HEAT, rounds=3, speed=5), active([6, 1, 3])],
     },
@@ -879,10 +874,7 @@ UI_STEPS = {
     },
     'mekanism_energy_tablet': {
         1: [{'op': 'swap', 'id': CHAMBER},
-            card('tab', '#item:' + CHAMBER, icon=CHAMBER, at=[3.5, 2.1, 3.5], slots=[None], bars=[[ENERGY, 0.0, '@moremekaponder.ui.energy']],
-                 rows=[['process', [0], [], False, [0], []], ['legend'], T('@moremekaponder.ui.energy_slot', None, NOTE)]),
-            item('mekanism:energy_tablet', [3.5, 2.7, 3.5], motion=[0, -0.05, 0], wait=12), cslot('tab', 0, 'mekanism:energy_tablet', wait=5),
-            cbar('tab', 0, 0.8, 30), active([3, 1, 3], wait=40), active([3, 1, 3], False)],
+            gpanel(CHAMBER, ins=[['mekanism:energy_tablet', 1]], energySlot=True)],
     },
     'mekanism_formulaic_assemblicator': {
         0: [B([3, 1, 3], 'mekanism:formulaic_assemblicator'), *power_west(),
@@ -899,12 +891,8 @@ UI_STEPS = {
             cslot('fa', 0, 'minecraft:wheat', wait=3), cslot('fa', 1, 'minecraft:wheat', wait=3), cslot('fa', 2, 'minecraft:wheat', wait=30)],
     },
     'mekanism_precision_sawmill': {
-        1: [card('saw', '#item:mekanism:precision_sawmill', icon='mekanism:precision_sawmill', at=[3.5, 2.1, 3.5],
-                 slots=[['minecraft:oak_log', 1], None, None], big=[1], bars=[[ENERGY, 1.0, '@moremekaponder.ui.energy']],
-                 rows=[['process', [0], [0], True, [1, 2], []], ['legend'], T('@moremekaponder.ui.sawdust_chance', 'mekanism:sawdust', NOTE)]),
-            active([3, 1, 3]), cprog('saw', 1.0, 30), cbar('saw', 0, 0.75, 30, wait=30), active([3, 1, 3], False, wait=2),
-            cprog('saw', 0.0, 0), cslot('saw', 0), cslot('saw', 1, 'minecraft:oak_planks', 6), cslot('saw', 2, 'mekanism:sawdust', wait=4),
-            item('mekanism:sawdust', [3.5, 1.3, 2.85], motion=[0, 0.18, -0.12], wait=25)],
+        1: [gpanel('mekanism:precision_sawmill', ins=[['minecraft:oak_log', 1]], outs=[['minecraft:oak_planks', 6], ['mekanism:sawdust', 1]],
+                   energy=True, note='@moremekaponder.ui.sawdust_chance')],
     },
     'mekanism_oredictionificator': {
         0: [B([3, 1, 3], 'mekanism:oredictionificator'),

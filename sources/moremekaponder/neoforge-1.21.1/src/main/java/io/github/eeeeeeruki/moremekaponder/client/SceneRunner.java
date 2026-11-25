@@ -553,10 +553,11 @@ final class SceneRunner {
             scene.idle(4);
         }
         if (!gauges.isEmpty()) flow(gauges, target, o.has("src") ? vec(o.getAsJsonArray("src")) : null, !ins.isEmpty());
-        setActive(target, true);
+        boolean act = !o.has("active") || o.get("active").getAsBoolean();
+        if (act) setActive(target, true);
         if (card != null) card.run(crafting ? 20 : 40);
         scene.idle(crafting ? 20 : 40);
-        setActive(target, false);
+        if (act) setActive(target, false);
         if (card != null) card.finish(outs);
         Vec3 front = o.has("front") ? vec(o.getAsJsonArray("front")) : Vec3.atCenterOf(target).add(0, -0.1, -0.65);
         Vec3 push = o.has("push") ? vec(o.getAsJsonArray("push")) : new Vec3(0, 0.18, -0.12);
@@ -657,6 +658,8 @@ final class SceneRunner {
                 && (outs.isEmpty() || sameOut);
         boolean heater = path.equals("fuelwood_heater") || path.equals("resistive_heater");
         boolean module = path.equals("modification_station");
+        JsonObject layout = layout(machine);
+        if (layout != null && upgrade.isEmpty()) return screenCard(o, machine, layout, top, ins, outs, gauges, drain, fill, false);
         List<Integer> left = new ArrayList<>(), right = new ArrayList<>();
         if (o.has("energy") && o.get("energy").getAsBoolean() && !fill) {
             ui.energy = b.bar(ENERGY, 1f, Component.translatable("moremekaponder.ui.energy"));
@@ -761,6 +764,9 @@ final class SceneRunner {
 
     /** Gauges only: a tank filling or emptying. */
     private Ui gaugeCard(JsonObject o, String machine, BlockPos at, List<Gauge> gauges, boolean drain) {
+        JsonObject layout = o.has("title") || o.has("icon") ? null : layout(machine);
+        if (layout != null)
+            return screenCard(o, machine, layout, Vec3.atCenterOf(at).add(0, 0.6, 0), List.of(), List.of(), gauges, drain, false, true);
         ItemStack icon = machine == null ? ItemStack.EMPTY : stack(machine, 1);
         if (o.has("icon")) icon = stack(o.get("icon").getAsString(), 1);
         Component title = o.has("title") ? text(o.get("title")) : machineName(icon);
@@ -777,6 +783,175 @@ final class SceneRunner {
             ui.moves.add(new int[]{bar, Math.round(to * 1000)});
         }
         b.process(new int[0], new int[0], false, new int[0], ints(bars)).legend();
+        if (o.has("note")) b.text(text(o.get("note")), ItemStack.EMPTY, NOTE);
+        ui.link = fx.card(b);
+        transient_.add(ui.link);
+        return ui;
+    }
+
+    // ------------------------------------------------------------------ real machine screens
+
+    private static JsonObject screens;
+
+    /** The machine's screen layout (from Mekanism's own GUI code, see screens.json), or null. */
+    private static JsonObject layout(String machine) {
+        if (screens == null) {
+            screens = new JsonObject();
+            try (var in = SceneRunner.class.getResourceAsStream("/assets/moremekaponder/screens.json")) {
+                if (in != null) screens = com.google.gson.JsonParser.parseReader(new java.io.InputStreamReader(in, java.nio.charset.StandardCharsets.UTF_8)).getAsJsonObject();
+            } catch (Exception ignored) {
+            }
+        }
+        return machine != null && screens.has(machine) ? screens.getAsJsonObject(machine) : null;
+    }
+
+    /** Takes the next gauge for a gauge of the screen: a liquid for a fluid gauge, a chemical for the others. */
+    private static Gauge pickGauge(List<Gauge> list, String fillType) {
+        if (list.isEmpty()) return null;
+        boolean fluid = fillType.equals("fluid") || fillType.equals("lava");
+        for (int i = 0; i < list.size(); i++) {
+            Gauge g = list.get(i);
+            boolean isFluid = g.label().getContents() instanceof net.minecraft.network.chat.contents.TranslatableContents t
+                    && t.getKey().startsWith("block.");
+            if (isFluid == fluid) return list.remove(i);
+        }
+        return list.remove(0);
+    }
+
+    /** Items that go into a machine's second (fuel / infusion) slot instead of its main input. */
+    private static boolean secondSlot(String machine, ItemStack s) {
+        String id = key(s).toString(), p = key(s).getPath();
+        if ("mekanism:metallurgic_infuser".equals(machine))
+            return p.startsWith("enriched_") || p.equals("redstone") || p.equals("coal") || p.equals("charcoal") || p.equals("diamond")
+                    || p.equals("dust_diamond") || p.equals("bio_fuel") || p.equals("red_mushroom") || p.equals("brown_mushroom");
+        if ("mekanism:osmium_compressor".equals(machine)) return id.equals("mekanism:ingot_osmium");
+        return false;
+    }
+
+    /**
+     * The card drawn like the machine's real screen: Mekanism's window, slots, gauges, power bar and progress arrow
+     * at the places the game puts them. Items, gauges and the power bar then move like in the game.
+     */
+    private Ui screenCard(JsonObject o, String machine, JsonObject layout, Vec3 top, List<ItemStack> ins, List<ItemStack> outs,
+                          List<Gauge> gauges, boolean drain, boolean fill, boolean gaugeOnly) {
+        ItemStack icon = machine == null ? ItemStack.EMPTY : stack(machine, 1);
+        CardBuilder b = CardBuilder.of(machineName(icon)).target(top).screen(layout.get("w").getAsInt(), layout.get("h").getAsInt(), -1);
+        Ui ui = new Ui();
+        boolean energyFlag = o.has("energy") && o.get("energy").getAsBoolean();
+        boolean genFlag = o.has("gen") && o.get("gen").getAsBoolean();
+        boolean energySlot = o.has("energySlot") && o.get("energySlot").getAsBoolean();
+        boolean cube = machine != null && machine.endsWith("energy_cube");
+        List<Gauge> gin = new ArrayList<>(), gout = new ArrayList<>();
+        Gauge energyGauge = null;
+        for (Gauge g : gauges) {
+            if (g.label().getContents() instanceof net.minecraft.network.chat.contents.TranslatableContents t
+                    && t.getKey().equals("moremekaponder.ui.energy")) energyGauge = g;
+            else (g.in() && !gaugeOnly ? gin : gout).add(g);
+        }
+        List<Gauge> ginAll = new ArrayList<>(gin), goutAll = new ArrayList<>(gout);
+        // which input goes to which slot
+        int[] inRole = new int[ins.size()];
+        int main = 0;
+        for (int i = 0; i < ins.size(); i++) {
+            if (fill || (energySlot && i == 0)) inRole[i] = -1;
+            else if (secondSlot(machine, ins.get(i))) inRole[i] = 1;
+            else inRole[i] = main++ == 0 ? 0 : 1;
+        }
+        ui.in = new int[ins.size()];
+        Arrays.fill(ui.in, -1);
+        ui.out = new int[outs.size()];
+        Arrays.fill(ui.out, -1);
+        for (JsonElement e : layout.getAsJsonArray("parts")) {
+            JsonObject p = e.getAsJsonObject();
+            int x = p.get("x").getAsInt(), y = p.get("y").getAsInt();
+            String role = p.has("role") ? p.get("role").getAsString() : "";
+            switch (p.get("t").getAsString()) {
+                case "slot" -> {
+                    int slot = b.slotAt(x, y, p.get("k").getAsString(), ItemStack.EMPTY);
+                    if (role.startsWith("in")) {
+                        int want = role.charAt(2) - '0';
+                        for (int i = 0; i < ins.size(); i++) if (inRole[i] == want && ui.in[i] < 0) { ui.in[i] = slot; break; }
+                    } else if (role.startsWith("out")) {
+                        int k = role.charAt(3) - '0';
+                        if (k < outs.size()) ui.out[k] = slot;
+                    } else if (role.equals("item") && fill && !ins.isEmpty()) {
+                        ui.in[0] = slot;
+                    } else if (role.equals("energy_item") && energySlot && !ins.isEmpty()) {
+                        ui.in[0] = slot;
+                    }
+                }
+                case "gauge" -> {
+                    String type = p.get("type").getAsString(), fillType = p.get("fill").getAsString(), frame = p.get("frame").getAsString();
+                    Gauge g = null;
+                    float from = 0f, to = 0f;
+                    if (role.startsWith("gin")) {
+                        g = pickGauge(gin, fillType);
+                        if (g != null) { from = 0.9f; to = 0.35f; }
+                    } else if (role.startsWith("gout")) {
+                        g = pickGauge(gout, fillType);
+                        if (g != null) {
+                            boolean down = drain || fill;
+                            from = down ? 0.9f : 0.1f;
+                            to = fill ? 0.6f : down ? 0.25f : 0.85f;
+                        }
+                    } else if (role.equals("energy")) {
+                        int bar;
+                        if (cube && fill) { bar = b.gaugeAt(x, y, type, "energy", frame, ENERGY, 1f, Component.translatable("moremekaponder.ui.energy")); ui.moves.add(new int[]{bar, 550}); }
+                        else if (energyGauge != null) { bar = b.gaugeAt(x, y, type, "energy", frame, ENERGY, 0.1f, Component.translatable("moremekaponder.ui.energy")); ui.moves.add(new int[]{bar, 880}); }
+                        else if (energyFlag) { ui.energy = b.gaugeAt(x, y, type, "energy", frame, ENERGY, 1f, Component.translatable("moremekaponder.ui.energy")); }
+                        else b.gaugeAt(x, y, type, "energy", frame, ENERGY, 0.8f, null);
+                        continue;
+                    }
+                    if (g == null) {
+                        b.gaugeAt(x, y, type, fillType, frame, 0xFF808080, 0f, null);
+                    } else {
+                        int bar = b.gaugeAt(x, y, type, fillType, frame, 0xFF000000 | g.color(), from, g.label());
+                        ui.moves.add(new int[]{bar, Math.round(to * 1000)});
+                    }
+                }
+                case "power" -> {
+                    boolean v = p.get("v").getAsBoolean();
+                    if (role.equals("gen")) {
+                        float gf = o.has("genFrom") ? o.get("genFrom").getAsFloat() : genFlag ? 0.1f : 0.5f;
+                        int bar = b.powerAt(x, y, v, gf, genFlag || o.has("genTo") ? Component.translatable("moremekaponder.ui.generated") : null);
+                        if (o.has("genTo")) ui.moves.add(new int[]{bar, Math.round(o.get("genTo").getAsFloat() * 1000)});
+                        else if (genFlag) ui.gen = bar;
+                    } else if (energySlot) {
+                        int bar = b.powerAt(x, y, v, 0f, Component.translatable("moremekaponder.ui.energy"));
+                        ui.moves.add(new int[]{bar, 800});
+                    } else if (energyFlag) {
+                        ui.energy = b.powerAt(x, y, v, 1f, Component.translatable("moremekaponder.ui.energy"));
+                    } else b.powerAt(x, y, v, 0.8f, null);
+                }
+                case "progress" -> b.progressAt(x, y, p.get("type").getAsString());
+                case "screen" -> b.innerScreenAt(x, y, p.get("w").getAsInt(), p.get("h").getAsInt());
+                case "image" -> b.imageAt(ResourceLocation.parse(p.get("tex").getAsString()), x, y, 0, 0, p.get("w").getAsInt(),
+                        p.get("h").getAsInt(), p.get("tw").getAsInt(), p.get("th").getAsInt());
+                default -> {
+                }
+            }
+        }
+        if (o.has("screenText")) {
+            for (JsonElement e : o.getAsJsonArray("screenText")) {
+                JsonArray t = e.getAsJsonArray();
+                int col = t.size() > 3 ? argb(t.get(3).getAsInt()) : 0xFF3CFE9A;
+                b.textAt(t.get(0).getAsInt(), t.get(1).getAsInt(), text(t.get(2)), col, t.size() > 4 ? t.get(4).getAsInt() : 76, false);
+            }
+        }
+        ui.consume = !fill && !energySlot;
+        ui.arrow = true;
+        if (!gaugeOnly) {
+            List<Component> inNames = new ArrayList<>(), outNames = new ArrayList<>();
+            for (Gauge g : ginAll) inNames.add(g.label());
+            for (Gauge g : goutAll) outNames.add(g.label());
+            if (genFlag) outNames.add(Component.translatable("moremekaponder.ui.generated"));
+            if (fill && !ins.isEmpty())
+                b.text(Component.translatable(cube ? "moremekaponder.ui.charging" : "moremekaponder.ui.filling", ins.get(0).getHoverName()));
+            else if (energySlot && !ins.isEmpty())
+                b.text(Component.translatable("moremekaponder.ui.energy_slot"), ItemStack.EMPTY, NOTE);
+            else if (!ins.isEmpty() || !outs.isEmpty() || (!inNames.isEmpty() && !outNames.isEmpty()))
+                b.text(caption(ins, inNames, outs, outNames));
+        }
         if (o.has("note")) b.text(text(o.get("note")), ItemStack.EMPTY, NOTE);
         ui.link = fx.card(b);
         transient_.add(ui.link);
@@ -826,17 +1001,15 @@ final class SceneRunner {
             int i = 0;
             for (ItemStack s : ins) for (int k = 0; k < s.getCount() && i < 9; k++) grid[i++] = s.copyWithCount(1);
         }
-        ItemStack table = new ItemStack(Items.CRAFTING_TABLE);
-        CardBuilder b = CardBuilder.of(table.getHoverName()).icon(table).target(top);
+        CardBuilder b = CardBuilder.of(Component.translatable("container.crafting")).target(top).screen(176, 80, 28)
+                .imageAt(ResourceLocation.withDefaultNamespace("textures/gui/container/crafting_table.png"), 0, 0, 0, 0, 176, 76, 256, 256);
         Ui ui = new Ui();
-        int[] cells = new int[9];
         List<Integer> filled = new ArrayList<>();
         for (int i = 0; i < 9; i++) {
-            cells[i] = grid[i].isEmpty() ? -1 : b.slot(grid[i]);
-            if (cells[i] >= 0) filled.add(cells[i]);
+            int c = b.slotAt(29 + (i % 3) * 18, 16 + (i / 3) * 18, "vanilla", grid[i]);
+            if (!grid[i].isEmpty()) filled.add(c);
         }
-        int out = b.bigSlot(ItemStack.EMPTY);
-        b.grid(cells, out);
+        int out = b.slotAt(123, 34, "vanilla", ItemStack.EMPTY);
         if (!shownResult.isEmpty()) b.text(Component.translatable("moremekaponder.ui.crafts", count(shownResult)), shownResult, DARK);
         ui.in = new int[0];
         ui.out = new int[]{out};

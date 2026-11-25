@@ -502,8 +502,10 @@ for e in entries:
 
 import os
 from ui_lang import UI_LANG
+import screens
 os.makedirs(OUT+'/assets/moremekaponder/lang', exist_ok=True)
 json.dump(out_entries, open(OUT+'/assets/moremekaponder/scenes.json','w'), ensure_ascii=False, separators=(',',':'))
+screens.write(OUT)
 for l in ['ja_jp','en_us']:
     out = dict(lang); out.update(UI_LANG[l])
     json.dump(out, open(OUT+f'/assets/moremekaponder/lang/{l}.json','w'), ensure_ascii=False, indent=1)
