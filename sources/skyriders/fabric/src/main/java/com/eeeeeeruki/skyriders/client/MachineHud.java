@@ -6,9 +6,8 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.RenderTickCounter;
-import net.minecraft.registry.Registries;
 import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.util.math.MathHelper;
 
 /** HP・チャージ・スペシャル・速度・パッチの段階・着地の表示 */
 public final class MachineHud {
@@ -51,8 +50,9 @@ public final class MachineHud {
                 : sp >= 1f ? Text.translatable("hud.skyriders.special_ready")
                 : Text.translatable("hud.skyriders.special");
         ctx.drawTextWithShadow(tr, spLabel, x, y + 2, 0xFF90E0);
-        boolean blink = sp >= 1f && (client.player.age / 5) % 2 == 0;
-        drawBar(ctx, x, y + 12, barW, 3, active > 0 ? 1f : sp, blink ? 0xFFFFFFFF : 0xFFFF60C0);
+        int spColor = sp >= 1f ? 0xFF000000 | MathHelper.hsvToRgb((client.player.age % 20) / 20f, 0.7f, 1f)
+                : sp >= 0.9f && (client.player.age / 2) % 2 == 0 ? 0xFFFFFFFF : 0xFFFF60C0; // 満タン直前は激しく光る
+        drawBar(ctx, x, y + 12, barW, 3, active > 0 ? 1f : sp, spColor);
 
         // パッチの段階（右はし）
         int px = w - 84;
@@ -91,12 +91,19 @@ public final class MachineHud {
             ctx.getMatrices().pop();
         }
 
-        // ほおばり中
-        if (m.hasAbility()) {
-            Identifier id = Identifier.tryParse(m.getAbility());
-            Text name = id != null ? Registries.ENTITY_TYPE.get(id).getName() : Text.literal(m.getAbility());
-            Text t = Text.translatable("hud.skyriders.ability", name);
-            ctx.drawTextWithShadow(tr, t, w / 2 - tr.getWidth(t) / 2, y - 58, 0xA0FFFF);
+        // チャージのオーバーヒート
+        if (m.chargeOverheatTimer > 0) {
+            Text t = Text.translatable("hud.skyriders.charge_overheat");
+            ctx.drawTextWithShadow(tr, t, w / 2 - tr.getWidth(t) / 2, y - 58, 0xFF8040);
+        }
+
+        // スペシャル発動可能：画面のはしが虹色に光る
+        if (m.isSpecialReady()) {
+            int c = 0x90000000 | (MathHelper.hsvToRgb((client.player.age % 40) / 40f, 0.8f, 1f) & 0xFFFFFF);
+            ctx.fill(0, 0, w, 3, c);
+            ctx.fill(0, h - 3, w, h, c);
+            ctx.fill(0, 0, 3, h, c);
+            ctx.fill(w - 3, 0, w, h, c);
         }
     }
 

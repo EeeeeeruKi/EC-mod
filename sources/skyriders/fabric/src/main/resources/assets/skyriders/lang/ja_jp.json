@@ -6,7 +6,6 @@
   "hud.skyriders.special_ready": "Qキーでスペシャルを発動できます！",
   "hud.skyriders.special_active": "スペシャル発動中！",
   "hud.skyriders.speed": "%s km/h",
-  "hud.skyriders.ability": "ほおばり中：%s（スペース/シフトではき出せます）",
   "message.skyriders.mounted": "乗りました！ スペース/シフトでチャージ、Qでスペシャル、Eで降ります",
   "message.skyriders.special_ready": "スペシャルの準備ができました！ Qキーで発動できます",
   "message.skyriders.special_lost": "スペシャルの時間切れです",
@@ -41,5 +40,7 @@
   "message.skyriders.patch_all": "オールパッチ！ すべての能力が上がりました",
   "message.skyriders.patch_fake": "にせパッチでした！ %s が下がりました",
   "message.skyriders.destroyed": "マシンがこわれました！",
-  "hud.skyriders.overheat": "上昇の限界です（着地するまで上昇できません）"
+  "hud.skyriders.overheat": "上昇の限界です（着地するまで上昇できません）",
+  "hud.skyriders.charge_overheat": "チャージがオーバーヒートしました！",
+  "entity.skyriders.star_shot": "星型弾"
 }

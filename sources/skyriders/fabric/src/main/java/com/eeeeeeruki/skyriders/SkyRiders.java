@@ -2,6 +2,7 @@ package com.eeeeeeruki.skyriders;
 
 import com.eeeeeeruki.skyriders.entity.MachineEntity;
 import com.eeeeeeruki.skyriders.entity.PatchKind;
+import com.eeeeeeruki.skyriders.entity.StarShotEntity;
 import com.eeeeeeruki.skyriders.item.MachineItem;
 import com.eeeeeeruki.skyriders.item.PatchItem;
 import com.eeeeeeruki.skyriders.net.MachineActionPayload;
@@ -44,6 +45,14 @@ public class SkyRiders implements ModInitializer {
                     .maxTrackingRange(10)
                     .trackingTickInterval(1)
                     .build("machine"));
+
+    public static final EntityType<StarShotEntity> STAR_SHOT = Registry.register(
+            Registries.ENTITY_TYPE, id("star_shot"),
+            EntityType.Builder.<StarShotEntity>create(StarShotEntity::new, SpawnGroup.MISC)
+                    .dimensions(0.6f, 0.6f)
+                    .maxTrackingRange(8)
+                    .trackingTickInterval(1)
+                    .build("star_shot"));
 
     public static final Item MACHINE_ITEM = Registry.register(
             Registries.ITEM, id("machine"),

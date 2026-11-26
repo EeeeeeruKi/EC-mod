@@ -37,7 +37,9 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
+import net.minecraft.particle.DustParticleEffect;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3f;
 
 import java.util.List;
 import java.util.Optional;
@@ -54,11 +56,17 @@ import java.util.function.IntConsumer;
 public class MachineEntity extends Entity {
 
     // ===== マシンに関係なく共通の値 =====
-    private static final double BRAKE_SPEED = 0.15;   // チャージ中に向かう速さ（止まりきらない）
     private static final double BRAKE_RATE = 0.045;   // チャージ中の減速（重量で変わる）
     private static final double MIN_STEP = 0.004;     // 収束の最後のひと押し
-    private static final float BOOST_POWER = 1.2f;    // 満タンで放した時に足される速度
-    private static final float DRIFT_TURN_MUL = 1.5f; // チャージ中（ドリフト）の旋回
+    private static final double BOOST_POWER = 1.4;    // 満タンで放した時に足される速度（最高速の何倍か）
+    private static final double DRIFT_BRAKE_MUL = 0.55;// ドリフト中はブレーキがゆるい
+    private static final float DRIFT_CHARGE_MUL = 1.5f;// ドリフト中はチャージが早くたまる
+    private static final double STOP_SPEED = 0.06;     // これより遅いと「停止状態」
+    private static final float STOP_TURN_MUL = 2.2f;   // 停止状態の旋回
+    private static final int CHARGE_LOCK_TICKS = 40;   // チャージのオーバーヒートのあと、チャージできない時間
+    private static final float MIN_DASH = 0.08f;       // これ以上たまっていればダッシュする（ポンピング用に小さめ）
+    private static final double CAPTURE_RANGE = 4.0;   // キャプチャー（吸い込み）の範囲
+    private static final int CAPTURE_FIRE_DELAY = 10;  // 捕らえてから星型弾を撃つまで（この間は無敵）
     private static final float DRIFT_GRIP_MUL = 0.16f;// チャージ中はほぼ滑る＝前の勢いが残る
     private static final float AIR_GRIP = 0.6f;       // 空中は慣性ほぼなし：向いた方へすぐ進む
     private static final float AIR_TURN_MUL = 0.9f;
@@ -81,7 +89,7 @@ public class MachineEntity extends Entity {
     private static final double NEUTRAL_SINK = -0.12; // 無操作の滑空：揚力0なら落ちる速さ
     private static final double NEUTRAL_LIFT = 0.15;  // 揚力1あたり、無操作で浮く強さ
     private static final double OVERHEAT_SINK = -0.12;// 点滅中の落ち方
-    private static final double RAM_MIN = 0.55;       // 体当たりになる速さ
+    private static final double RAM_MIN = 0.65;       // 体当たりになる速さ（最高速の何倍か）
     /** マイクラのダメージ → マシンのHP（100）へのダメージ */
     public static final float MACHINE_DAMAGE_SCALE = 4f;
 
@@ -94,9 +102,8 @@ public class MachineEntity extends Entity {
     private static final TrackedData<Float> SPECIAL = DataTracker.registerData(MachineEntity.class, TrackedDataHandlerRegistry.FLOAT);
     private static final TrackedData<Integer> SPECIAL_ACTIVE = DataTracker.registerData(MachineEntity.class, TrackedDataHandlerRegistry.INTEGER);
     private static final TrackedData<Integer> SPIN = DataTracker.registerData(MachineEntity.class, TrackedDataHandlerRegistry.INTEGER);
-    private static final TrackedData<String> ABILITY = DataTracker.registerData(MachineEntity.class, TrackedDataHandlerRegistry.STRING);
     private static final TrackedData<Boolean> CHARGING = DataTracker.registerData(MachineEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
-    private static final TrackedData<Boolean> BLINK = DataTracker.registerData(MachineEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
+    private static final TrackedData<Integer> BLINK = DataTracker.registerData(MachineEntity.class, TrackedDataHandlerRegistry.INTEGER); // 0なし 1限界が近い 2限界
     private static final TrackedData<Float> HP = DataTracker.registerData(MachineEntity.class, TrackedDataHandlerRegistry.FLOAT);
     @SuppressWarnings("unchecked")
     private static final TrackedData<Integer>[] LEVELS = new TrackedData[PatchKind.ALL.length];
@@ -121,6 +128,10 @@ public class MachineEntity extends Entity {
     private int stunTicks;
     private float flightPitch;       // 機首の角度（+で下がる）
     private boolean stalled;
+    private boolean climbWarned;     // 上昇の限界が近い（点滅しはじめ）
+    private int chargeHold;          // 満タンのまま押している時間
+    private int chargeLockTicks;     // チャージのオーバーヒート後、チャージできない時間
+    public int chargeOverheatTimer;  // HUD用
     private boolean overheated;      // 上昇の限界で点滅中（着地するまで上昇できない）
     private double climbUsed;        // 離陸してから上がった高さ
     private int flightTicks;
@@ -143,6 +154,13 @@ public class MachineEntity extends Entity {
     private int serverSpinCooldown;
     private int hurtCooldown;
     private int ramCooldown;
+    private double serverSpeed;
+    private int captured;            // 捕らえた敵の数
+    private int captureTimer;        // 星型弾を撃つまで
+    private int invulnTicks;         // キャプチャーのモーション中は無敵
+    // 見た目用（全クライアント）
+    private int visAirTicks;
+    public float hover = 0.18f, prevHover = 0.18f;
     @Nullable
     private Vec3d lastServerPos;
 
@@ -158,9 +176,8 @@ public class MachineEntity extends Entity {
         builder.add(SPECIAL, 0f);
         builder.add(SPECIAL_ACTIVE, 0);
         builder.add(SPIN, 0);
-        builder.add(ABILITY, "");
         builder.add(CHARGING, false);
-        builder.add(BLINK, false);
+        builder.add(BLINK, 0);
         builder.add(HP, 100f);
         for (TrackedData<Integer> l : LEVELS) builder.add(l, 0);
     }
@@ -307,8 +324,9 @@ public class MachineEntity extends Entity {
     protected void removePassenger(Entity passenger) {
         super.removePassenger(passenger);
         if (!this.getWorld().isClient) {
+            this.noClip = false;
             this.dataTracker.set(CHARGING, false);
-            this.dataTracker.set(BLINK, false);
+            this.dataTracker.set(BLINK, 0);
         }
     }
 
@@ -376,6 +394,75 @@ public class MachineEntity extends Entity {
         this.visPitch += (pitchGoal - this.visPitch) * (mine ? 1f : 0.25f);
 
         if (!this.getWorld().isClient) tickServer();
+        else tickVisuals();
+    }
+
+    /** 見た目の変化（すべてのクライアント） */
+    private void tickVisuals() {
+        World w = this.getWorld();
+        this.visAirTicks = this.isOnGround() ? 0 : this.visAirTicks + 1;
+        boolean pushing = this.isPushing();
+
+        // プッシュすると地面側へ沈む（スター型は普段は浮いている）
+        this.prevHover = this.hover;
+        float hoverGoal = !this.spec.star() ? 0f : pushing && this.isOnGround() ? 0.02f : 0.18f;
+        this.hover += (hoverGoal - this.hover) * 0.35f;
+
+        double rad = Math.toRadians(this.getYaw());
+        double fx = -Math.sin(rad), fz = Math.cos(rad);
+        double rx = -fz, rz = fx;
+
+        // ブレーキランプ：光が尾を引く
+        if (pushing && this.hasPassengers()) {
+            w.addParticle(new DustParticleEffect(new Vector3f(1f, 0.1f, 0.05f), 0.9f),
+                    this.getX() - fx * 0.85, this.getY() + this.hover + 0.18, this.getZ() - fz * 0.85, 0, 0, 0);
+        }
+
+        // HPが減ると煙が出る
+        float hpRate = this.getHp() / this.maxHp();
+        if (hpRate < 0.5f && this.age % (hpRate < 0.25f ? 2 : 4) == 0) {
+            w.addParticle(hpRate < 0.25f ? ParticleTypes.LARGE_SMOKE : ParticleTypes.SMOKE,
+                    this.getX() + (this.random.nextDouble() - 0.5) * 0.8, this.getY() + 0.4,
+                    this.getZ() + (this.random.nextDouble() - 0.5) * 0.8, 0, 0.04, 0);
+            if (hpRate < 0.25f && this.random.nextInt(6) == 0) {
+                w.addParticle(ParticleTypes.FLAME, this.getX(), this.getY() + 0.3, this.getZ(), 0, 0.03, 0);
+            }
+        }
+
+        // ヴェイパー：滑空中に後ろへ飛行機雲
+        if (this.spec.vapor() && this.isGlidingVisual() && this.age % 2 == 0) {
+            for (int sgn = -1; sgn <= 1; sgn += 2) {
+                w.addParticle(ParticleTypes.WHITE_ASH,
+                        this.getX() - fx * 0.7 + rx * 0.7 * sgn, this.getY() + this.hover + 0.15,
+                        this.getZ() - fz * 0.7 + rz * 0.7 * sgn, 0, 0, 0);
+            }
+        }
+
+        // パッチの発光：いちばん多い色の粒が出る（多いほど多い）
+        PatchKind dom = this.dominantPatch();
+        if (dom != null) {
+            int lv = this.level(dom);
+            int every = lv >= 12 ? 2 : lv >= 6 ? 5 : 12;
+            if (this.age % every == 0) {
+                int c = MachineEntity.glowColor(dom);
+                w.addParticle(new DustParticleEffect(new Vector3f(((c >> 16) & 255) / 255f, ((c >> 8) & 255) / 255f, (c & 255) / 255f), 1.0f),
+                        this.getX() + (this.random.nextDouble() - 0.5) * 1.4, this.getY() + 0.3,
+                        this.getZ() + (this.random.nextDouble() - 0.5) * 1.4, 0, 0.02, 0);
+            }
+        }
+
+        // スペシャル発動可能：虹色に光る
+        if (this.isSpecialReady() && this.age % 2 == 0) {
+            int c = MathHelper.hsvToRgb((this.age % 40) / 40f, 0.8f, 1f);
+            w.addParticle(new DustParticleEffect(new Vector3f(((c >> 16) & 255) / 255f, ((c >> 8) & 255) / 255f, (c & 255) / 255f), 1.2f),
+                    this.getX() + (this.random.nextDouble() - 0.5) * 1.6, this.getY() + 0.5 + this.random.nextDouble() * 0.6,
+                    this.getZ() + (this.random.nextDouble() - 0.5) * 1.6, 0, 0.03, 0);
+        }
+    }
+
+    /** 発光の色。HPは攻撃（赤系）と見分けるため白 */
+    public static int glowColor(PatchKind k) {
+        return k == PatchKind.HP ? 0xFFFFFF : k.color;
     }
 
     /** 乗っている人のクライアント：マシンの物理 */
@@ -395,7 +482,6 @@ public class MachineEntity extends Entity {
         this.airTicks = onGround ? 0 : this.airTicks + 1;
         boolean grounded = this.airTicks < 3;
         boolean special = this.getSpecialActiveTicks() > 0;
-        boolean pressEdge = this.inCharge && !this.prevCharge;
         boolean stunned = this.stunTicks > 0;
         if (stunned) this.stunTicks--;
 
@@ -411,16 +497,29 @@ public class MachineEntity extends Entity {
             this.rightTapAge = this.age;
         }
 
-        // --- ほおばっている時はボタンで「はき出し」 ---
-        if (pressEdge && this.hasAbility()) {
-            clientActionSender.accept(MachineActionPayload.USE);
-        }
+        // --- プッシュ中かどうか（キャプチャー・ブレーキランプ用に、地上でも空中でもサーバーへ知らせる） ---
+        if (this.inCharge && !this.prevCharge) clientActionSender.accept(MachineActionPayload.CHARGE_START);
+        if (!this.inCharge && this.prevCharge) clientActionSender.accept(MachineActionPayload.CHARGE_STOP);
+
+        boolean chargeLocked = this.chargeLockTicks > 0;
+        if (chargeLocked) this.chargeLockTicks--;
+
+        double rad0 = Math.toRadians(this.getYaw());
+        double fwd0 = this.velX * -Math.sin(rad0) + this.velZ * Math.cos(rad0);
 
         // --- 機首の向き（ヨー）：旋回ステータス ---
         float turnMul = this.turnMul();
-        boolean charging = this.inCharge && grounded && !special && !stunned; // 地上でプッシュ＝ブレーキ＋チャージ
+        boolean braking = this.inCharge && grounded && !special && !stunned; // 地上でプッシュ＝押し付けてブレーキ＋チャージ
         float steer = stunned ? 0f : (this.inRight ? 1f : 0f) - (this.inLeft ? 1f : 0f);
-        float turn = this.spec.turn() * turnMul * (charging ? DRIFT_TURN_MUL : grounded ? 1f : AIR_TURN_MUL);
+        boolean stopped = braking && Math.abs(fwd0) < STOP_SPEED;
+        float turn;
+        if (stopped) {
+            // 停止状態：ドリフトより曲がりやすい（スター型は重量、接地タイプは旋回とグリップで決まる）
+            turn = this.spec.turn() * STOP_TURN_MUL * (this.spec.star()
+                    ? (float) curve(tw(), 0.6, 1.4) : turnMul * (0.5f + this.spec.grip() * 2f));
+        } else {
+            turn = this.spec.turn() * turnMul * (braking ? this.spec.driftTurnMul() : grounded ? 1f : AIR_TURN_MUL);
+        }
         this.setYaw(this.getYaw() + steer * turn);
 
         double rad = Math.toRadians(this.getYaw());
@@ -429,7 +528,7 @@ public class MachineEntity extends Entity {
         double fwd = this.velX * fx + this.velZ * fz;   // 今の勢いのうち「前」の分
         double side = this.velX * rx + this.velZ * rz;  // 今の勢いのうち「横」の分（すべり）
 
-        // --- 機首の上げ下げ（ピッチ）：旋回ステータスで応答が速くなる ---
+        // --- 機首の上げ下げ（ピッチ）：旋回ステータスで応答が速くなる。空中プッシュでは変わらない ---
         float pitchTarget = 0f;
         if (!stunned) {
             if (this.inForward) pitchTarget = MAX_PITCH;
@@ -437,35 +536,68 @@ public class MachineEntity extends Entity {
         }
         if (grounded) pitchTarget *= 0.35f;
         else if (this.stalled) pitchTarget = 22f; // 失速すると機首が下がる
+        if (!grounded && this.inCharge) pitchTarget = this.flightPitch; // 急降下は機首の向きを変えない
         if (stunned) pitchTarget += MathHelper.sin(this.stunTicks * 1.3f) * 12f;
         this.flightPitch += (pitchTarget - this.flightPitch) * 0.12f * turnMul;
 
-        // --- チャージとブースト ---
-        if (charging && !this.wasCharging) {
-            clientActionSender.accept(MachineActionPayload.CHARGE_START);
+        // --- チャージダッシュ：地上でプッシュを離した時だけ。被弾の硬直中は止まって、離した入力は硬直のあとに効く ---
+        if (!stunned) {
+            if (!braking && this.wasCharging && grounded && !this.inCharge) {
+                fwd = boost(fwd, 1f);
+                side *= 0.5; // ダッシュで向いた方へそろう（ポンピング）
+            }
+            this.wasCharging = braking;
         }
-        if (!charging && this.wasCharging) {
-            clientActionSender.accept(MachineActionPayload.CHARGE_STOP);
-            // 地上でボタンを離した時だけブースト（押したまま飛び出したらチャージは持ち越し）
-            if (grounded && !this.inCharge) fwd = boost(fwd, 1f);
+
+        // --- チャージのオーバーヒート：満タンのまま押し続けると、ひるんでチャージが空になる ---
+        if (braking && this.charge >= 1f) {
+            if (++this.chargeHold > this.spec.chargeHoldTicks()) {
+                this.chargeHold = 0;
+                this.charge = 0f;
+                this.chargeLockTicks = CHARGE_LOCK_TICKS;
+                this.stunTicks = 10;
+                this.chargeOverheatTimer = 40;
+                this.getWorld().playSound(this.getX(), this.getY(), this.getZ(),
+                        SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.PLAYERS, 0.9f, 1.2f, false);
+                for (int i = 0; i < 8; i++) {
+                    this.getWorld().addParticle(ParticleTypes.LARGE_SMOKE,
+                            this.getX() + (this.random.nextDouble() - 0.5), this.getY() + 0.4,
+                            this.getZ() + (this.random.nextDouble() - 0.5), 0, 0.05, 0);
+                }
+            }
+        } else {
+            this.chargeHold = 0;
         }
-        this.wasCharging = charging;
+        if (this.chargeOverheatTimer > 0) this.chargeOverheatTimer--;
 
         double vy = this.velY;
         if (grounded) {
             // ===== 地上 =====
+            boolean drifting = braking && steer != 0f;
             if (special) {
                 fwd = Math.max(fwd, this.topSpeed() * 1.8);
-            } else if (charging) {
-                fwd += (BRAKE_SPEED - fwd) * this.brakeRate();
-                this.charge = Math.min(1f, this.charge + 1f / this.chargeTicks());
+            } else if (braking) {
+                if (stopped && (this.inForward || this.inBack)) {
+                    // 停止状態でW/S：ゆっくり前後に動く
+                    fwd = converge(fwd, this.inForward ? this.spec.slowForward() : -this.spec.slowBack(), 0.3);
+                } else {
+                    // ブレーキ：最後は止まる。ドリフト中はゆるめ、Wで弱く、Sで強く
+                    double brake = this.brakeRate() * (drifting ? DRIFT_BRAKE_MUL : 1.0);
+                    if (this.inForward) brake *= 0.5;
+                    else if (this.inBack) brake *= 1.8;
+                    fwd = converge(fwd, 0, brake);
+                }
+                if (!chargeLocked) {
+                    this.charge = Math.min(1f, this.charge + (drifting ? DRIFT_CHARGE_MUL : 1f) / this.chargeTicks());
+                }
             } else if (stunned) {
                 fwd *= 0.9;
             } else {
                 fwd = converge(fwd, this.topSpeed(), this.accelK());
             }
-            float grip = this.spec.grip() * (charging ? DRIFT_GRIP_MUL : 1f);
-            side *= (1.0 - grip);
+            // スター型：滑るドリフト（前の勢いが残る）、接地タイプ：曲がるドリフト（向きと一緒に変わる）
+            float grip = this.spec.grip() * (braking ? (this.spec.star() ? DRIFT_GRIP_MUL : 4f) : 1f);
+            side *= (1.0 - Math.min(1f, grip));
             // 離陸した直後の数tickは、離陸の上昇を消さないよう重力を弱くする
             vy = onGround ? Math.max(vy - GRAVITY * this.fallMul(), FAST_FALL_MAX * this.fallMul()) : vy - 0.02;
             this.stalled = false;
@@ -491,12 +623,13 @@ public class MachineEntity extends Entity {
             } else {
                 // 上昇は減速、下降は加速（重いほど下降の加速が強い）
                 fwd += EXCHANGE * sin * (sin > 0 ? fallMul : 1.0);
-                // 機首を上げていない時だけ、飛行速へ収束する
-                if (this.flightPitch > -5f) fwd = converge(fwd, this.flyTop(), this.accelK() * AIR_ACCEL_MUL);
+                // 機首を上げていない時だけ、飛行速へ収束する（空中プッシュ中はスラスターを切るので進まない）
+                if (this.inCharge) fwd *= 0.995;
+                else if (this.flightPitch > -5f) fwd = converge(fwd, this.flyTop(), this.accelK() * AIR_ACCEL_MUL);
                 fwd = Math.max(0, Math.min(fwd, this.flyTop() * 1.8));
             }
 
-            if (this.inCharge && !this.hasAbility()) {
+            if (this.inCharge) {
                 vy = Math.max(vy - GRAVITY * fallMul, FAST_FALL_MAX * fallMul); // 空中でプッシュ：急降下
             } else if (this.stalled || !this.spec.star()) {
                 vy = Math.max(vy - GRAVITY * 0.75 * fallMul, FAST_FALL_MAX * fallMul);
@@ -522,6 +655,12 @@ public class MachineEntity extends Entity {
         this.velX = fx * fwd + rx * side;
         this.velZ = fz * fwd + rz * side;
         this.velY = vy;
+        // 崖際で踏みとどまる：プッシュ中は、先に地面が無いなら進まない
+        if (braking && onGround && this.getWorld().isSpaceEmpty(this,
+                this.getBoundingBox().offset(this.velX, -SNAP_DOWN - 0.1, this.velZ))) {
+            this.velX *= 0.1;
+            this.velZ *= 0.1;
+        }
         int airBefore = this.airTicks;
         double fallSpeed = vy;
         this.setVelocity(this.velX, this.velY, this.velZ);
@@ -547,6 +686,10 @@ public class MachineEntity extends Entity {
         // 上昇した量を数えて、限界を超えたら点滅（着地するまで上昇できない）
         if (!this.isOnGround()) {
             if (this.velY > 0) this.climbUsed += this.velY;
+            if (!this.climbWarned && this.climbUsed >= this.climbLimit() * 0.75) {
+                this.climbWarned = true; // 限界が近い：点滅しはじめる
+                clientActionSender.accept(MachineActionPayload.BLINK_WARN);
+            }
             if (!this.overheated && this.climbUsed >= this.climbLimit()) {
                 this.overheated = true;
                 clientActionSender.accept(MachineActionPayload.BLINK_ON);
@@ -567,8 +710,9 @@ public class MachineEntity extends Entity {
             }
             this.climbUsed = 0;
             this.flightTicks = 0;
-            if (this.overheated) {
+            if (this.overheated || this.climbWarned) {
                 this.overheated = false;
+                this.climbWarned = false;
                 clientActionSender.accept(MachineActionPayload.BLINK_OFF);
             }
         }
@@ -579,10 +723,10 @@ public class MachineEntity extends Entity {
             this.getWorld().addParticle(special ? ParticleTypes.FIREWORK : ParticleTypes.CLOUD,
                     this.getX() - fx * 0.9, this.getY() + 0.25, this.getZ() - fz * 0.9, 0, 0.02, 0);
         }
-        if (charging && Math.abs(side) > 0.15 && this.age % 2 == 0) {
+        if (braking && Math.abs(side) > 0.15 && this.age % 2 == 0) {
             this.getWorld().addParticle(ParticleTypes.CRIT, this.getX() - fx * 0.7, this.getY() + 0.1, this.getZ() - fz * 0.7, 0, 0.05, 0);
         }
-        if (charging && this.charge >= 1f && this.age % 2 == 0) {
+        if (braking && this.charge >= 1f && this.age % 2 == 0) {
             this.getWorld().addParticle(ParticleTypes.ELECTRIC_SPARK,
                     this.getX() + (this.random.nextDouble() - 0.5) * 1.2, this.getY() + 0.3,
                     this.getZ() + (this.random.nextDouble() - 0.5) * 1.2, 0, 0.1, 0);
@@ -603,8 +747,9 @@ public class MachineEntity extends Entity {
 
     /** ためたチャージをブーストに変える（最高速を一時的に超える） */
     private double boost(double fwd, float power) {
-        if (this.charge >= 0.15f) {
-            fwd = Math.max(fwd, 0) + BOOST_POWER * this.charge * power;
+        if (this.charge >= MIN_DASH) {
+            fwd = Math.max(fwd, 0) + this.topSpeed() * BOOST_POWER * this.charge * power;
+            clientActionSender.accept(MachineActionPayload.DASH_BASE + Math.round(this.charge * 100));
             this.getWorld().playSound(this.getX(), this.getY(), this.getZ(),
                     SoundEvents.ENTITY_FIREWORK_ROCKET_LAUNCH, SoundCategory.PLAYERS, 1.0f, 0.8f + this.charge * 0.6f, false);
         }
@@ -748,8 +893,13 @@ public class MachineEntity extends Entity {
         ServerWorld world = (ServerWorld) this.getWorld();
         PlayerEntity rider = this.getControllingPassenger() instanceof PlayerEntity p ? p : null;
 
+        // 人が乗っている間は、サーバーで当たり判定をやり直さない（乗っている人の画面で計算した位置をそのまま使う）。
+        // やり直すと計算が少しずれた時に「引っかかった」と判断され、マシンだけ前の位置に戻されてしまう
+        this.noClip = rider != null;
+
         if (this.serverSpinCooldown > 0) this.serverSpinCooldown--;
         if (this.hurtCooldown > 0) this.hurtCooldown--;
+        if (this.invulnTicks > 0) this.invulnTicks--;
         if (this.ramCooldown > 0) this.ramCooldown--;
         int spin = this.dataTracker.get(SPIN);
         if (spin > 0) this.dataTracker.set(SPIN, spin - 1);
@@ -760,6 +910,7 @@ public class MachineEntity extends Entity {
         this.lastServerPos = pos;
         double hSpeed = Math.sqrt(vel.x * vel.x + vel.z * vel.z);
         if (hSpeed > 8) hSpeed = 0; // テレポートなど
+        this.serverSpeed = hSpeed;
 
         // スペシャル発動中：まわりにダメージ
         int active = this.dataTracker.get(SPECIAL_ACTIVE);
@@ -779,13 +930,14 @@ public class MachineEntity extends Entity {
         }
 
         // 体当たり：速さ×重量で威力と吹っ飛ばしが上がる
-        if (this.ramCooldown <= 0 && hSpeed >= RAM_MIN) {
+        double ramMin = this.topSpeed() * RAM_MIN;
+        if (this.ramCooldown <= 0 && hSpeed >= ramMin) {
             Vec3d dir = new Vec3d(vel.x, 0, vel.z);
             for (LivingEntity e : world.getEntitiesByClass(LivingEntity.class, this.getBoundingBox().expand(0.35),
                     e -> e.isAlive() && e != rider && e.getVehicle() != this && !e.isSpectator())) {
                 Vec3d to = e.getPos().subtract(pos);
                 if (to.x * dir.x + to.z * dir.z <= 0) continue; // 進んでいる方にいる相手だけ
-                float dmg = (float) ((hSpeed - RAM_MIN + 0.1) * 6.0 * this.attackMul() * this.ramPower());
+                float dmg = (float) ((hSpeed / this.topSpeed() - RAM_MIN + 0.1) * 3.0 * this.attackMul() * this.ramPower());
                 if (hitTarget(e, rider, dmg, hSpeed * 1.2 * this.ramPower())) {
                     this.ramCooldown = 10;
                     world.playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.ENTITY_PLAYER_ATTACK_KNOCKBACK, SoundCategory.PLAYERS, 1f, 0.9f);
@@ -818,37 +970,60 @@ public class MachineEntity extends Entity {
             }
         }
 
-        // チャージ中は吸い込み（ほおばっていない時だけ）
-        if (this.dataTracker.get(CHARGING) && !this.hasAbility()) {
-            tickInhale(world, rider);
-        }
+        // キャプチャー：プッシュ中は地上でも空中でも、まわりの雑魚敵を吸い込む
+        if (this.dataTracker.get(CHARGING)) tickCapture(world, rider);
+        if (this.captureTimer > 0 && --this.captureTimer == 0) fireStar(world, rider);
     }
 
-    private void tickInhale(ServerWorld world, PlayerEntity rider) {
-        Vec3d forward = Vec3d.fromPolar(0f, this.getYaw());
-        Vec3d mouth = this.getPos().add(forward.multiply(0.8)).add(0, 0.4, 0);
-        List<LivingEntity> list = this.getWorld().getEntitiesByClass(LivingEntity.class,
-                this.getBoundingBox().expand(5.0), e -> e instanceof Monster && e.isAlive() && e != rider && !e.hasVehicle());
+    /** キャプチャー：範囲内なら横や後ろの敵も吸い込む。捕らえたら少しあとに星型弾を撃つ */
+    private void tickCapture(ServerWorld world, PlayerEntity rider) {
+        Vec3d center = this.getPos().add(0, 0.4, 0);
+        List<LivingEntity> list = world.getEntitiesByClass(LivingEntity.class, this.getBoundingBox().expand(CAPTURE_RANGE),
+                e -> e instanceof Monster && e.isAlive() && e != rider && !e.hasVehicle() && e.getMaxHealth() <= 40f);
         for (LivingEntity e : list) {
-            Vec3d toMouth = mouth.subtract(e.getPos().add(0, e.getHeight() * 0.5, 0));
-            double dist = toMouth.length();
-            if (dist > 5.0) continue;
-            Vec3d fromMachine = e.getPos().subtract(this.getPos()).normalize();
-            if (fromMachine.dotProduct(forward) < 0.35) continue; // 前にいる敵だけ
-
-            if (dist < 1.8 && e.getMaxHealth() <= 40f) {
-                Identifier id = Registries.ENTITY_TYPE.getId(e.getType());
+            Vec3d to = center.subtract(e.getPos().add(0, e.getHeight() * 0.5, 0));
+            double dist = to.length();
+            if (dist > CAPTURE_RANGE) continue;
+            if (dist < 1.6) {
                 world.spawnParticles(ParticleTypes.POOF, e.getX(), e.getY() + 0.5, e.getZ(), 10, 0.3, 0.3, 0.3, 0.02);
                 e.discard();
-                this.dataTracker.set(ABILITY, id.toString());
+                this.captured++;
+                if (this.captureTimer <= 0) this.captureTimer = CAPTURE_FIRE_DELAY;
+                this.invulnTicks = Math.max(this.invulnTicks, this.captureTimer + 4);
                 world.playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.ENTITY_PLAYER_BURP, SoundCategory.PLAYERS, 1f, 1.2f);
-                return;
+                continue;
             }
-            e.setVelocity(e.getVelocity().multiply(0.5).add(toMouth.normalize().multiply(0.35)));
+            e.setVelocity(e.getVelocity().multiply(0.5).add(to.normalize().multiply(0.35)));
             e.velocityModified = true;
             if (this.age % 3 == 0) {
                 world.spawnParticles(ParticleTypes.CLOUD, e.getX(), e.getY() + 0.5, e.getZ(), 1, 0.2, 0.2, 0.2, 0.0);
             }
+        }
+    }
+
+    /** 捕らえた敵を星型弾にして前へ撃つ。2体以上なら貫通する */
+    private void fireStar(ServerWorld world, PlayerEntity rider) {
+        int n = this.captured;
+        this.captured = 0;
+        if (n <= 0 || rider == null) return;
+        Vec3d forward = Vec3d.fromPolar(0f, this.getYaw());
+        StarShotEntity star = new StarShotEntity(SkyRiders.STAR_SHOT, world);
+        star.setup(this, rider, n >= 2, (n >= 2 ? 8f : 10f) * this.attackMul());
+        star.refreshPositionAndAngles(this.getX() + forward.x * 1.4, this.getY() + 0.5, this.getZ() + forward.z * 1.4, this.getYaw(), 0f);
+        star.setVelocity(forward.multiply(1.4 + this.getServerSpeed()));
+        world.spawnEntity(star);
+        world.playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.ENTITY_SNOWBALL_THROW, SoundCategory.PLAYERS, 1f, 0.7f);
+    }
+
+    /** チャージダッシュの演出：たまった量で変わる（ほかの人からも見える） */
+    private void dashEffect(ServerWorld world, float amount) {
+        Vec3d back = Vec3d.fromPolar(0f, this.getYaw()).multiply(-0.9);
+        double x = this.getX() + back.x, y = this.getY() + 0.3, z = this.getZ() + back.z;
+        world.spawnParticles(ParticleTypes.CLOUD, x, y, z, 3 + (int) (amount * 12), 0.3, 0.15, 0.3, 0.03);
+        if (amount >= 0.4f) world.spawnParticles(ParticleTypes.FLAME, x, y, z, (int) (amount * 14), 0.25, 0.1, 0.25, 0.04);
+        if (amount >= 0.8f) {
+            world.spawnParticles(ParticleTypes.FIREWORK, x, y, z, 16, 0.3, 0.2, 0.3, 0.12);
+            world.spawnParticles(ParticleTypes.SONIC_BOOM, x, y, z, 1, 0, 0, 0, 0);
         }
     }
 
@@ -869,9 +1044,9 @@ public class MachineEntity extends Entity {
             }
             case MachineActionPayload.CHARGE_START -> this.dataTracker.set(CHARGING, true);
             case MachineActionPayload.CHARGE_STOP -> this.dataTracker.set(CHARGING, false);
-            case MachineActionPayload.BLINK_ON -> this.dataTracker.set(BLINK, true);
-            case MachineActionPayload.BLINK_OFF -> this.dataTracker.set(BLINK, false);
-            case MachineActionPayload.USE -> spitStar(world, player);
+            case MachineActionPayload.BLINK_WARN -> this.dataTracker.set(BLINK, Math.max(1, this.dataTracker.get(BLINK)));
+            case MachineActionPayload.BLINK_ON -> this.dataTracker.set(BLINK, 2);
+            case MachineActionPayload.BLINK_OFF -> this.dataTracker.set(BLINK, 0);
             case MachineActionPayload.SPECIAL -> {
                 if (this.dataTracker.get(SPECIAL) >= 100f && this.dataTracker.get(SPECIAL_ACTIVE) <= 0) {
                     this.dataTracker.set(SPECIAL, 0f);
@@ -882,46 +1057,11 @@ public class MachineEntity extends Entity {
             }
             case MachineActionPayload.EXIT_OR_SWAP -> exitOrSwap(player);
             default -> {
-            }
-        }
-    }
-
-    /** ほおばった敵を星にしてはき出す（前にまっすぐ飛ぶ） */
-    private void spitStar(ServerWorld world, ServerPlayerEntity player) {
-        if (!this.hasAbility()) return;
-        this.dataTracker.set(ABILITY, "");
-
-        Vec3d forward = Vec3d.fromPolar(0f, this.getYaw());
-        Vec3d start = this.getPos().add(0, 0.6, 0).add(forward.multiply(1.2));
-        Vec3d end = start.add(forward.multiply(24));
-        BlockHitResult blockHit = world.raycast(new RaycastContext(start, end,
-                RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, this));
-        if (blockHit.getType() != HitResult.Type.MISS) end = blockHit.getPos();
-
-        LivingEntity target = null;
-        double best = Double.MAX_VALUE;
-        for (LivingEntity e : world.getEntitiesByClass(LivingEntity.class, new Box(start, end).expand(1.0),
-                e -> e.isAlive() && e != player)) {
-            Optional<Vec3d> hit = e.getBoundingBox().expand(0.4).raycast(start, end);
-            if (hit.isPresent()) {
-                double d = start.squaredDistanceTo(hit.get());
-                if (d < best) {
-                    best = d;
-                    target = e;
+                if (action >= MachineActionPayload.DASH_BASE && action <= MachineActionPayload.DASH_BASE + 100) {
+                    dashEffect(world, (action - MachineActionPayload.DASH_BASE) / 100f);
                 }
             }
         }
-        if (target != null) {
-            end = target.getPos().add(0, target.getHeight() * 0.5, 0);
-            hitTarget(target, player, 10f * this.attackMul(), 1.0);
-        }
-
-        double len = start.distanceTo(end);
-        for (double d = 0; d < len; d += 0.7) {
-            Vec3d p = start.add(forward.multiply(d));
-            world.spawnParticles(ParticleTypes.END_ROD, p.x, p.y, p.z, 1, 0, 0, 0, 0);
-        }
-        world.playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.ENTITY_SNOWBALL_THROW, SoundCategory.PLAYERS, 1f, 0.7f);
     }
 
     /** E：近くに空いているマシンがあれば乗り換え（パッチも持っていく）、無ければ降りる */
@@ -975,11 +1115,26 @@ public class MachineEntity extends Entity {
         return hurt;
     }
 
+    /** 星型弾が当たった時（吹っ飛ぶ向きは弾の向き） */
+    void hitWithStar(LivingEntity e, PlayerEntity owner, float dmg, Vec3d vel) {
+        Vec3d dir = new Vec3d(vel.x, 0, vel.z);
+        if (e.getVehicle() instanceof MachineEntity other) {
+            if (other != this && other.takeHit(dmg * MACHINE_DAMAGE_SCALE, owner, dir, 0.7)) addSpecial(5f);
+            return;
+        }
+        boolean hurt = e.damage(this.getDamageSources().playerAttack(owner), dmg);
+        if (dir.lengthSquared() > 1e-4) e.takeKnockback(0.7, -dir.x, -dir.z);
+        if (hurt) {
+            addSpecial(5f);
+            if (!e.isAlive() && e instanceof Monster) dropPatchFrom(e);
+        }
+    }
+
     /**
      * マシンがダメージを受ける。防御は割合で軽減（上限90%）、よろけと吹っ飛びも減る。
      */
     public boolean takeHit(float raw, @Nullable Entity attacker, Vec3d dir, double knock) {
-        if (this.getWorld().isClient || this.isRemoved() || this.hurtCooldown > 0) return false;
+        if (this.getWorld().isClient || this.isRemoved() || this.hurtCooldown > 0 || this.invulnTicks > 0) return false;
         this.hurtCooldown = 8;
         float def = this.defenseMul();
         float taken = Math.max(raw / def, raw * 0.1f);
@@ -1035,7 +1190,7 @@ public class MachineEntity extends Entity {
     }
 
     /** マシンの攻撃で倒した敵は、パッチを落とすことがある（たまに偽パッチ） */
-    private void dropPatchFrom(LivingEntity e) {
+    void dropPatchFrom(LivingEntity e) {
         ServerWorld world = (ServerWorld) this.getWorld();
         float r = this.random.nextFloat();
         Item item = SkyRiders.PATCHES.get(PatchKind.ALL[this.random.nextInt(PatchKind.ALL.length)]);
@@ -1080,7 +1235,7 @@ public class MachineEntity extends Entity {
         this.dataTracker.set(HP, Math.min(hp, this.maxHp()));
     }
 
-    private void addSpecial(float amount) {
+    void addSpecial(float amount) {
         if (this.dataTracker.get(SPECIAL_ACTIVE) > 0) return;
         float g = this.dataTracker.get(SPECIAL);
         if (g < 100f) this.dataTracker.set(SPECIAL, Math.min(99.9f, g + amount));
@@ -1131,7 +1286,6 @@ public class MachineEntity extends Entity {
     @Override
     protected void readCustomDataFromNbt(NbtCompound nbt) {
         this.dataTracker.set(SPECIAL, nbt.getFloat("Special"));
-        this.dataTracker.set(ABILITY, nbt.getString("Ability"));
         NbtCompound patches = nbt.getCompound("Patches");
         for (PatchKind k : PatchKind.ALL) {
             this.dataTracker.set(LEVELS[k.ordinal()], MathHelper.clamp(patches.getInt(k.id), PatchKind.MIN, k.max));
@@ -1142,7 +1296,6 @@ public class MachineEntity extends Entity {
     @Override
     protected void writeCustomDataToNbt(NbtCompound nbt) {
         nbt.putFloat("Special", this.dataTracker.get(SPECIAL));
-        nbt.putString("Ability", this.dataTracker.get(ABILITY));
         NbtCompound patches = new NbtCompound();
         for (PatchKind k : PatchKind.ALL) patches.putInt(k.id, this.level(k));
         nbt.put("Patches", patches);
@@ -1161,9 +1314,42 @@ public class MachineEntity extends Entity {
         return this.landingTimer > 0 ? this.landingResult : 0;
     }
 
-    /** 上昇の限界で点滅しているか（ほかの人からも見える） */
-    public boolean isBlinking() {
-        return this.overheated || this.dataTracker.get(BLINK);
+    /** 上昇の限界の点滅：0なし 1限界が近い（ゆっくり） 2限界（速く）。ほかの人からも見える */
+    public int blinkLevel() {
+        int local = this.overheated ? 2 : this.climbWarned ? 1 : 0;
+        return Math.max(local, this.dataTracker.get(BLINK));
+    }
+
+    public double getServerSpeed() {
+        return this.serverSpeed;
+    }
+
+    /** プッシュ中か（ブレーキランプ・沈み込み・キャプチャー） */
+    public boolean isPushing() {
+        return this.dataTracker.get(CHARGING) || (this.isLogicalSideForUpdatingMovement() && this.inCharge);
+    }
+
+    public boolean isSpecialReady() {
+        return this.dataTracker.get(SPECIAL) >= 100f && this.dataTracker.get(SPECIAL_ACTIVE) <= 0;
+    }
+
+    /** 滑空中の見た目（ライダーの姿勢・ヴェイパー） */
+    public boolean isGlidingVisual() {
+        return this.visAirTicks > 6 && !this.isTouchingWater();
+    }
+
+    /** いちばん多く集めたパッチ（無ければ null） */
+    @Nullable
+    public PatchKind dominantPatch() {
+        PatchKind best = null;
+        int lv = 0;
+        for (PatchKind k : PatchKind.ALL) {
+            if (this.level(k) > lv) {
+                lv = this.level(k);
+                best = k;
+            }
+        }
+        return best;
     }
 
     public boolean isOverheated() {
@@ -1198,11 +1384,4 @@ public class MachineEntity extends Entity {
         return SPIN_DURATION;
     }
 
-    public String getAbility() {
-        return this.dataTracker.get(ABILITY);
-    }
-
-    public boolean hasAbility() {
-        return !this.dataTracker.get(ABILITY).isEmpty();
-    }
 }

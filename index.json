@@ -2740,6 +2740,36 @@
       "summary": "エアライド系のマシンに乗って走るMOD（試作版）。マシンは自動で前に進み、ボタンひとつでチャージ・ブースト・ドリフト・吸い込みができます。空中では速度と高度を交換しながら滑空し、パッチを集めてマシンを強くできます。",
       "versions": [
         {
+          "version": "0.4.2",
+          "mc": "1.21.1",
+          "loader": "fabric",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/skyriders/1.21.1-fabric/skyriders-0.4.2.jar",
+          "fileName": "skyriders-0.4.2.jar",
+          "sha256": "163b80891a39b78f1ebd985477ce37c1dabd0a4e23080c630c0e3c0bb3fb634a",
+          "changelog": "人が乗っている時に、マシンだけがブロックに引っかかって置いていかれることがあったのを直しました。",
+          "released": "2026-11-26"
+        },
+        {
+          "version": "0.4.1",
+          "mc": "1.21.1",
+          "loader": "fabric",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/skyriders/1.21.1-fabric/skyriders-0.4.1.jar",
+          "fileName": "skyriders-0.4.1.jar",
+          "sha256": "c62cbe2ab0887363ff82c7ccc5ce90b446461fb18ec49aead089e003371e93fb",
+          "changelog": "パッチ0の時の最高速を約30km/hにしました。チャージダッシュの伸びと体当たりになる速さは、最高速に合わせて変わるようにしました。",
+          "released": "2026-11-26"
+        },
+        {
+          "version": "0.4.0",
+          "mc": "1.21.1",
+          "loader": "fabric",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/skyriders/1.21.1-fabric/skyriders-0.4.0.jar",
+          "fileName": "skyriders-0.4.0.jar",
+          "sha256": "946d571c5b9a07b766ca43e5fa2199c5e1a5c05906bbded501eeff10bbe84146",
+          "changelog": "プッシュを細かく作り直しました。押し続けると止まるまでブレーキし、W/Sで強さを変えられます。崖際で踏みとどまり、ドリフト中はブレーキがゆるくチャージが早くたまります。少しのチャージでもダッシュできるのでポンピングができます。停止中はよく曲がり、W/Sでゆっくり前後に動けます。満タンのまま押し続けるとオーバーヒートします。プッシュ中は地上でも空中でもまわりの敵を吸い込み、自動で星型弾を撃ちます（2体以上で貫通、撃つまで無敵）。見た目では、プッシュで沈む、ブレーキランプ、チャージ量で変わるダッシュ演出、パッチの色の発光、損傷の煙、ヴェイパー、滑空中のライダーの姿勢、スペシャル満タンの虹色を追加しました。",
+          "released": "2026-11-26"
+        },
+        {
           "version": "0.3.0",
           "mc": "1.21.1",
           "loader": "fabric",

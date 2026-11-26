@@ -6,7 +6,6 @@
   "hud.skyriders.special_ready": "Press Q to use your Special!",
   "hud.skyriders.special_active": "Special active!",
   "hud.skyriders.speed": "%s km/h",
-  "hud.skyriders.ability": "Holding: %s (Space/Shift to spit)",
   "message.skyriders.mounted": "Mounted! Space/Shift: charge, Q: special, E: get off",
   "message.skyriders.special_ready": "Special ready! Press Q to use it",
   "message.skyriders.special_lost": "Your Special timed out",
@@ -41,5 +40,7 @@
   "message.skyriders.patch_all": "All Patch! Every stat went up",
   "message.skyriders.patch_fake": "Fake patch! %s went down",
   "message.skyriders.destroyed": "Your machine was destroyed!",
-  "hud.skyriders.overheat": "Climb limit reached (land to climb again)"
+  "hud.skyriders.overheat": "Climb limit reached (land to climb again)",
+  "hud.skyriders.charge_overheat": "Charge overheated!",
+  "entity.skyriders.star_shot": "Star Shot"
 }

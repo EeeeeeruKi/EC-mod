@@ -1,7 +1,11 @@
 package com.eeeeeeruki.skyriders.client;
 
 import com.eeeeeeruki.skyriders.entity.MachineEntity;
+import com.eeeeeeruki.skyriders.entity.PatchKind;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.RedstoneLampBlock;
+import net.minecraft.client.render.LightmapTextureManager;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.VertexConsumerProvider;
@@ -27,8 +31,9 @@ public class MachineRenderer extends EntityRenderer<MachineEntity> {
     @Override
     public void render(MachineEntity entity, float yaw, float tickDelta, MatrixStack matrices,
                        VertexConsumerProvider vertexConsumers, int light) {
-        // 上昇の限界：点滅（2tickごとに消える）
-        if (entity.isBlinking() && (entity.age / 2) % 2 == 0) {
+        // 上昇の限界：限界が近いとゆっくり、限界では速く点滅する
+        int blink = entity.blinkLevel();
+        if ((blink == 1 && (entity.age / 4) % 2 == 0) || (blink == 2 && (entity.age / 2) % 2 == 0)) {
             super.render(entity, yaw, tickDelta, matrices, vertexConsumers, light);
             return;
         }
@@ -49,6 +54,8 @@ public class MachineRenderer extends EntityRenderer<MachineEntity> {
         float roll = MathHelper.lerp(tickDelta, entity.prevRoll, entity.roll);
         matrices.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(roll));
         matrices.translate(0f, -0.18f, 0f);
+        // ホバー：普段は浮いていて、プッシュすると沈む
+        matrices.translate(0f, MathHelper.lerp(tickDelta, entity.prevHover, entity.hover) - 0.08f, 0f);
 
         BlockState body = Blocks.GOLD_BLOCK.getDefaultState();
         BlockState tip = Blocks.YELLOW_CONCRETE.getDefaultState();
@@ -69,6 +76,32 @@ public class MachineRenderer extends EntityRenderer<MachineEntity> {
         // 真ん中
         cube(matrices, vertexConsumers, light, core, -0.2f, 0.26f, -0.2f, 0.4f, 0.06f, 0.4f);
 
+        int full = LightmapTextureManager.MAX_LIGHT_COORDINATE;
+        // ブレーキランプ：プッシュ中に点灯
+        if (entity.isPushing() && entity.hasPassengers()) {
+            cube(matrices, vertexConsumers, full, Blocks.REDSTONE_LAMP.getDefaultState().with(RedstoneLampBlock.LIT, true),
+                    -0.15f, 0.12f, -0.78f, 0.3f, 0.12f, 0.12f);
+        }
+
+        // 発光：スペシャル発動可能なら虹色、そうでなければ一番多く集めたパッチの色（多いほど強く光る）
+        BlockState glow = null;
+        if (entity.isSpecialReady()) {
+            glow = RAINBOW[(entity.age / 2) % RAINBOW.length].getDefaultState();
+        } else {
+            PatchKind dom = entity.dominantPatch();
+            if (dom != null) {
+                int lv = entity.level(dom);
+                boolean on = lv >= 12 || (lv >= 6 ? (entity.age / 4) % 2 == 0 : entity.age % 16 < 4);
+                if (on) glow = glassFor(dom).getDefaultState();
+            }
+        }
+        if (glow != null) {
+            matrices.push();
+            matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(45f));
+            cube(matrices, vertexConsumers, full, glow, -0.52f, 0.02f, -0.52f, 1.04f, 0.3f, 1.04f);
+            matrices.pop();
+        }
+
         matrices.pop();
         super.render(entity, yaw, tickDelta, matrices, vertexConsumers, light);
     }
@@ -80,6 +113,24 @@ public class MachineRenderer extends EntityRenderer<MachineEntity> {
         m.scale(sx, sy, sz);
         this.blocks.renderBlockAsEntity(state, m, v, light, OverlayTexture.DEFAULT_UV);
         m.pop();
+    }
+
+    private static final Block[] RAINBOW = {Blocks.RED_STAINED_GLASS, Blocks.ORANGE_STAINED_GLASS, Blocks.YELLOW_STAINED_GLASS,
+            Blocks.LIME_STAINED_GLASS, Blocks.LIGHT_BLUE_STAINED_GLASS, Blocks.BLUE_STAINED_GLASS, Blocks.PURPLE_STAINED_GLASS};
+
+    /** パッチの色のガラス（HPは攻撃と見分けるため白） */
+    private static Block glassFor(PatchKind k) {
+        return switch (k) {
+            case TOP_SPEED -> Blocks.RED_STAINED_GLASS;
+            case ACCEL -> Blocks.ORANGE_STAINED_GLASS;
+            case CHARGE -> Blocks.YELLOW_STAINED_GLASS;
+            case TURN -> Blocks.LIME_STAINED_GLASS;
+            case FLY -> Blocks.LIGHT_BLUE_STAINED_GLASS;
+            case ATTACK -> Blocks.MAGENTA_STAINED_GLASS;
+            case DEFENSE -> Blocks.BLUE_STAINED_GLASS;
+            case WEIGHT -> Blocks.PURPLE_STAINED_GLASS;
+            case HP -> Blocks.WHITE_STAINED_GLASS;
+        };
     }
 
     @Override

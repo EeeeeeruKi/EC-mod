@@ -27,6 +27,7 @@ public class SkyRidersClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         EntityRendererRegistry.register(SkyRiders.MACHINE, MachineRenderer::new);
+        EntityRendererRegistry.register(SkyRiders.STAR_SHOT, StarShotRenderer::new);
 
         MachineEntity.clientActionSender = action -> {
             if (ClientPlayNetworking.canSend(MachineActionPayload.ID)) {
