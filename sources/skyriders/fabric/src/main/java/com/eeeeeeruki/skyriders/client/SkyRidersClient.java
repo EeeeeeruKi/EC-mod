@@ -93,7 +93,6 @@ public class SkyRidersClient implements ClientModInitializer {
             riding = true;
             savedPerspective = client.options.getPerspective();
             client.options.setPerspective(Perspective.THIRD_PERSON_BACK);
-            client.inGameHud.setOverlayMessage(Text.translatable("message.skyriders.mounted"), false);
         } else if (machine == null && riding) {
             riding = false;
             if (savedPerspective != null) client.options.setPerspective(savedPerspective);

@@ -61,7 +61,6 @@ public class CoursePointBlock extends Block {
         String course = placer instanceof PlayerEntity p ? cs.selectedCourse(p.getUuid()) : CourseState.DEFAULT_COURSE;
         cs.putPoint(course, this.ta, world, pos, state.get(FACING).asRotation());
         if (placer instanceof PlayerEntity p) {
-            p.sendMessage(Text.translatable(this.ta ? "message.skyriders.ta_placed" : "message.skyriders.start_placed", course), true);
         }
     }
 

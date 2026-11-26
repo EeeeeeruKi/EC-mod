@@ -42,9 +42,6 @@ public class CourseMarkerBlock extends Block {
         }
         cs.putMarker(world, pos, new CourseState.Marker(course, this.goal ? 0 : number, this.goal));
         if (placer instanceof PlayerEntity p) {
-            p.sendMessage(this.goal
-                    ? Text.translatable("message.skyriders.goal_placed", course)
-                    : Text.translatable("message.skyriders.checkpoint_placed", course, number), true);
         }
     }
 

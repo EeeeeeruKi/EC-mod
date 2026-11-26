@@ -2740,6 +2740,16 @@
       "summary": "エアライド系のマシンに乗って走るMOD（試作版）。マシンは自動で前に進み、ボタンひとつでチャージ・ブースト・ドリフト・吸い込みができます。空中では速度と高度を交換しながら滑空し、パッチを集めてマシンを強くできます。",
       "versions": [
         {
+          "version": "0.6.2",
+          "mc": "1.21.1",
+          "loader": "fabric",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/skyriders/1.21.1-fabric/skyriders-0.6.2.jar",
+          "fileName": "skyriders-0.6.2.jar",
+          "sha256": "438ef1f9dca513dc97b18dec3140f11dde0e9c0adac41995160a87bbccccd7b2",
+          "changelog": "遊んでいる最中のチャット・アクションバーのメッセージを出さないようにしました（タイトル表示とHUDはそのままです）。",
+          "released": "2026-11-26"
+        },
+        {
           "version": "0.6.1",
           "mc": "1.21.1",
           "loader": "fabric",

@@ -1277,12 +1277,10 @@ public class MachineEntity extends Entity {
                 this.dataTracker.set(SPECIAL, gauge);
                 if (gauge >= 100f) {
                     this.specialReadyTicks = 0;
-                    rider.sendMessage(Text.translatable("message.skyriders.special_ready"), true);
                     world.playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.BLOCK_NOTE_BLOCK_CHIME.value(), SoundCategory.PLAYERS, 1f, 1.5f);
                 }
             } else if (++this.specialReadyTicks > SPECIAL_READY_LIMIT) {
                 this.dataTracker.set(SPECIAL, 0f);
-                rider.sendMessage(Text.translatable("message.skyriders.special_lost"), true);
             }
         }
 
@@ -1370,7 +1368,6 @@ public class MachineEntity extends Entity {
                 if (this.dataTracker.get(SPECIAL) >= 100f && this.dataTracker.get(SPECIAL_ACTIVE) <= 0) {
                     this.dataTracker.set(SPECIAL, 0f);
                     this.dataTracker.set(SPECIAL_ACTIVE, SPECIAL_DURATION);
-                    player.sendMessage(Text.translatable("message.skyriders.special_start"), true);
                     world.playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.ITEM_TOTEM_USE, SoundCategory.PLAYERS, 0.8f, 1.4f);
                 }
             }
@@ -1403,7 +1400,6 @@ public class MachineEntity extends Entity {
             }
             other.dataTracker.set(HP, Math.min(other.dataTracker.get(HP), other.maxHp()));
             this.dataTracker.set(HP, Math.min(this.dataTracker.get(HP), this.maxHp()));
-            player.sendMessage(Text.translatable("message.skyriders.swap"), true);
         }
     }
 
@@ -1495,7 +1491,6 @@ public class MachineEntity extends Entity {
             }
         }
         if (this.getControllingPassenger() instanceof PlayerEntity p) {
-            p.sendMessage(Text.translatable("message.skyriders.destroyed"), true);
         }
         this.removeAllPassengers();
         this.discard();
@@ -1530,17 +1525,14 @@ public class MachineEntity extends Entity {
             PatchKind k = kind != null ? kind : PatchKind.ALL[this.random.nextInt(PatchKind.ALL.length)];
             addLevel(k, -1);
             damageHp(15f);
-            rider.sendMessage(Text.translatable("message.skyriders.patch_fake", k.displayName()).formatted(Formatting.RED), true);
             world.playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.ENTITY_VILLAGER_NO, SoundCategory.PLAYERS, 1f, 1f);
             return;
         }
         if (kind == null) {
             for (PatchKind k : PatchKind.ALL) addLevel(k, 1);
-            rider.sendMessage(Text.translatable("message.skyriders.patch_all"), true);
         } else {
             addLevel(kind, 1);
             int lv = this.level(kind);
-            rider.sendMessage(Text.translatable("message.skyriders.patch_get", kind.displayName(), lv > 0 ? "+" + lv : String.valueOf(lv)), true);
         }
         world.playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.ENTITY_ITEM_PICKUP, SoundCategory.PLAYERS, 0.8f, 1.3f);
     }

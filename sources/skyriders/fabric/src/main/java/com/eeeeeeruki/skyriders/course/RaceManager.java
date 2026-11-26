@@ -79,7 +79,6 @@ public final class RaceManager {
             if (!(player.getVehicle() instanceof MachineEntity machine)) {
                 LAST_POS.remove(id);
                 if (RACES.remove(id) != null) {
-                    player.sendMessage(Text.translatable("message.skyriders.race_cancel_dismount"), false);
                     sendState(player, null, now);
                 }
                 continue;
@@ -123,7 +122,6 @@ public final class RaceManager {
             // スタート
             TreeSet<Integer> nums = cs.checkpointNumbers(course);
             if (nums.isEmpty()) {
-                player.sendMessage(Text.translatable("message.skyriders.race_no_checkpoint", course).formatted(Formatting.YELLOW), false);
                 return;
             }
             p = new Progress();
@@ -149,8 +147,6 @@ public final class RaceManager {
             RACES.remove(id);
             boolean best = cs.addRecord(course, player.getGameProfile().getName(), time);
             title(player, Text.translatable("title.skyriders.race_finish"), Text.literal(formatTime(time)));
-            player.sendMessage(Text.translatable("message.skyriders.race_finish", course, formatTime(time)).formatted(Formatting.GOLD), false);
-            if (best) player.sendMessage(Text.translatable("message.skyriders.race_best").formatted(Formatting.YELLOW), false);
             player.getServerWorld().playSound(null, player.getX(), player.getY(), player.getZ(),
                     SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundCategory.PLAYERS, 1f, 1f);
             sendState(player, null, now);
@@ -168,7 +164,6 @@ public final class RaceManager {
         if (p == null || !p.course.equals(course)) return;
         if (number == p.next) {
             p.next++;
-            player.sendMessage(Text.translatable("message.skyriders.race_checkpoint", number, p.total), true);
             sound(player, 1.8f);
             sendState(player, p, now);
         } else if (number > p.next) {
@@ -229,7 +224,6 @@ public final class RaceManager {
             if (ta) {
                 RACES.remove(r.getUuid());
                 sendState(r, null, now);
-                r.sendMessage(Text.translatable("message.skyriders.ta_ready", course), false);
             } else {
                 Progress pr = new Progress();
                 pr.course = course;
@@ -249,7 +243,6 @@ public final class RaceManager {
     /** 管理画面から：自分のレースをやめる */
     public static void cancel(ServerPlayerEntity player) {
         if (RACES.remove(player.getUuid()) != null) {
-            player.sendMessage(Text.translatable("message.skyriders.race_cancel"), false);
             sendState(player, null, player.getServer().getTicks());
         }
     }
@@ -261,7 +254,6 @@ public final class RaceManager {
     private static void warn(ServerPlayerEntity player, Text text) {
         if (WARN_COOLDOWNS.containsKey(player.getUuid())) return;
         WARN_COOLDOWNS.put(player.getUuid(), WARN_COOLDOWN);
-        player.sendMessage(text.copy().formatted(Formatting.RED), true);
         player.getServerWorld().playSound(null, player.getX(), player.getY(), player.getZ(),
                 SoundEvents.BLOCK_NOTE_BLOCK_BASS.value(), SoundCategory.PLAYERS, 1f, 0.6f);
     }
