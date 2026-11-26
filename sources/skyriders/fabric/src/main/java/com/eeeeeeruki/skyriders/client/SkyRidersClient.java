@@ -7,6 +7,7 @@ import com.eeeeeeruki.skyriders.net.MachineActionPayload;
 import com.eeeeeeruki.skyriders.net.MachineHitPayload;
 import com.eeeeeeruki.skyriders.net.CourseScreenPayload;
 import com.eeeeeeruki.skyriders.net.RaceStatePayload;
+import com.eeeeeeruki.skyriders.net.RaceControlPayload;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.minecraft.client.render.RenderLayer;
 import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
@@ -53,6 +54,12 @@ public class SkyRidersClient implements ClientModInitializer {
         ClientPlayNetworking.registerGlobalReceiver(RaceStatePayload.ID,
                 (payload, context) -> context.client().execute(() -> RaceHud.receive(payload)));
         HudRenderCallback.EVENT.register(RaceHud::render);
+        ClientPlayNetworking.registerGlobalReceiver(RaceControlPayload.ID, (payload, context) -> context.client().execute(() -> {
+            if (context.client().world != null
+                    && context.client().world.getEntityById(payload.entityId()) instanceof MachineEntity m) {
+                m.applyRaceControl(payload.x(), payload.y(), payload.z(), payload.yaw(), payload.freeze());
+            }
+        }));
         ClientTickEvents.END_CLIENT_TICK.register(c -> RaceHud.tick());
         BlockRenderLayerMap.INSTANCE.putBlocks(RenderLayer.getTranslucent(), SkyRiders.GOAL_BLOCK, SkyRiders.CHECKPOINT_BLOCK);
 

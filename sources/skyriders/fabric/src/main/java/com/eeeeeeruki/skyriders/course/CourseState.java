@@ -32,6 +32,10 @@ public class CourseState extends PersistentState {
     public static class Course {
         public final String name;
         public int laps = 3;
+        @Nullable
+        public Spot start;  // スタート地点
+        @Nullable
+        public Spot ta;     // TA地点
         public final List<Record> records = new ArrayList<>();
 
         Course(String name) {
@@ -40,6 +44,61 @@ public class CourseState extends PersistentState {
     }
 
     public record Record(String player, int ticks) {
+    }
+
+    /** スタート地点・TA地点：ディメンション・場所・向き */
+    public record Spot(String dim, long pos, float yaw) {
+        public BlockPos blockPos() {
+            return BlockPos.fromLong(this.pos);
+        }
+
+        NbtCompound toNbt() {
+            NbtCompound t = new NbtCompound();
+            t.putString("Dim", this.dim);
+            t.putLong("Pos", this.pos);
+            t.putFloat("Yaw", this.yaw);
+            return t;
+        }
+
+        static Spot fromNbt(NbtCompound t) {
+            return new Spot(t.getString("Dim"), t.getLong("Pos"), t.getFloat("Yaw"));
+        }
+    }
+
+    /** スタート地点（ta=false）かTA地点（ta=true）を置く。同じ場所が別のコースにあれば外す */
+    public void putPoint(String course, boolean ta, World world, BlockPos pos, float yaw) {
+        removePoint(world, pos);
+        Spot spot = new Spot(world.getRegistryKey().getValue().toString(), pos.asLong(), yaw);
+        if (ta) course(course).ta = spot;
+        else course(course).start = spot;
+        this.markDirty();
+    }
+
+    public void removePoint(World world, BlockPos pos) {
+        String dim = world.getRegistryKey().getValue().toString();
+        long p = pos.asLong();
+        for (Course c : this.courses.values()) {
+            if (c.start != null && c.start.dim().equals(dim) && c.start.pos() == p) {
+                c.start = null;
+                this.markDirty();
+            }
+            if (c.ta != null && c.ta.dim().equals(dim) && c.ta.pos() == p) {
+                c.ta = null;
+                this.markDirty();
+            }
+        }
+    }
+
+    /** その場所がどのコースのスタート地点／TA地点か（無ければ null） */
+    @Nullable
+    public String pointOwner(World world, BlockPos pos) {
+        String dim = world.getRegistryKey().getValue().toString();
+        long p = pos.asLong();
+        for (Course c : this.courses.values()) {
+            if ((c.start != null && c.start.dim().equals(dim) && c.start.pos() == p)
+                    || (c.ta != null && c.ta.dim().equals(dim) && c.ta.pos() == p)) return c.name;
+        }
+        return null;
     }
 
     /** number は チェックポイントの番号（ゴールは 0） */
@@ -144,6 +203,8 @@ public class CourseState extends PersistentState {
                 rl.add(rt);
             }
             t.put("Records", rl);
+            if (c.start != null) t.put("Start", c.start.toNbt());
+            if (c.ta != null) t.put("Ta", c.ta.toNbt());
             cl.add(t);
         }
         nbt.put("Courses", cl);
@@ -177,6 +238,8 @@ public class CourseState extends PersistentState {
             NbtCompound t = (NbtCompound) el;
             Course c = s.course(t.getString("Name"));
             c.laps = Math.max(1, t.getInt("Laps"));
+            if (t.contains("Start")) c.start = Spot.fromNbt(t.getCompound("Start"));
+            if (t.contains("Ta")) c.ta = Spot.fromNbt(t.getCompound("Ta"));
             for (NbtElement re : t.getList("Records", NbtElement.COMPOUND_TYPE)) {
                 NbtCompound rt = (NbtCompound) re;
                 c.records.add(new Record(rt.getString("Player"), rt.getInt("Ticks")));

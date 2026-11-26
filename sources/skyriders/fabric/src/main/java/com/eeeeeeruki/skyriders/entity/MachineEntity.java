@@ -131,6 +131,8 @@ public class MachineEntity extends Entity {
     private boolean climbWarned;     // 上昇の限界が近い（点滅しはじめ）
     private int chargeHold;          // 満タンのまま押している時間
     private int chargeLockTicks;     // チャージのオーバーヒート後、チャージできない時間
+    private int freezeTicks;         // スタートのカウントダウン中（動けない）
+    private static final float COUNTDOWN_CHARGE_TICKS = 40f; // カウントダウン中のチャージ（全マシン共通・パッチの影響なし）
     public int chargeOverheatTimer;  // HUD用
     private boolean overheated;      // 上昇の限界で点滅中（着地するまで上昇できない）
     private double climbUsed;        // 離陸してから上がった高さ
@@ -484,6 +486,24 @@ public class MachineEntity extends Entity {
             this.wasControlled = true;
         }
 
+        // スタートのカウントダウン：動けないけど、プッシュでチャージできる（速さは全マシン共通）
+        if (this.freezeTicks > 0) {
+            this.freezeTicks--;
+            if (this.inCharge && !this.prevCharge) clientActionSender.accept(MachineActionPayload.CHARGE_START);
+            if (!this.inCharge && this.prevCharge) clientActionSender.accept(MachineActionPayload.CHARGE_STOP);
+            if (this.inCharge) this.charge = Math.min(1f, this.charge + 1f / COUNTDOWN_CHARGE_TICKS);
+            this.wasCharging = this.inCharge || this.charge > 0f; // GOの時に離していればすぐダッシュ
+            this.velX = this.velZ = 0;
+            this.velY = Math.max(this.velY - GRAVITY, FAST_FALL_MAX);
+            this.setVelocity(0, this.velY, 0);
+            this.move(MovementType.SELF, this.getVelocity());
+            if (this.isOnGround()) this.velY = 0;
+            this.prevCharge = this.inCharge;
+            this.prevLeft = this.inLeft;
+            this.prevRight = this.inRight;
+            return;
+        }
+
         boolean onGround = this.isOnGround();
         this.airTicks = onGround ? 0 : this.airTicks + 1;
         boolean grounded = this.airTicks < 3;
@@ -829,6 +849,24 @@ public class MachineEntity extends Entity {
         this.leftTapAge = -100;
         this.rightTapAge = -100;
         clientActionSender.accept(MachineActionPayload.SPIN);
+    }
+
+    /** スタート地点／TA地点へワープ（乗っている人のクライアント） */
+    public void applyRaceControl(double x, double y, double z, float yaw, int freeze) {
+        if (!this.isLogicalSideForUpdatingMovement()) return;
+        this.updatePositionAndAngles(x, y, z, yaw, 0f);
+        this.velX = this.velY = this.velZ = 0;
+        this.setVelocity(Vec3d.ZERO);
+        this.charge = 0f;
+        this.flightPitch = 0f;
+        this.airTicks = 0;
+        this.stunTicks = 0;
+        this.wasCharging = false;
+        this.freezeTicks = freeze;
+    }
+
+    public boolean isFrozen() {
+        return this.freezeTicks > 0;
     }
 
     /** サーバーから届いた吹っ飛び（乗っている人のクライアント） */

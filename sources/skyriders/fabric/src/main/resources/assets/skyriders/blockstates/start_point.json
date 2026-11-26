@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "skyriders:block/start_point"
+    },
+    "facing=east": {
+      "model": "skyriders:block/start_point",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "skyriders:block/start_point",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "skyriders:block/start_point",
+      "y": 270
+    }
+  }
+}

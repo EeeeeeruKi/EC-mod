@@ -3,6 +3,7 @@ package com.eeeeeeruki.skyriders.course;
 import com.eeeeeeruki.skyriders.block.CourseMarkerBlock;
 import com.eeeeeeruki.skyriders.entity.MachineEntity;
 import com.eeeeeeruki.skyriders.net.CourseScreenPayload;
+import com.eeeeeeruki.skyriders.net.RaceControlPayload;
 import com.eeeeeeruki.skyriders.net.RaceStatePayload;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -36,6 +37,8 @@ public final class RaceManager {
 
     private static final int GOAL_COOLDOWN = 40;
     private static final int WARN_COOLDOWN = 40;
+    private static final int COUNTDOWN = 60;       // 3・2・1（各1秒）
+    private static final double GRID_RANGE = 48;   // スタート地点からこの距離にいるマシンも一緒にスタート
 
     private static final class Progress {
         String course;
@@ -43,7 +46,7 @@ public final class RaceManager {
         int laps;
         int next = 1;   // 次に通るチェックポイントの番号
         int total;      // チェックポイントの数（一番大きい番号）
-        int startTick;
+        int startTick;  // カウントダウン中は、これより前の間は動けない
     }
 
     private static final Map<UUID, Progress> RACES = new HashMap<>();
@@ -60,6 +63,19 @@ public final class RaceManager {
 
         for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
             UUID id = player.getUuid();
+            Progress cd = RACES.get(id);
+            if (cd != null && now <= cd.startTick) {
+                int left = cd.startTick - now;
+                if (left > 0 && left % 20 == 0) {
+                    title(player, Text.literal(String.valueOf(left / 20)).formatted(Formatting.YELLOW), Text.empty());
+                    sound(player, 0.8f);
+                } else if (left == 0) {
+                    title(player, Text.translatable("title.skyriders.race_go").formatted(Formatting.GREEN),
+                            Text.translatable("title.skyriders.race_start_sub", cd.course, cd.laps));
+                    sound(player, 1.6f);
+                    sendState(player, cd, now);
+                }
+            }
             if (!(player.getVehicle() instanceof MachineEntity machine)) {
                 LAST_POS.remove(id);
                 if (RACES.remove(id) != null) {
@@ -79,6 +95,7 @@ public final class RaceManager {
             double dist = last.distanceTo(pos);
             int steps = Math.min(30, Math.max(1, (int) Math.ceil(dist / 0.4)));
             BlockPos prevHit = null;
+            if (cd != null && now < cd.startTick) continue; // カウントダウン中
             for (int i = 1; i <= steps; i++) {
                 Vec3d p = last.lerp(pos, i / (double) steps);
                 for (double h : new double[]{0.25, 1.2}) {
@@ -122,7 +139,8 @@ public final class RaceManager {
         }
 
         if (p.next <= p.total) {
-            warn(player, Text.translatable("message.skyriders.race_need_all"));
+            // スタートしてすぐゴールの線を通った時（まだ1つも通っていない）は何も言わない
+            if (p.next > 1) warn(player, Text.translatable("message.skyriders.race_need_all"));
             return;
         }
         if (p.lap >= p.laps) {
@@ -155,6 +173,76 @@ public final class RaceManager {
             sendState(player, p, now);
         } else if (number > p.next) {
             warn(player, Text.translatable("message.skyriders.race_missed", p.next));
+        }
+    }
+
+    /**
+     * 管理画面から：スタート地点（カウントダウン）またはTA地点（助走してゴールを通ったら計測開始）へワープする。
+     * スタート地点の時は、近くでマシンに乗っている人も一緒に並べてスタートする。
+     */
+    public static void startFromPoint(ServerPlayerEntity player, boolean ta) {
+        MinecraftServer server = player.getServer();
+        CourseState cs = CourseState.get(server);
+        String course = cs.selectedCourse(player.getUuid());
+        CourseState.Course c = cs.course(course);
+        CourseState.Spot spot = ta ? c.ta : c.start;
+        if (spot == null) {
+            player.sendMessage(Text.translatable(ta ? "message.skyriders.no_ta" : "message.skyriders.no_start", course).formatted(Formatting.YELLOW), false);
+            return;
+        }
+        if (!(player.getVehicle() instanceof MachineEntity)) {
+            player.sendMessage(Text.translatable("message.skyriders.need_machine").formatted(Formatting.YELLOW), false);
+            return;
+        }
+        if (!player.getWorld().getRegistryKey().getValue().toString().equals(spot.dim())) {
+            player.sendMessage(Text.translatable("message.skyriders.other_dimension").formatted(Formatting.YELLOW), false);
+            return;
+        }
+        ServerWorld world = player.getServerWorld();
+        BlockPos bp = spot.blockPos();
+        Vec3d center = Vec3d.ofBottomCenter(bp).add(0, 0.1, 0);
+        Vec3d fwd = Vec3d.fromPolar(0f, spot.yaw());
+        Vec3d right = new Vec3d(-fwd.z, 0, fwd.x);
+
+        java.util.List<ServerPlayerEntity> racers = new java.util.ArrayList<>();
+        racers.add(player);
+        if (!ta) {
+            for (ServerPlayerEntity other : world.getPlayers()) {
+                if (other != player && other.getVehicle() instanceof MachineEntity
+                        && other.squaredDistanceTo(center) <= GRID_RANGE * GRID_RANGE) racers.add(other);
+            }
+        }
+        int now = server.getTicks();
+        for (int i = 0; i < racers.size(); i++) {
+            ServerPlayerEntity r = racers.get(i);
+            MachineEntity machine = (MachineEntity) r.getVehicle();
+            // 横に3台ずつ、後ろへ並べる
+            double side = ((i % 3) - (i % 3 == 2 ? 3 : 0)) * 2.5; // 0, +2.5, -2.5
+            Vec3d p = center.add(right.multiply(side)).subtract(fwd.multiply((i / 3) * 3.0));
+            machine.refreshPositionAndAngles(p.x, p.y, p.z, spot.yaw(), 0f);
+            machine.setVelocity(Vec3d.ZERO);
+            LAST_POS.put(r.getUuid(), p);
+            GOAL_COOLDOWNS.put(r.getUuid(), GOAL_COOLDOWN);
+            if (ServerPlayNetworking.canSend(r, RaceControlPayload.ID)) {
+                ServerPlayNetworking.send(r, new RaceControlPayload(machine.getId(), p.x, p.y, p.z, spot.yaw(), ta ? 0 : COUNTDOWN));
+            }
+            if (ta) {
+                RACES.remove(r.getUuid());
+                sendState(r, null, now);
+                r.sendMessage(Text.translatable("message.skyriders.ta_ready", course), false);
+            } else {
+                Progress pr = new Progress();
+                pr.course = course;
+                pr.laps = c.laps;
+                TreeSet<Integer> nums = cs.checkpointNumbers(course);
+                pr.total = nums.isEmpty() ? 0 : nums.last();
+                pr.startTick = now + COUNTDOWN;
+                RACES.put(r.getUuid(), pr);
+                sendState(r, null, now);
+                if (nums.isEmpty()) {
+                    r.sendMessage(Text.translatable("message.skyriders.race_no_checkpoint", course).formatted(Formatting.YELLOW), false);
+                }
+            }
         }
     }
 
@@ -235,6 +323,8 @@ public final class RaceManager {
                 recs.add(ro);
             }
             o.add("records", recs);
+            o.addProperty("hasStart", c.start != null);
+            o.addProperty("hasTa", c.ta != null);
             list.add(o);
         }
         root.add("courses", list);
@@ -262,6 +352,14 @@ public final class RaceManager {
                 cs.markDirty();
             }
             case com.eeeeeeruki.skyriders.net.CourseEditPayload.CANCEL_RACE -> cancel(player);
+            case com.eeeeeeruki.skyriders.net.CourseEditPayload.START_RACE -> {
+                startFromPoint(player, false);
+                return;
+            }
+            case com.eeeeeeruki.skyriders.net.CourseEditPayload.START_TA -> {
+                startFromPoint(player, true);
+                return;
+            }
             default -> {
             }
         }

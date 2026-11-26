@@ -1,6 +1,7 @@
 package com.eeeeeeruki.skyriders.item;
 
 import com.eeeeeeruki.skyriders.block.CourseMarkerBlock;
+import com.eeeeeeruki.skyriders.block.CoursePointBlock;
 import com.eeeeeeruki.skyriders.course.CourseState;
 import com.eeeeeeruki.skyriders.course.RaceManager;
 import net.minecraft.block.BlockState;
@@ -41,6 +42,21 @@ public class CourseToolItem extends Item {
         World world = ctx.getWorld();
         BlockState state = world.getBlockState(ctx.getBlockPos());
         PlayerEntity player = ctx.getPlayer();
+        if (state.getBlock() instanceof CoursePointBlock point) {
+            if (world instanceof ServerWorld sw && player != null) {
+                CourseState cs = CourseState.get(sw.getServer());
+                if (player.isSneaking()) {
+                    String course = cs.selectedCourse(player.getUuid());
+                    cs.putPoint(course, point.isTa(), world, ctx.getBlockPos(), state.get(CoursePointBlock.FACING).asRotation());
+                    player.sendMessage(Text.translatable(point.isTa() ? "message.skyriders.ta_set" : "message.skyriders.start_set", course), true);
+                } else {
+                    String owner = cs.pointOwner(world, ctx.getBlockPos());
+                    player.sendMessage(owner == null ? Text.translatable("message.skyriders.point_none")
+                            : Text.translatable(point.isTa() ? "message.skyriders.ta_info" : "message.skyriders.start_info", owner), true);
+                }
+            }
+            return ActionResult.success(world.isClient);
+        }
         if (!(state.getBlock() instanceof CourseMarkerBlock block)) {
             if (player instanceof ServerPlayerEntity sp) RaceManager.sendScreen(sp);
             return ActionResult.success(world.isClient);

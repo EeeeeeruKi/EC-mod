@@ -1,6 +1,8 @@
 package com.eeeeeeruki.skyriders;
 
 import com.eeeeeeruki.skyriders.block.CourseMarkerBlock;
+import com.eeeeeeruki.skyriders.block.CoursePointBlock;
+import com.eeeeeeruki.skyriders.net.RaceControlPayload;
 import com.eeeeeeruki.skyriders.course.RaceManager;
 import com.eeeeeeruki.skyriders.entity.MachineEntity;
 import com.eeeeeeruki.skyriders.item.CourseToolItem;
@@ -78,6 +80,14 @@ public class SkyRiders implements ModInitializer {
             new BlockItem(GOAL_BLOCK, new Item.Settings()));
     public static final Item CHECKPOINT_BLOCK_ITEM = Registry.register(Registries.ITEM, id("checkpoint_block"),
             new BlockItem(CHECKPOINT_BLOCK, new Item.Settings()));
+    public static final Block START_POINT = Registry.register(Registries.BLOCK, id("start_point"),
+            new CoursePointBlock(markerSettings(MapColor.GREEN), false));
+    public static final Block TA_POINT = Registry.register(Registries.BLOCK, id("ta_point"),
+            new CoursePointBlock(markerSettings(MapColor.ORANGE), true));
+    public static final Item START_POINT_ITEM = Registry.register(Registries.ITEM, id("start_point"),
+            new BlockItem(START_POINT, new Item.Settings()));
+    public static final Item TA_POINT_ITEM = Registry.register(Registries.ITEM, id("ta_point"),
+            new BlockItem(TA_POINT, new Item.Settings()));
     public static final Item COURSE_TOOL = Registry.register(Registries.ITEM, id("course_tool"),
             new CourseToolItem(new Item.Settings().maxCount(1)));
 
@@ -112,6 +122,8 @@ public class SkyRiders implements ModInitializer {
                         entries.add(COURSE_TOOL);
                         entries.add(GOAL_BLOCK_ITEM);
                         entries.add(CHECKPOINT_BLOCK_ITEM);
+                        entries.add(START_POINT_ITEM);
+                        entries.add(TA_POINT_ITEM);
                     })
                     .build());
 
@@ -121,6 +133,7 @@ public class SkyRiders implements ModInitializer {
         PayloadTypeRegistry.playS2C().register(MachineHitPayload.ID, MachineHitPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(CourseScreenPayload.ID, CourseScreenPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(RaceStatePayload.ID, RaceStatePayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(RaceControlPayload.ID, RaceControlPayload.CODEC);
         PayloadTypeRegistry.playC2S().register(CourseEditPayload.ID, CourseEditPayload.CODEC);
         ServerPlayNetworking.registerGlobalReceiver(CourseEditPayload.ID, (payload, context) -> {
             ServerPlayerEntity player = context.player();

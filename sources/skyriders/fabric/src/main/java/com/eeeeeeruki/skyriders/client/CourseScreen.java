@@ -106,8 +106,23 @@ public class CourseScreen extends Screen {
         this.addDrawableChild(ButtonWidget.builder(Text.literal("+"), b -> send(CourseEditPayload.NUMBER, "", 1))
                 .dimensions(cx + 90, y, 20, 20).build());
 
-        // 下のボタン
+        // スタート地点・TA地点から始める
         int by = this.height - 28;
+        JsonObject c = selectedCourse();
+        ButtonWidget start = ButtonWidget.builder(Text.translatable("screen.skyriders.course.start_race"), b -> {
+            send(CourseEditPayload.START_RACE, "", 0);
+            this.close();
+        }).dimensions(cx - 155, by - 24, 152, 20).build();
+        start.active = c.has("hasStart") && c.get("hasStart").getAsBoolean();
+        this.addDrawableChild(start);
+        ButtonWidget ta = ButtonWidget.builder(Text.translatable("screen.skyriders.course.start_ta"), b -> {
+            send(CourseEditPayload.START_TA, "", 0);
+            this.close();
+        }).dimensions(cx + 3, by - 24, 152, 20).build();
+        ta.active = c.has("hasTa") && c.get("hasTa").getAsBoolean();
+        this.addDrawableChild(ta);
+
+        // 下のボタン
         this.addDrawableChild(ButtonWidget.builder(Text.translatable("screen.skyriders.course.reset"),
                 b -> send(CourseEditPayload.RESET_RECORDS, "", 0)).dimensions(cx - 155, by, 100, 20).build());
         ButtonWidget cancel = ButtonWidget.builder(Text.translatable("screen.skyriders.course.cancel_race"),
@@ -151,6 +166,13 @@ public class CourseScreen extends Screen {
             ctx.drawTextWithShadow(this.textRenderer, Text.translatable("screen.skyriders.course.missing", join(missing)), cx - 110, y, 0xFF8080);
         }
 
+        y += 12;
+        boolean hasStart = c.has("hasStart") && c.get("hasStart").getAsBoolean();
+        boolean hasTa = c.has("hasTa") && c.get("hasTa").getAsBoolean();
+        ctx.drawTextWithShadow(this.textRenderer, Text.translatable("screen.skyriders.course.points",
+                Text.translatable(hasStart ? "screen.skyriders.course.yes" : "screen.skyriders.course.no"),
+                Text.translatable(hasTa ? "screen.skyriders.course.yes" : "screen.skyriders.course.no")), cx - 110, y, 0xC0C0FF);
+
         // ベストタイム
         y += 18;
         ctx.drawTextWithShadow(this.textRenderer, Text.translatable("screen.skyriders.course.records"), cx - 110, y, 0xFFE070);
@@ -158,7 +180,7 @@ public class CourseScreen extends Screen {
         if (recs.isEmpty()) {
             ctx.drawTextWithShadow(this.textRenderer, Text.translatable("screen.skyriders.course.no_records"), cx - 100, y + 12, 0xA0A0A0);
         }
-        int maxRows = Math.max(1, (this.height - 40 - (y + 12)) / 11);
+        int maxRows = Math.max(1, (this.height - 64 - (y + 12)) / 11);
         for (int i = 0; i < recs.size() && i < maxRows; i++) {
             JsonObject r = recs.get(i).getAsJsonObject();
             String line = (i + 1) + ". " + r.get("time").getAsString() + "  " + r.get("player").getAsString();
