@@ -1,4 +1,14 @@
 {
   "parent": "minecraft:item/generated",
-  "textures": { "layer0": "minecraft:item/firework_star" }
+  "textures": {
+    "layer0": "skyriders:item/patch_accel"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "skyriders:fake": 1
+      },
+      "model": "skyriders:item/patch_accel_fake"
+    }
+  ]
 }

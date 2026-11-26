@@ -162,6 +162,7 @@ public class MachineEntity extends Entity {
     private int invulnTicks;         // キャプチャーのモーション中は無敵
     // 見た目用（全クライアント）
     private int visAirTicks;
+    private double visSpeed;
     public float hover = 0.18f, prevHover = 0.18f;
     @Nullable
     private Vec3d lastServerPos;
@@ -217,9 +218,30 @@ public class MachineEntity extends Entity {
         return this.spec.topSpeed() * curve(t(PatchKind.TOP_SPEED), this.spec.topMaxMul(), 0.3) * curve(tw(), 1.5, 0.85);
     }
 
-    /** 加速＝収束力 */
+    /** 加速＝収束力（最高速への維持力）。加速が増えると、ダッシュ後に戻る減速も速くなる */
     public double accelK() {
-        return this.spec.accel() * curve(t(PatchKind.ACCEL), 2.5, 0.4);
+        return this.spec.accel() * this.accelMul();
+    }
+
+    /**
+     * 加速パッチの効き方：1〜3個ではほとんど変わらず、4個目から大きく効く。
+     * マイナス側は他のステータスと同じ。
+     */
+    public double accelMul() {
+        int d = this.level(PatchKind.ACCEL);
+        if (d < 0) return curve(MathHelper.clamp((d - 2) / 16f, -1f, 1f), 2.5, 0.4);
+        if (d <= 3) return 0.925 + 0.025 * d;            // 0〜3個：ほぼ飾り（2個でやっと標準）
+        return 1.15 + (d - 4) / 14.0 * (2.5 - 1.15);     // 4個目から本番（18個で2.5倍）
+    }
+
+    /** 加速パッチが効いているか（紫のエフェクト） */
+    public boolean accelActive() {
+        return this.level(PatchKind.ACCEL) >= 4;
+    }
+
+    /** チャージダッシュ・離陸時加速の上乗せ（加速パッチで増える。外からの加速には効かない） */
+    private double accelOutputMul() {
+        return 1.0 + (this.accelMul() - 1.0) * 0.5;
     }
 
     public float chargeTicks() {
@@ -425,6 +447,15 @@ public class MachineEntity extends Entity {
             w.addParticle(new DustParticleEffect(new Vector3f(1f, 0.1f, 0.05f), 0.9f),
                     this.getX() - fx * 0.85, this.getY() + this.hover + 0.18, this.getZ() - fz * 0.85, 0, 0, 0);
         }
+
+        // 加速パッチ4個目から：低速から加速している時に紫のエフェクト
+        double hs = Math.sqrt(Math.pow(this.getX() - this.prevX, 2) + Math.pow(this.getZ() - this.prevZ, 2));
+        if (this.accelActive() && this.hasPassengers() && hs > this.visSpeed + 0.004
+                && hs < this.topSpeed() * 0.85 && this.age % 2 == 0) {
+            w.addParticle(ParticleTypes.WITCH, this.getX() - fx * 0.8 + (this.random.nextDouble() - 0.5) * 0.6,
+                    this.getY() + 0.3, this.getZ() - fz * 0.8 + (this.random.nextDouble() - 0.5) * 0.6, 0, 0.02, 0);
+        }
+        this.visSpeed = hs;
 
         // HPが減ると煙が出る
         float hpRate = this.getHp() / this.maxHp();
@@ -689,6 +720,7 @@ public class MachineEntity extends Entity {
         }
         int airBefore = this.airTicks;
         double fallSpeed = vy;
+        double preX = this.velX, preZ = this.velZ;
         this.setVelocity(this.velX, this.velY, this.velZ);
         this.move(MovementType.SELF, this.getVelocity());
 
@@ -704,6 +736,12 @@ public class MachineEntity extends Entity {
         this.velX = after.x;
         this.velY = this.isOnGround() ? 0 : after.y;
         this.velZ = after.z;
+        // 壁に当たると跳ね返る（加速パッチで強くなる＝すぐ立て直せる）
+        if (this.horizontalCollision) {
+            double bounce = MathHelper.clamp(0.2 + 0.25 * (this.accelMul() - 1.0), 0.1, 0.6);
+            if (after.x == 0 && Math.abs(preX) > 0.05) this.velX = -preX * bounce;
+            if (after.z == 0 && Math.abs(preZ) > 0.05) this.velZ = -preZ * bounce;
+        }
 
         // --- 離陸：加速と上向きの勢いが自動で入る ---
         if (onGround && !this.isOnGround() && !this.isTouchingWater()) {
@@ -774,7 +812,7 @@ public class MachineEntity extends Entity {
     /** ためたチャージをブーストに変える（最高速を一時的に超える） */
     private double boost(double fwd, float power) {
         if (this.charge >= MIN_DASH) {
-            fwd = Math.max(fwd, 0) + this.topSpeed() * BOOST_POWER * this.charge * power;
+            fwd = Math.max(fwd, 0) + this.topSpeed() * BOOST_POWER * this.charge * power * this.accelOutputMul();
             clientActionSender.accept(MachineActionPayload.DASH_BASE + Math.round(this.charge * 100));
             this.getWorld().playSound(this.getX(), this.getY(), this.getZ(),
                     SoundEvents.ENTITY_FIREWORK_ROCKET_LAUNCH, SoundCategory.PLAYERS, 1.0f, 0.8f + this.charge * 0.6f, false);
@@ -790,8 +828,8 @@ public class MachineEntity extends Entity {
                 ? (TAKEOFF_RISE + TAKEOFF_LIFT_RISE * this.lift()) / arc
                 : (0.08 + 0.3 * this.flyTop() / this.spec.flySpeed()) / arc; // 揚力が無いタイプは飛行速でジャンプの高さが決まる
         this.velY = Math.max(this.velY, 0) + rise;
-        this.velX += fx * TAKEOFF_ACCEL * arc;
-        this.velZ += fz * TAKEOFF_ACCEL * arc;
+        this.velX += fx * TAKEOFF_ACCEL * arc * this.accelOutputMul();
+        this.velZ += fz * TAKEOFF_ACCEL * arc * this.accelOutputMul();
         this.climbUsed = 0;
         this.flightTicks = 0;
     }
@@ -1065,6 +1103,7 @@ public class MachineEntity extends Entity {
         double x = this.getX() + back.x, y = this.getY() + 0.3, z = this.getZ() + back.z;
         world.spawnParticles(ParticleTypes.CLOUD, x, y, z, 3 + (int) (amount * 12), 0.3, 0.15, 0.3, 0.03);
         if (amount >= 0.4f) world.spawnParticles(ParticleTypes.FLAME, x, y, z, (int) (amount * 14), 0.25, 0.1, 0.25, 0.04);
+        if (this.accelActive()) world.spawnParticles(ParticleTypes.WITCH, x, y, z, 6 + (int) (amount * 14), 0.35, 0.2, 0.35, 0.05);
         if (amount >= 0.8f) {
             world.spawnParticles(ParticleTypes.FIREWORK, x, y, z, 16, 0.3, 0.2, 0.3, 0.12);
             world.spawnParticles(ParticleTypes.SONIC_BOOM, x, y, z, 1, 0, 0, 0, 0);

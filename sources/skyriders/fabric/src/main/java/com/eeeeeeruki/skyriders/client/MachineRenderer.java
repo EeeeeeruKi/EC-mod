@@ -122,13 +122,13 @@ public class MachineRenderer extends EntityRenderer<MachineEntity> {
     private static Block glassFor(PatchKind k) {
         return switch (k) {
             case TOP_SPEED -> Blocks.RED_STAINED_GLASS;
-            case ACCEL -> Blocks.ORANGE_STAINED_GLASS;
+            case ACCEL -> Blocks.PURPLE_STAINED_GLASS;
             case CHARGE -> Blocks.YELLOW_STAINED_GLASS;
             case TURN -> Blocks.LIME_STAINED_GLASS;
             case FLY -> Blocks.LIGHT_BLUE_STAINED_GLASS;
             case ATTACK -> Blocks.MAGENTA_STAINED_GLASS;
             case DEFENSE -> Blocks.BLUE_STAINED_GLASS;
-            case WEIGHT -> Blocks.PURPLE_STAINED_GLASS;
+            case WEIGHT -> Blocks.GRAY_STAINED_GLASS;
             case HP -> Blocks.WHITE_STAINED_GLASS;
         };
     }

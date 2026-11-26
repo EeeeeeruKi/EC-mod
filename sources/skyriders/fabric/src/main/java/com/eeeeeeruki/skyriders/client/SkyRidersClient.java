@@ -3,6 +3,8 @@ package com.eeeeeeruki.skyriders.client;
 import com.eeeeeeruki.skyriders.SkyRiders;
 import com.eeeeeeruki.skyriders.entity.MachineEntity;
 import com.eeeeeeruki.skyriders.item.PatchItem;
+import com.eeeeeeruki.skyriders.entity.PatchKind;
+import net.minecraft.client.item.ModelPredicateProviderRegistry;
 import com.eeeeeeruki.skyriders.net.MachineActionPayload;
 import com.eeeeeeruki.skyriders.net.MachineHitPayload;
 import com.eeeeeeruki.skyriders.net.CourseScreenPayload;
@@ -66,8 +68,13 @@ public class SkyRidersClient implements ClientModInitializer {
         // パッチの色
         List<Item> patches = new ArrayList<>(SkyRiders.PATCHES.values());
         patches.add(SkyRiders.PATCH_ALL);
+        // 加速パッチは専用の絵（紫の矢印パネル）なので色を付けない
+        patches.remove(SkyRiders.PATCHES.get(PatchKind.ACCEL));
         ColorProviderRegistry.ITEM.register((stack, tintIndex) -> tintIndex == 0 && stack.getItem() instanceof PatchItem p
                 ? 0xFF000000 | p.color() : 0xFFFFFFFF, patches.toArray(new Item[0]));
+        // 偽パッチの見分け方：加速パッチは真ん中の模様が傾いている
+        ModelPredicateProviderRegistry.register(SkyRiders.PATCHES.get(PatchKind.ACCEL), SkyRiders.id("fake"),
+                (stack, world, entity, seed) -> PatchItem.isFake(stack) ? 1f : 0f);
 
         // ワールドより先に入力を読む（バニラのQ・Eより先に横取りする）
         ClientTickEvents.START_CLIENT_TICK.register(SkyRidersClient::readInput);

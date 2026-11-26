@@ -8,13 +8,13 @@ import net.minecraft.text.Text;
  */
 public enum PatchKind {
     TOP_SPEED("top_speed", 0xFF4040, 18),
-    ACCEL("accel", 0xFF9020, 18),
+    ACCEL("accel", 0xB050FF, 18),      // 紫の矢印パネル
     CHARGE("charge", 0xFFE040, 18),
     TURN("turn", 0x40D040, 18),
     FLY("fly", 0x40C0FF, 18),
     ATTACK("attack", 0xFF40A0, 18),
     DEFENSE("defense", 0x4060FF, 18),
-    WEIGHT("weight", 0xA070FF, 18),
+    WEIGHT("weight", 0x9A9AAA, 18),
     HP("hp", 0x60FF90, 16);
 
     public static final int MIN = -14;
