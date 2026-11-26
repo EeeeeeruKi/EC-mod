@@ -30,6 +30,7 @@ public class RailRenderer implements BlockEntityRenderer<RailBlockEntity> {
         if (entity.getWorld() == null) return;
         BlockPos pos = entity.getPos();
         RailGeometry.Curve c = RailGeometry.curve(entity.getWorld(), pos);
+        if (c == null) return; // 壊した直後
         Vec3d origin = Vec3d.of(pos);
         VertexConsumer vc = vertexConsumers.getBuffer(RenderLayer.getEntityCutoutNoCull(TEXTURE));
         MatrixStack.Entry entry = matrices.peek();

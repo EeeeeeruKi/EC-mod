@@ -78,7 +78,8 @@ public class MachineEntity extends Entity {
     private static final float MAX_PITCH = 30f;       // 機首の上げ下げの最大角度
     private static final double EXCHANGE = 0.05;      // 機首の角度で速度⇔高度を交換する強さ
     private static final double CLIMB_K = 0.9;        // 機首を上げた時、速さのどれだけを上昇に使うか
-    private static final double STALL_SPEED = 0.28;   // これより遅くなると失速
+    private static final double STALL_SPEED = 0.28;
+    private static final double LIFT_CLIMB = 0.3;     // 速さが0でも、揚力1あたりこれだけ上がれる（機首を最大まで上げた時は半分）   // これより遅くなると失速
     private static final double SNAP_DOWN = 1.05;     // これ以下の段差は地面に吸い付く
     private static final int LANDING_JUDGE_AIR = 10;  // これ以上飛んでから着地したら判定する
     private static final float NICE_ANGLE = 10f;      // 機首の角度がこれ以内ならナイス着地
@@ -694,8 +695,10 @@ public class MachineEntity extends Entity {
             }
 
             // 失速の判定
-            if (!this.stalled && fwd < STALL_SPEED && this.flightPitch < 5f) this.stalled = true;
-            if (this.stalled && fwd > STALL_SPEED * 1.5) this.stalled = false;
+            // 失速は揚力が無くなってから（揚力がある限り、遅くても上昇できる）
+            boolean hasLift = this.spec.star() && lift > 0.05 && !this.overheated;
+            if (!this.stalled && !hasLift && fwd < STALL_SPEED && this.flightPitch < 5f) this.stalled = true;
+            if (this.stalled && (hasLift || fwd > STALL_SPEED * 1.5)) this.stalled = false;
 
             if (special) {
                 fwd = Math.max(fwd, this.flyTop() * 1.8);
@@ -716,6 +719,8 @@ public class MachineEntity extends Entity {
                 // 何もしなくても揚力に従って浮く。機首を上げると揚力ぶん強く上がる
                 double neutral = NEUTRAL_SINK + NEUTRAL_LIFT * lift;
                 double climb = -fwd * sin * CLIMB_K * (0.15 + 0.85 * Math.min(lift, 1.2));
+                // 遅くても、揚力のぶんは上がれる
+                if (sin < 0) climb = Math.max(climb, -sin * LIFT_CLIMB * Math.min(lift, 1.5));
                 if (climb > 0) climb /= fallMul;
                 double target = neutral + climb;
                 if (target < 0) target *= fallMul; // 重いと速く落ちる
@@ -837,6 +842,10 @@ public class MachineEntity extends Entity {
             return;
         }
         RailGeometry.Curve c = RailGeometry.curve(w, this.railPos);
+        if (c == null) {
+            leaveRail(new Vec3d(this.velX, this.velY, this.velZ), true);
+            return;
+        }
         boolean special = this.getSpecialActiveTicks() > 0;
 
         // 速さ：最高速で決まり、加速パッチはその半分くらい効く。下りは速く、上りは遅く
@@ -890,6 +899,10 @@ public class MachineEntity extends Entity {
                     return;
                 }
                 c = RailGeometry.curve(w, this.railPos);
+                if (c == null) {
+                    leaveRail(new Vec3d(this.velX, this.velY, this.velZ), true);
+                    return;
+                }
             }
         }
 
@@ -913,6 +926,7 @@ public class MachineEntity extends Entity {
     private boolean enterRail(World w, BlockPos next) {
         if (!RailGeometry.isRail(w, next)) return false;
         RailGeometry.Curve cn = RailGeometry.curve(w, next);
+        if (cn == null) return false;
         if (this.railPos.equals(cn.a())) {
             this.railT = 0;
             this.railDir = 1;
@@ -948,6 +962,7 @@ public class MachineEntity extends Entity {
     /** レールのその場所の一番近い点に乗る。向きは今の進む向きに近い方 */
     private boolean attachTo(World w, BlockPos bp, Vec3d near, Vec3d moveDir) {
         RailGeometry.Curve c = RailGeometry.curve(w, bp);
+        if (c == null) return false;
         double bestT = 0, best = Double.MAX_VALUE;
         for (int i = 0; i <= 10; i++) {
             double t = i / 10.0;
@@ -980,6 +995,7 @@ public class MachineEntity extends Entity {
         for (BlockPos bp : BlockPos.iterate(center.add(-1, -1, -1), center.add(1, 1, 1))) {
             if (!RailGeometry.isRail(w, bp)) continue;
             RailGeometry.Curve c = RailGeometry.curve(w, bp);
+            if (c == null) continue;
             for (int i = 0; i <= 10; i++) {
                 Vec3d q = c.point(i / 10.0).add(0, RAIL_RIDE_HEIGHT, 0);
                 if (q.squaredDistanceTo(foot) < RAIL_CATCH * RAIL_CATCH) {

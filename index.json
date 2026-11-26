@@ -2740,6 +2740,16 @@
       "summary": "エアライド系のマシンに乗って走るMOD（試作版）。マシンは自動で前に進み、ボタンひとつでチャージ・ブースト・ドリフト・吸い込みができます。空中では速度と高度を交換しながら滑空し、パッチを集めてマシンを強くできます。",
       "versions": [
         {
+          "version": "0.6.1",
+          "mc": "1.21.1",
+          "loader": "fabric",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/skyriders/1.21.1-fabric/skyriders-0.6.1.jar",
+          "fileName": "skyriders-0.6.1.jar",
+          "sha256": "eb5a7212033c8beabe69c212fd80fc8c61225bbb2c495093dff2e104dcfb43f4",
+          "changelog": "レールを壊すとゲームが落ちることがあったのを直しました。揚力が残っている間は、速さが遅くても機首を上げれば上昇できるようにしました（失速するのは揚力が無くなってからです。上昇の限界はそのままです）。",
+          "released": "2026-11-26"
+        },
+        {
           "version": "0.6.0",
           "mc": "1.21.1",
           "loader": "fabric",

@@ -118,8 +118,11 @@ public final class RailGeometry {
         return Integer.compare(x.getZ(), y.getZ());
     }
 
+    /** レールでなくなっていたら（壊した直後など）null */
+    @Nullable
     public static Curve curve(BlockView world, BlockPos pos) {
         BlockState state = world.getBlockState(pos);
+        if (!(state.getBlock() instanceof RailBlock)) return null;
         Vec3d p = anchor(state, pos);
         BlockPos[] l = links(world, pos);
         BlockPos a = l[0], b = l[1];
@@ -140,7 +143,9 @@ public final class RailGeometry {
     }
 
     private static Vec3d mid(BlockView world, BlockPos other, Vec3d p) {
-        return anchor(world.getBlockState(other), other).add(p).multiply(0.5);
+        BlockState s = world.getBlockState(other);
+        if (!(s.getBlock() instanceof RailBlock)) return p;
+        return anchor(s, other).add(p).multiply(0.5);
     }
 
     private static Vec3d facing(BlockState state) {
