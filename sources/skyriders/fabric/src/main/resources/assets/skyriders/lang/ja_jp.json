@@ -102,5 +102,15 @@
   "screen.skyriders.course.start_ta": "TA地点から走る",
   "screen.skyriders.course.points": "スタート地点：%s　TA地点：%s",
   "screen.skyriders.course.yes": "あり",
-  "screen.skyriders.course.no": "なし"
+  "screen.skyriders.course.no": "なし",
+  "block.skyriders.rail": "レール",
+  "item.skyriders.rail_center": "レール（真ん中）",
+  "item.skyriders.rail_left": "レール（左寄り）",
+  "item.skyriders.rail_right": "レール（右寄り）",
+  "item.skyriders.rail_top": "レール（上寄り）",
+  "item.skyriders.rail_bottom": "レール（下寄り）",
+  "item.skyriders.rail_top_left": "レール（左上寄り）",
+  "item.skyriders.rail_bottom_left": "レール（左下寄り）",
+  "item.skyriders.rail_top_right": "レール（右上寄り）",
+  "item.skyriders.rail_bottom_right": "レール（右下寄り）"
 }

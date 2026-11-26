@@ -38,6 +38,8 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
 import net.minecraft.particle.DustParticleEffect;
+import com.eeeeeeruki.skyriders.block.RailGeometry;
+import net.minecraft.util.math.BlockPos;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
@@ -103,6 +105,7 @@ public class MachineEntity extends Entity {
     private static final TrackedData<Integer> SPECIAL_ACTIVE = DataTracker.registerData(MachineEntity.class, TrackedDataHandlerRegistry.INTEGER);
     private static final TrackedData<Integer> SPIN = DataTracker.registerData(MachineEntity.class, TrackedDataHandlerRegistry.INTEGER);
     private static final TrackedData<Boolean> CHARGING = DataTracker.registerData(MachineEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
+    private static final TrackedData<Boolean> RAIL = DataTracker.registerData(MachineEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
     private static final TrackedData<Integer> BLINK = DataTracker.registerData(MachineEntity.class, TrackedDataHandlerRegistry.INTEGER); // 0なし 1限界が近い 2限界
     private static final TrackedData<Float> HP = DataTracker.registerData(MachineEntity.class, TrackedDataHandlerRegistry.FLOAT);
     @SuppressWarnings("unchecked")
@@ -132,6 +135,16 @@ public class MachineEntity extends Entity {
     private int chargeHold;          // 満タンのまま押している時間
     private int chargeLockTicks;     // チャージのオーバーヒート後、チャージできない時間
     private int freezeTicks;         // スタートのカウントダウン中（動けない）
+    // レール
+    private boolean onRail;
+    private BlockPos railPos = BlockPos.ORIGIN;
+    private double railT;
+    private int railDir = 1;
+    private double railSpeed;
+    private int railCooldown;
+    private static final double RAIL_SPEED_MUL = 1.3;   // レールの上の速さ（最高速の何倍か）
+    private static final double RAIL_RIDE_HEIGHT = 0.1; // レールの線からマシンの底まで
+    private static final double RAIL_CATCH = 0.8;       // これより近いと乗る
     private static final float COUNTDOWN_CHARGE_TICKS = 40f; // カウントダウン中のチャージ（全マシン共通・パッチの影響なし）
     public int chargeOverheatTimer;  // HUD用
     private boolean overheated;      // 上昇の限界で点滅中（着地するまで上昇できない）
@@ -181,6 +194,7 @@ public class MachineEntity extends Entity {
         builder.add(SPIN, 0);
         builder.add(CHARGING, false);
         builder.add(BLINK, 0);
+        builder.add(RAIL, false);
         builder.add(HP, 100f);
         for (TrackedData<Integer> l : LEVELS) builder.add(l, 0);
     }
@@ -357,6 +371,7 @@ public class MachineEntity extends Entity {
             this.noClip = false;
             this.dataTracker.set(CHARGING, false);
             this.dataTracker.set(BLINK, 0);
+            this.dataTracker.set(RAIL, false);
         }
     }
 
@@ -514,6 +529,7 @@ public class MachineEntity extends Entity {
             this.overheated = false;
             this.climbUsed = 0;
             this.flightTicks = 0;
+            this.onRail = false;
             this.wasControlled = true;
         }
 
@@ -532,6 +548,12 @@ public class MachineEntity extends Entity {
             this.prevCharge = this.inCharge;
             this.prevLeft = this.inLeft;
             this.prevRight = this.inRight;
+            return;
+        }
+
+        if (this.railCooldown > 0) this.railCooldown--;
+        if (this.onRail) {
+            tickRail();
             return;
         }
 
@@ -799,6 +821,201 @@ public class MachineEntity extends Entity {
         this.prevCharge = this.inCharge;
         this.prevLeft = this.inLeft;
         this.prevRight = this.inRight;
+
+        tryAttachRail();
+    }
+
+    // =====================================================================
+    // レール（グラインド）
+    // =====================================================================
+
+    /** レールに乗っている時の動き。チャージは自動でたまり、降りた瞬間にダッシュ */
+    private void tickRail() {
+        World w = this.getWorld();
+        if (!RailGeometry.isRail(w, this.railPos)) {
+            leaveRail(new Vec3d(this.velX, this.velY, this.velZ), true);
+            return;
+        }
+        RailGeometry.Curve c = RailGeometry.curve(w, this.railPos);
+        boolean special = this.getSpecialActiveTicks() > 0;
+
+        // 速さ：最高速で決まり、加速パッチはその半分くらい効く。下りは速く、上りは遅く
+        Vec3d tan0 = c.tangent(this.railT).normalize().multiply(this.railDir);
+        double target = this.topSpeed() * RAIL_SPEED_MUL * (1.0 + 0.5 * (this.accelMul() - 1.0));
+        if (special) target = Math.max(target, this.topSpeed() * 1.8);
+        this.railSpeed = converge(this.railSpeed, target, this.accelK());
+        this.railSpeed = Math.max(0.12, this.railSpeed - tan0.y * 0.04 * this.fallMul());
+
+        // チャージ：自動でたまる。プッシュすると速くたまる
+        if (!special) {
+            this.charge = Math.min(1f, this.charge + (this.inCharge ? 2f : 1f) / (this.chargeTicks() * 1.5f));
+        }
+        if (this.inCharge && !this.prevCharge) clientActionSender.accept(MachineActionPayload.CHARGE_START);
+        if (!this.inCharge && this.prevCharge) clientActionSender.accept(MachineActionPayload.CHARGE_STOP);
+
+        // A/D：となりのレールに乗り換え。無ければ飛び降りる
+        boolean leftEdge = this.inLeft && !this.prevLeft;
+        boolean rightEdge = this.inRight && !this.prevRight;
+        this.prevCharge = this.inCharge;
+        this.prevLeft = this.inLeft;
+        this.prevRight = this.inRight;
+        if (leftEdge || rightEdge) {
+            Vec3d side = new Vec3d(-tan0.z, 0, tan0.x);
+            if (side.lengthSquared() < 1e-4) side = new Vec3d(1, 0, 0);
+            side = side.normalize().multiply(rightEdge ? 1 : -1);
+            if (!switchRail(side, tan0)) {
+                leaveRail(tan0.multiply(this.railSpeed).add(side.multiply(0.35)).add(0, 0.25, 0), true);
+            }
+            return;
+        }
+
+        // レールに沿って進む（ブロックをまたいだら次のレールへ）
+        double remaining = this.railSpeed;
+        for (int guard = 0; remaining > 1e-4 && guard < 8; guard++) {
+            double len = c.length();
+            double nt = this.railT + remaining / len * this.railDir;
+            if (nt >= 0 && nt <= 1) {
+                this.railT = nt;
+                remaining = 0;
+            } else {
+                remaining -= (this.railDir > 0 ? 1 - this.railT : this.railT) * len;
+                BlockPos next = this.railDir > 0 ? c.b() : c.a();
+                if (next == null || !enterRail(w, next)) {
+                    // レールの終わり：その向きのまま飛び出す
+                    this.railT = this.railDir > 0 ? 1 : 0;
+                    Vec3d end = c.point(this.railT);
+                    Vec3d endTan = c.tangent(this.railT).normalize().multiply(this.railDir);
+                    this.setPosition(end.x, end.y + RAIL_RIDE_HEIGHT, end.z);
+                    leaveRail(endTan.multiply(this.railSpeed), true);
+                    return;
+                }
+                c = RailGeometry.curve(w, this.railPos);
+            }
+        }
+
+        Vec3d p = c.point(this.railT);
+        Vec3d tan = c.tangent(this.railT).normalize().multiply(this.railDir);
+        this.setPosition(p.x, p.y + RAIL_RIDE_HEIGHT, p.z);
+        this.setOnGround(false);
+        if (tan.x * tan.x + tan.z * tan.z > 1e-4) this.setYaw((float) Math.toDegrees(Math.atan2(-tan.x, tan.z)));
+        this.flightPitch = (float) MathHelper.clamp(-Math.toDegrees(Math.asin(MathHelper.clamp(tan.y, -1, 1))), -MAX_PITCH, MAX_PITCH);
+        this.velX = tan.x * this.railSpeed;
+        this.velY = tan.y * this.railSpeed;
+        this.velZ = tan.z * this.railSpeed;
+        this.setVelocity(this.velX, this.velY, this.velZ);
+        if (this.age % 2 == 0) {
+            w.addParticle(ParticleTypes.ELECTRIC_SPARK, p.x, p.y + 0.05, p.z,
+                    (this.random.nextDouble() - 0.5) * 0.2, 0.1, (this.random.nextDouble() - 0.5) * 0.2);
+        }
+    }
+
+    /** 次のレールブロックに入る。つながりが片方向だけの時は入れない */
+    private boolean enterRail(World w, BlockPos next) {
+        if (!RailGeometry.isRail(w, next)) return false;
+        RailGeometry.Curve cn = RailGeometry.curve(w, next);
+        if (this.railPos.equals(cn.a())) {
+            this.railT = 0;
+            this.railDir = 1;
+        } else if (this.railPos.equals(cn.b())) {
+            this.railT = 1;
+            this.railDir = -1;
+        } else {
+            return false;
+        }
+        this.railPos = next;
+        return true;
+    }
+
+    /** 横のレールに乗り換える */
+    private boolean switchRail(Vec3d side, Vec3d tan) {
+        World w = this.getWorld();
+        Vec3d base = this.getPos().add(0, -RAIL_RIDE_HEIGHT, 0);
+        for (double d = 1.0; d <= 3.5; d += 0.5) {
+            for (double h = -1; h <= 1; h += 1) {
+                Vec3d q = base.add(side.multiply(d)).add(0, h, 0);
+                BlockPos bp = BlockPos.ofFloored(q);
+                if (bp.equals(this.railPos) || !RailGeometry.isRail(w, bp)) continue;
+                if (attachTo(w, bp, base.add(side.multiply(d)), tan)) {
+                    this.getWorld().playSound(this.getX(), this.getY(), this.getZ(),
+                            SoundEvents.BLOCK_CHAIN_PLACE, SoundCategory.PLAYERS, 0.9f, 1.4f, false);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /** レールのその場所の一番近い点に乗る。向きは今の進む向きに近い方 */
+    private boolean attachTo(World w, BlockPos bp, Vec3d near, Vec3d moveDir) {
+        RailGeometry.Curve c = RailGeometry.curve(w, bp);
+        double bestT = 0, best = Double.MAX_VALUE;
+        for (int i = 0; i <= 10; i++) {
+            double t = i / 10.0;
+            double d = c.point(t).squaredDistanceTo(near);
+            if (d < best) {
+                best = d;
+                bestT = t;
+            }
+        }
+        if (best > RAIL_CATCH * RAIL_CATCH * 4) return false;
+        Vec3d tan = c.tangent(bestT).normalize();
+        this.railPos = bp;
+        this.railT = bestT;
+        this.railDir = moveDir.dotProduct(tan) >= 0 ? 1 : -1;
+        this.railSpeed = Math.max(Math.abs(moveDir.dotProduct(tan)), 0.3);
+        if (!this.onRail) {
+            this.onRail = true;
+            clientActionSender.accept(MachineActionPayload.RAIL_ON);
+        }
+        return true;
+    }
+
+    /** レールに当たったら乗る（ふつうに走っている時に毎tick調べる） */
+    private void tryAttachRail() {
+        if (this.onRail || this.railCooldown > 0 || this.getSpeed() < 0.1) return;
+        World w = this.getWorld();
+        Vec3d foot = this.getPos();
+        Vec3d move = new Vec3d(this.velX, this.velY, this.velZ);
+        BlockPos center = BlockPos.ofFloored(foot);
+        for (BlockPos bp : BlockPos.iterate(center.add(-1, -1, -1), center.add(1, 1, 1))) {
+            if (!RailGeometry.isRail(w, bp)) continue;
+            RailGeometry.Curve c = RailGeometry.curve(w, bp);
+            for (int i = 0; i <= 10; i++) {
+                Vec3d q = c.point(i / 10.0).add(0, RAIL_RIDE_HEIGHT, 0);
+                if (q.squaredDistanceTo(foot) < RAIL_CATCH * RAIL_CATCH) {
+                    if (attachTo(w, bp.toImmutable(), foot.subtract(0, RAIL_RIDE_HEIGHT, 0), move.lengthSquared() > 1e-6 ? move.normalize() : Vec3d.fromPolar(0f, this.getYaw()))) {
+                        w.playSound(this.getX(), this.getY(), this.getZ(), SoundEvents.BLOCK_CHAIN_HIT, SoundCategory.PLAYERS, 1f, 1.2f, false);
+                    }
+                    return;
+                }
+            }
+        }
+    }
+
+    /** レールから降りる。降りた瞬間にたまったチャージでダッシュ */
+    private void leaveRail(Vec3d vel, boolean dash) {
+        this.onRail = false;
+        this.railCooldown = 10;
+        clientActionSender.accept(MachineActionPayload.RAIL_OFF);
+        this.velX = vel.x;
+        this.velY = vel.y;
+        this.velZ = vel.z;
+        if (dash && !this.inCharge) {
+            double h = Math.sqrt(vel.x * vel.x + vel.z * vel.z);
+            if (h > 1e-4) {
+                double nh = boost(h, 1f);
+                this.velX *= nh / h;
+                this.velZ *= nh / h;
+            }
+        }
+        this.airTicks = 3;
+        this.flightTicks = 0;
+        this.climbUsed = 0;
+        this.wasCharging = false;
+    }
+
+    public boolean isOnRailVisual() {
+        return this.onRail || this.dataTracker.get(RAIL);
     }
 
     /** 今の速さを目標へ近づける（遅い時は加速、ブーストで超えた時は減速、どちらも同じ収束力） */
@@ -900,6 +1117,7 @@ public class MachineEntity extends Entity {
         this.airTicks = 0;
         this.stunTicks = 0;
         this.wasCharging = false;
+        this.onRail = false;
         this.freezeTicks = freeze;
     }
 
@@ -1130,6 +1348,8 @@ public class MachineEntity extends Entity {
             case MachineActionPayload.BLINK_WARN -> this.dataTracker.set(BLINK, Math.max(1, this.dataTracker.get(BLINK)));
             case MachineActionPayload.BLINK_ON -> this.dataTracker.set(BLINK, 2);
             case MachineActionPayload.BLINK_OFF -> this.dataTracker.set(BLINK, 0);
+            case MachineActionPayload.RAIL_ON -> this.dataTracker.set(RAIL, true);
+            case MachineActionPayload.RAIL_OFF -> this.dataTracker.set(RAIL, false);
             case MachineActionPayload.SPECIAL -> {
                 if (this.dataTracker.get(SPECIAL) >= 100f && this.dataTracker.get(SPECIAL_ACTIVE) <= 0) {
                     this.dataTracker.set(SPECIAL, 0f);
@@ -1418,7 +1638,7 @@ public class MachineEntity extends Entity {
 
     /** 滑空中の見た目（ライダーの姿勢・ヴェイパー） */
     public boolean isGlidingVisual() {
-        return this.visAirTicks > 6 && !this.isTouchingWater();
+        return this.visAirTicks > 6 && !this.isTouchingWater() && !this.isOnRailVisual();
     }
 
     /** いちばん多く集めたパッチ（無ければ null） */

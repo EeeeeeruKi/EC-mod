@@ -102,5 +102,15 @@
   "screen.skyriders.course.start_ta": "Time attack run",
   "screen.skyriders.course.points": "Start point: %s  TA point: %s",
   "screen.skyriders.course.yes": "yes",
-  "screen.skyriders.course.no": "none"
+  "screen.skyriders.course.no": "none",
+  "block.skyriders.rail": "Rail",
+  "item.skyriders.rail_center": "Rail (Center)",
+  "item.skyriders.rail_left": "Rail (Left)",
+  "item.skyriders.rail_right": "Rail (Right)",
+  "item.skyriders.rail_top": "Rail (Top)",
+  "item.skyriders.rail_bottom": "Rail (Bottom)",
+  "item.skyriders.rail_top_left": "Rail (Top Left)",
+  "item.skyriders.rail_bottom_left": "Rail (Bottom Left)",
+  "item.skyriders.rail_top_right": "Rail (Top Right)",
+  "item.skyriders.rail_bottom_right": "Rail (Bottom Right)"
 }

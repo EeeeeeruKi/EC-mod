@@ -2,6 +2,10 @@ package com.eeeeeeruki.skyriders;
 
 import com.eeeeeeruki.skyriders.block.CourseMarkerBlock;
 import com.eeeeeeruki.skyriders.block.CoursePointBlock;
+import com.eeeeeeruki.skyriders.block.RailBlock;
+import com.eeeeeeruki.skyriders.block.RailBlockEntity;
+import com.eeeeeeruki.skyriders.item.RailBlockItem;
+import net.minecraft.block.entity.BlockEntityType;
 import com.eeeeeeruki.skyriders.net.RaceControlPayload;
 import com.eeeeeeruki.skyriders.course.RaceManager;
 import com.eeeeeeruki.skyriders.entity.MachineEntity;
@@ -88,6 +92,24 @@ public class SkyRiders implements ModInitializer {
             new BlockItem(START_POINT, new Item.Settings()));
     public static final Item TA_POINT_ITEM = Registry.register(Registries.ITEM, id("ta_point"),
             new BlockItem(TA_POINT, new Item.Settings()));
+    public static final Block RAIL = Registry.register(Registries.BLOCK, id("rail"),
+            new RailBlock(AbstractBlock.Settings.create().mapColor(MapColor.IRON_GRAY).noCollision().nonOpaque()
+                    .strength(0.3f).sounds(BlockSoundGroup.METAL)));
+    public static final BlockEntityType<RailBlockEntity> RAIL_BLOCK_ENTITY = Registry.register(
+            Registries.BLOCK_ENTITY_TYPE, id("rail"),
+            BlockEntityType.Builder.create(RailBlockEntity::new, RAIL).build(null));
+    /** レール9種（左右・上下の寄せ）。真ん中を最後に登録して、ブロックを選んだ時は真ん中になるようにする */
+    public static final java.util.List<Item> RAIL_ITEMS = new java.util.ArrayList<>();
+
+    static {
+        String[] names = {"left", "right", "top", "bottom", "top_left", "bottom_left", "top_right", "bottom_right", "center"};
+        int[][] off = {{-1, 0}, {1, 0}, {0, 1}, {0, -1}, {-1, 1}, {-1, -1}, {1, 1}, {1, -1}, {0, 0}};
+        for (int i = 0; i < names.length; i++) {
+            RAIL_ITEMS.add(net.minecraft.item.Items.register(id("rail_" + names[i]),
+                    new RailBlockItem(RAIL, new Item.Settings(), off[i][0], off[i][1])));
+        }
+    }
+
     public static final Item COURSE_TOOL = Registry.register(Registries.ITEM, id("course_tool"),
             new CourseToolItem(new Item.Settings().maxCount(1)));
 
@@ -124,6 +146,8 @@ public class SkyRiders implements ModInitializer {
                         entries.add(CHECKPOINT_BLOCK_ITEM);
                         entries.add(START_POINT_ITEM);
                         entries.add(TA_POINT_ITEM);
+                        entries.add(RAIL_ITEMS.get(RAIL_ITEMS.size() - 1));
+                        for (int i = 0; i < RAIL_ITEMS.size() - 1; i++) entries.add(RAIL_ITEMS.get(i));
                     })
                     .build());
 

@@ -16,6 +16,8 @@ public record MachineActionPayload(int action) implements CustomPayload {
     public static final int BLINK_ON = 6;
     public static final int BLINK_OFF = 7;
     public static final int BLINK_WARN = 8;
+    public static final int RAIL_ON = 9;
+    public static final int RAIL_OFF = 10;
     /** チャージダッシュの演出：DASH_BASE + たまった量(0〜100) */
     public static final int DASH_BASE = 100;
 

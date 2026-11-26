@@ -12,6 +12,7 @@ import com.eeeeeeruki.skyriders.net.RaceStatePayload;
 import com.eeeeeeruki.skyriders.net.RaceControlPayload;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.block.entity.BlockEntityRendererFactories;
 import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
 import net.minecraft.item.Item;
 import java.util.ArrayList;
@@ -64,6 +65,7 @@ public class SkyRidersClient implements ClientModInitializer {
         }));
         ClientTickEvents.END_CLIENT_TICK.register(c -> RaceHud.tick());
         BlockRenderLayerMap.INSTANCE.putBlocks(RenderLayer.getTranslucent(), SkyRiders.GOAL_BLOCK, SkyRiders.CHECKPOINT_BLOCK);
+        BlockEntityRendererFactories.register(SkyRiders.RAIL_BLOCK_ENTITY, RailRenderer::new);
 
         // パッチの色
         List<Item> patches = new ArrayList<>(SkyRiders.PATCHES.values());
