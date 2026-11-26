@@ -1,6 +1,18 @@
 package com.eeeeeeruki.skyriders;
 
+import com.eeeeeeruki.skyriders.block.CourseMarkerBlock;
+import com.eeeeeeruki.skyriders.course.RaceManager;
 import com.eeeeeeruki.skyriders.entity.MachineEntity;
+import com.eeeeeeruki.skyriders.item.CourseToolItem;
+import com.eeeeeeruki.skyriders.net.CourseEditPayload;
+import com.eeeeeeruki.skyriders.net.CourseScreenPayload;
+import com.eeeeeeruki.skyriders.net.RaceStatePayload;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.minecraft.block.AbstractBlock;
+import net.minecraft.block.Block;
+import net.minecraft.block.MapColor;
+import net.minecraft.item.BlockItem;
+import net.minecraft.sound.BlockSoundGroup;
 import com.eeeeeeruki.skyriders.entity.PatchKind;
 import com.eeeeeeruki.skyriders.entity.StarShotEntity;
 import com.eeeeeeruki.skyriders.item.MachineItem;
@@ -58,6 +70,27 @@ public class SkyRiders implements ModInitializer {
             Registries.ITEM, id("machine"),
             new MachineItem(new Item.Settings().maxCount(1)));
 
+    public static final Block GOAL_BLOCK = Registry.register(Registries.BLOCK, id("goal_block"),
+            new CourseMarkerBlock(markerSettings(MapColor.WHITE), true));
+    public static final Block CHECKPOINT_BLOCK = Registry.register(Registries.BLOCK, id("checkpoint_block"),
+            new CourseMarkerBlock(markerSettings(MapColor.BLUE), false));
+    public static final Item GOAL_BLOCK_ITEM = Registry.register(Registries.ITEM, id("goal_block"),
+            new BlockItem(GOAL_BLOCK, new Item.Settings()));
+    public static final Item CHECKPOINT_BLOCK_ITEM = Registry.register(Registries.ITEM, id("checkpoint_block"),
+            new BlockItem(CHECKPOINT_BLOCK, new Item.Settings()));
+    public static final Item COURSE_TOOL = Registry.register(Registries.ITEM, id("course_tool"),
+            new CourseToolItem(new Item.Settings().maxCount(1)));
+
+    /** 通り抜けられて、少し透けるブロック */
+    private static AbstractBlock.Settings markerSettings(MapColor color) {
+        return AbstractBlock.Settings.create().mapColor(color).noCollision().nonOpaque().strength(0.3f)
+                .sounds(BlockSoundGroup.GLASS)
+                .allowsSpawning((s, w, p, t) -> false)
+                .solidBlock((s, w, p) -> false)
+                .suffocates((s, w, p) -> false)
+                .blockVision((s, w, p) -> false);
+    }
+
     public static final Map<PatchKind, Item> PATCHES = new EnumMap<>(PatchKind.class);
     public static final Item PATCH_ALL;
 
@@ -76,6 +109,9 @@ public class SkyRiders implements ModInitializer {
                         entries.add(MACHINE_ITEM);
                         PATCHES.values().forEach(entries::add);
                         entries.add(PATCH_ALL);
+                        entries.add(COURSE_TOOL);
+                        entries.add(GOAL_BLOCK_ITEM);
+                        entries.add(CHECKPOINT_BLOCK_ITEM);
                     })
                     .build());
 
@@ -83,6 +119,14 @@ public class SkyRiders implements ModInitializer {
     public void onInitialize() {
         PayloadTypeRegistry.playC2S().register(MachineActionPayload.ID, MachineActionPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(MachineHitPayload.ID, MachineHitPayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(CourseScreenPayload.ID, CourseScreenPayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(RaceStatePayload.ID, RaceStatePayload.CODEC);
+        PayloadTypeRegistry.playC2S().register(CourseEditPayload.ID, CourseEditPayload.CODEC);
+        ServerPlayNetworking.registerGlobalReceiver(CourseEditPayload.ID, (payload, context) -> {
+            ServerPlayerEntity player = context.player();
+            context.server().execute(() -> RaceManager.handleEdit(player, payload.action(), payload.text(), payload.value()));
+        });
+        ServerTickEvents.END_SERVER_TICK.register(RaceManager::tick);
         ServerPlayNetworking.registerGlobalReceiver(MachineActionPayload.ID, (payload, context) -> {
             ServerPlayerEntity player = context.player();
             context.server().execute(() -> {

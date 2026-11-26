@@ -5,6 +5,10 @@ import com.eeeeeeruki.skyriders.entity.MachineEntity;
 import com.eeeeeeruki.skyriders.item.PatchItem;
 import com.eeeeeeruki.skyriders.net.MachineActionPayload;
 import com.eeeeeeruki.skyriders.net.MachineHitPayload;
+import com.eeeeeeruki.skyriders.net.CourseScreenPayload;
+import com.eeeeeeruki.skyriders.net.RaceStatePayload;
+import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
+import net.minecraft.client.render.RenderLayer;
 import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
 import net.minecraft.item.Item;
 import java.util.ArrayList;
@@ -42,6 +46,15 @@ public class SkyRidersClient implements ClientModInitializer {
                 m.applyHitClient(payload.vx(), payload.vy(), payload.vz(), payload.stun());
             }
         }));
+
+        // コースの管理画面とレースの表示
+        ClientPlayNetworking.registerGlobalReceiver(CourseScreenPayload.ID,
+                (payload, context) -> context.client().execute(() -> CourseScreen.receive(payload.json())));
+        ClientPlayNetworking.registerGlobalReceiver(RaceStatePayload.ID,
+                (payload, context) -> context.client().execute(() -> RaceHud.receive(payload)));
+        HudRenderCallback.EVENT.register(RaceHud::render);
+        ClientTickEvents.END_CLIENT_TICK.register(c -> RaceHud.tick());
+        BlockRenderLayerMap.INSTANCE.putBlocks(RenderLayer.getTranslucent(), SkyRiders.GOAL_BLOCK, SkyRiders.CHECKPOINT_BLOCK);
 
         // パッチの色
         List<Item> patches = new ArrayList<>(SkyRiders.PATCHES.values());
