@@ -262,7 +262,13 @@ public class MachineEntity extends Entity {
 
     /** 上昇の限界（上がった高さの合計、ブロック） */
     public double climbLimit() {
-        return 2 + 8 * this.lift();
+        // 飛行パッチで大きく伸びる（+18で約100ブロック、0で約8ブロック）
+        return 2 + 8 * this.lift() * curve(t(PatchKind.FLY), 9.4, 0.5);
+    }
+
+    /** 上昇する時の減速の倍率：揚力が高いほど、上がっても速さが落ちにくい */
+    private double climbCost() {
+        return 1.0 / (1.0 + 1.6 * Math.max(0, this.lift() - 0.75));
     }
 
     /** チャージ中に止まる速さ（重いほど早く止まる） */
@@ -622,7 +628,7 @@ public class MachineEntity extends Entity {
                 fwd = Math.max(fwd, this.flyTop() * 1.8);
             } else {
                 // 上昇は減速、下降は加速（重いほど下降の加速が強い）
-                fwd += EXCHANGE * sin * (sin > 0 ? fallMul : 1.0);
+                fwd += EXCHANGE * sin * (sin > 0 ? fallMul : this.climbCost());
                 // 機首を上げていない時だけ、飛行速へ収束する（空中プッシュ中はスラスターを切るので進まない）
                 if (this.inCharge) fwd *= 0.995;
                 else if (this.flightPitch > -5f) fwd = converge(fwd, this.flyTop(), this.accelK() * AIR_ACCEL_MUL);
