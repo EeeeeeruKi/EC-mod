@@ -32,6 +32,7 @@ public class CourseState extends PersistentState {
     public static class Course {
         public final String name;
         public int laps = 3;
+        public String bgm = "";  // 音のID（空ならなし）
         @Nullable
         public Spot start;  // スタート地点
         @Nullable
@@ -195,6 +196,7 @@ public class CourseState extends PersistentState {
             NbtCompound t = new NbtCompound();
             t.putString("Name", c.name);
             t.putInt("Laps", c.laps);
+            t.putString("Bgm", c.bgm);
             NbtList rl = new NbtList();
             for (Record r : c.records) {
                 NbtCompound rt = new NbtCompound();
@@ -238,6 +240,7 @@ public class CourseState extends PersistentState {
             NbtCompound t = (NbtCompound) el;
             Course c = s.course(t.getString("Name"));
             c.laps = Math.max(1, t.getInt("Laps"));
+            c.bgm = t.getString("Bgm");
             if (t.contains("Start")) c.start = Spot.fromNbt(t.getCompound("Start"));
             if (t.contains("Ta")) c.ta = Spot.fromNbt(t.getCompound("Ta"));
             for (NbtElement re : t.getList("Records", NbtElement.COMPOUND_TYPE)) {

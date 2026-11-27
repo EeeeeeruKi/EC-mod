@@ -2740,6 +2740,16 @@
       "summary": "エアライド系のマシンに乗って走るMOD（試作版）。マシンは自動で前に進み、ボタンひとつでチャージ・ブースト・ドリフト・吸い込みができます。空中では速度と高度を交換しながら滑空し、パッチを集めてマシンを強くできます。",
       "versions": [
         {
+          "version": "0.7.0",
+          "mc": "1.21.1",
+          "loader": "fabric",
+          "url": "https://raw.githubusercontent.com/EeeeeeruKi/EC-mod/main/jars/skyriders/1.21.1-fabric/skyriders-0.7.0.jar",
+          "fileName": "skyriders-0.7.0.jar",
+          "sha256": "337e343c09ff9b0c51d623b1210ff5ccb323450aa4b5a0011d5a51dab553a50b",
+          "changelog": "コースごとにBGMを設定できるようにしました。管理画面の◀▶でレコードやゲームの曲から選べるほか、音のIDを入れるとリソースパックの曲も使えます。スタート地点・TA地点へのワープやスタートで流れ、ゴール・中止・降車で止まります。音量は「音楽」の設定に従います。",
+          "released": "2026-11-27"
+        },
+        {
           "version": "0.6.2",
           "mc": "1.21.1",
           "loader": "fabric",

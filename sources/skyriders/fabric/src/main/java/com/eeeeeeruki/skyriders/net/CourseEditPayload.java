@@ -16,6 +16,7 @@ public record CourseEditPayload(int action, String text, int value) implements C
     public static final int REFRESH = 6;
     public static final int START_RACE = 7;   // スタート地点からカウントダウン
     public static final int START_TA = 8;     // TA地点から助走
+    public static final int SET_BGM = 9;      // text: 音のID（空ならなし）
 
     public static final CustomPayload.Id<CourseEditPayload> ID = new CustomPayload.Id<>(SkyRiders.id("course_edit"));
     public static final PacketCodec<RegistryByteBuf, CourseEditPayload> CODEC = PacketCodec.tuple(

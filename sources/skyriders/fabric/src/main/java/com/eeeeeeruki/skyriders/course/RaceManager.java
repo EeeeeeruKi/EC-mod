@@ -4,6 +4,7 @@ import com.eeeeeeruki.skyriders.block.CourseMarkerBlock;
 import com.eeeeeeruki.skyriders.entity.MachineEntity;
 import com.eeeeeeruki.skyriders.net.CourseScreenPayload;
 import com.eeeeeeruki.skyriders.net.RaceControlPayload;
+import com.eeeeeeruki.skyriders.net.BgmPayload;
 import com.eeeeeeruki.skyriders.net.RaceStatePayload;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -78,9 +79,8 @@ public final class RaceManager {
             }
             if (!(player.getVehicle() instanceof MachineEntity machine)) {
                 LAST_POS.remove(id);
-                if (RACES.remove(id) != null) {
-                    sendState(player, null, now);
-                }
+                if (RACES.remove(id) != null) sendState(player, null, now);
+                if (BGM_ON.contains(id)) bgm(player, ""); // 降りたらBGMも止める
                 continue;
             }
             Vec3d pos = machine.getPos();
@@ -130,6 +130,7 @@ public final class RaceManager {
             p.total = nums.last();
             p.startTick = now;
             RACES.put(id, p);
+            bgm(player, cs.course(course).bgm);
             title(player, Text.translatable("title.skyriders.race_start"), Text.translatable("title.skyriders.race_start_sub", course, p.laps));
             sound(player, 1.0f);
             sendState(player, p, now);
@@ -149,6 +150,7 @@ public final class RaceManager {
             title(player, Text.translatable("title.skyriders.race_finish"), Text.literal(formatTime(time)));
             player.getServerWorld().playSound(null, player.getX(), player.getY(), player.getZ(),
                     SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundCategory.PLAYERS, 1f, 1f);
+            bgm(player, "");
             sendState(player, null, now);
             return;
         }
@@ -218,6 +220,7 @@ public final class RaceManager {
             machine.setVelocity(Vec3d.ZERO);
             LAST_POS.put(r.getUuid(), p);
             GOAL_COOLDOWNS.put(r.getUuid(), GOAL_COOLDOWN);
+            bgm(r, c.bgm);
             if (ServerPlayNetworking.canSend(r, RaceControlPayload.ID)) {
                 ServerPlayNetworking.send(r, new RaceControlPayload(machine.getId(), p.x, p.y, p.z, spot.yaw(), ta ? 0 : COUNTDOWN));
             }
@@ -242,6 +245,7 @@ public final class RaceManager {
 
     /** 管理画面から：自分のレースをやめる */
     public static void cancel(ServerPlayerEntity player) {
+        bgm(player, "");
         if (RACES.remove(player.getUuid()) != null) {
             sendState(player, null, player.getServer().getTicks());
         }
@@ -274,6 +278,14 @@ public final class RaceManager {
         ServerPlayNetworking.send(player, p == null
                 ? new RaceStatePayload(false, "", 0, 0, 0, 0, 0)
                 : new RaceStatePayload(true, p.course, p.lap, p.laps, p.next, p.total, now - p.startTick));
+    }
+
+    private static final java.util.Set<UUID> BGM_ON = new java.util.HashSet<>();
+
+    private static void bgm(ServerPlayerEntity player, String sound) {
+        if (sound.isEmpty()) BGM_ON.remove(player.getUuid());
+        else BGM_ON.add(player.getUuid());
+        if (ServerPlayNetworking.canSend(player, BgmPayload.ID)) ServerPlayNetworking.send(player, new BgmPayload(sound));
     }
 
     /** 0:12.34 の形 */
@@ -316,6 +328,7 @@ public final class RaceManager {
             }
             o.add("records", recs);
             o.addProperty("hasStart", c.start != null);
+            o.addProperty("bgm", c.bgm);
             o.addProperty("hasTa", c.ta != null);
             list.add(o);
         }
@@ -344,6 +357,13 @@ public final class RaceManager {
                 cs.markDirty();
             }
             case com.eeeeeeruki.skyriders.net.CourseEditPayload.CANCEL_RACE -> cancel(player);
+            case com.eeeeeeruki.skyriders.net.CourseEditPayload.SET_BGM -> {
+                String t = text.strip();
+                if (t.isEmpty() || net.minecraft.util.Identifier.tryParse(t) != null) {
+                    cs.course(course).bgm = t;
+                    cs.markDirty();
+                }
+            }
             case com.eeeeeeruki.skyriders.net.CourseEditPayload.START_RACE -> {
                 startFromPoint(player, false);
                 return;

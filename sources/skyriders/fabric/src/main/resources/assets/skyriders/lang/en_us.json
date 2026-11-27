@@ -112,5 +112,8 @@
   "item.skyriders.rail_top_left": "Rail (Top Left)",
   "item.skyriders.rail_bottom_left": "Rail (Bottom Left)",
   "item.skyriders.rail_top_right": "Rail (Top Right)",
-  "item.skyriders.rail_bottom_right": "Rail (Bottom Right)"
+  "item.skyriders.rail_bottom_right": "Rail (Bottom Right)",
+  "screen.skyriders.course.bgm": "BGM",
+  "screen.skyriders.course.bgm_id": "Sound ID (e.g. minecraft:music_disc.cat)",
+  "screen.skyriders.course.bgm_set": "Set"
 }

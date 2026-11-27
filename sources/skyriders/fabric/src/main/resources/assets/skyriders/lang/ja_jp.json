@@ -112,5 +112,8 @@
   "item.skyriders.rail_top_left": "レール（左上寄り）",
   "item.skyriders.rail_bottom_left": "レール（左下寄り）",
   "item.skyriders.rail_top_right": "レール（右上寄り）",
-  "item.skyriders.rail_bottom_right": "レール（右下寄り）"
+  "item.skyriders.rail_bottom_right": "レール（右下寄り）",
+  "screen.skyriders.course.bgm": "BGM",
+  "screen.skyriders.course.bgm_id": "音のID（例：minecraft:music_disc.cat）",
+  "screen.skyriders.course.bgm_set": "設定"
 }

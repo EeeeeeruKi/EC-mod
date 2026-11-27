@@ -57,6 +57,9 @@ public class SkyRidersClient implements ClientModInitializer {
         ClientPlayNetworking.registerGlobalReceiver(RaceStatePayload.ID,
                 (payload, context) -> context.client().execute(() -> RaceHud.receive(payload)));
         HudRenderCallback.EVENT.register(RaceHud::render);
+        ClientPlayNetworking.registerGlobalReceiver(com.eeeeeeruki.skyriders.net.BgmPayload.ID,
+                (payload, context) -> context.client().execute(() -> RaceBgm.play(payload.sound())));
+        net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents.DISCONNECT.register((h, c) -> c.execute(RaceBgm::stop));
         ClientPlayNetworking.registerGlobalReceiver(RaceControlPayload.ID, (payload, context) -> context.client().execute(() -> {
             if (context.client().world != null
                     && context.client().world.getEntityById(payload.entityId()) instanceof MachineEntity m) {

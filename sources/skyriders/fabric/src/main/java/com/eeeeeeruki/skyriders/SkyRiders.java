@@ -158,6 +158,7 @@ public class SkyRiders implements ModInitializer {
         PayloadTypeRegistry.playS2C().register(CourseScreenPayload.ID, CourseScreenPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(RaceStatePayload.ID, RaceStatePayload.CODEC);
         PayloadTypeRegistry.playS2C().register(RaceControlPayload.ID, RaceControlPayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(com.eeeeeeruki.skyriders.net.BgmPayload.ID, com.eeeeeeruki.skyriders.net.BgmPayload.CODEC);
         PayloadTypeRegistry.playC2S().register(CourseEditPayload.ID, CourseEditPayload.CODEC);
         ServerPlayNetworking.registerGlobalReceiver(CourseEditPayload.ID, (payload, context) -> {
             ServerPlayerEntity player = context.player();

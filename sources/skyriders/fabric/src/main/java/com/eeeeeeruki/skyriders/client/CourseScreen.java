@@ -20,6 +20,20 @@ import java.util.List;
 public class CourseScreen extends Screen {
     private JsonObject data;
     private TextFieldWidget nameField;
+    private TextFieldWidget bgmField;
+    /** ◀▶で選べるBGM（空＝なし） */
+    private static final String[] BGM_PRESETS = {"",
+            "minecraft:music_disc.pigstep", "minecraft:music_disc.otherside", "minecraft:music_disc.relic",
+            "minecraft:music_disc.creator", "minecraft:music_disc.precipice", "minecraft:music_disc.blocks",
+            "minecraft:music_disc.chirp", "minecraft:music_disc.cat", "minecraft:music_disc.far", "minecraft:music_disc.mall",
+            "minecraft:music_disc.mellohi", "minecraft:music_disc.stal", "minecraft:music_disc.strad", "minecraft:music_disc.ward",
+            "minecraft:music_disc.wait", "minecraft:music_disc.13", "minecraft:music_disc.11", "minecraft:music_disc.5",
+            "minecraft:music.game", "minecraft:music.creative", "minecraft:music.nether.basalt_deltas",
+            "minecraft:music.nether.crimson_forest", "minecraft:music.end", "minecraft:music.under_water"};
+
+    private JsonObject c0() {
+        return selectedCourse();
+    }
     private String typed = "";
 
     private CourseScreen(JsonObject data) {
@@ -106,6 +120,24 @@ public class CourseScreen extends Screen {
         this.addDrawableChild(ButtonWidget.builder(Text.literal("+"), b -> send(CourseEditPayload.NUMBER, "", 1))
                 .dimensions(cx + 90, y, 20, 20).build());
 
+        // BGM：◀▶でえらぶ、IDを入れて「設定」
+        y += 24;
+        String bgm = c0().has("bgm") ? c0().get("bgm").getAsString() : "";
+        int bi = Math.max(0, java.util.Arrays.asList(BGM_PRESETS).indexOf(bgm));
+        this.addDrawableChild(ButtonWidget.builder(Text.literal("◀"), b -> send(CourseEditPayload.SET_BGM,
+                BGM_PRESETS[(bi - 1 + BGM_PRESETS.length) % BGM_PRESETS.length], 0)).dimensions(cx - 50, y, 20, 20).build());
+        this.addDrawableChild(ButtonWidget.builder(Text.literal("▶"), b -> send(CourseEditPayload.SET_BGM,
+                BGM_PRESETS[(bi + 1) % BGM_PRESETS.length], 0)).dimensions(cx + 90, y, 20, 20).build());
+        y += 22;
+        this.bgmField = new TextFieldWidget(this.textRenderer, cx - 110, y, 150, 20, Text.translatable("screen.skyriders.course.bgm_id"));
+        this.bgmField.setMaxLength(100);
+        this.bgmField.setPlaceholder(Text.translatable("screen.skyriders.course.bgm_id"));
+        this.addDrawableChild(this.bgmField);
+        this.addDrawableChild(ButtonWidget.builder(Text.translatable("screen.skyriders.course.bgm_set"), b -> {
+            send(CourseEditPayload.SET_BGM, this.bgmField.getText().strip(), 0);
+            this.bgmField.setText("");
+        }).dimensions(cx + 44, y, 66, 20).build());
+
         // スタート地点・TA地点から始める
         int by = this.height - 28;
         JsonObject c = selectedCourse();
@@ -151,6 +183,14 @@ public class CourseScreen extends Screen {
         y += 24;
         ctx.drawTextWithShadow(this.textRenderer, Text.translatable("screen.skyriders.course.number"), cx - 110, y + 6, 0xFFFFFF);
         ctx.drawCenteredTextWithShadow(this.textRenderer, this.data.get("number").getAsString(), cx + 70, y + 6, 0xFFFFFF);
+
+        // BGM
+        y += 24;
+        String bgm = c.has("bgm") ? c.get("bgm").getAsString() : "";
+        ctx.drawTextWithShadow(this.textRenderer, Text.translatable("screen.skyriders.course.bgm"), cx - 110, y + 6, 0xFFFFFF);
+        String shown = bgm.isEmpty() ? Text.translatable("screen.skyriders.course.no").getString() : bgm.replace("minecraft:", "");
+        ctx.drawCenteredTextWithShadow(this.textRenderer, this.textRenderer.trimToWidth(shown, 115), cx + 35, y + 6, 0xA0E0FF);
+        y += 22;
 
         // コースの中身
         y += 30;
